@@ -43,13 +43,13 @@ const LessonAttachmentsManager = ({ lessonId }: Props) => {
   const { data: attachments = [], isLoading } = useQuery({
     queryKey: ['lesson-attachments', lessonId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('lesson_attachments')
         .select('*')
         .eq('lesson_id', lessonId)
         .order('sort_order', { ascending: true });
       if (error) throw error;
-      return data as Attachment[];
+      return (data || []) as Attachment[];
     },
   });
 
@@ -60,7 +60,7 @@ const LessonAttachmentsManager = ({ lessonId }: Props) => {
         ? Math.max(...attachments.map(a => a.sort_order)) + 1 
         : 0;
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('lesson_attachments')
         .insert({
           lesson_id: lessonId,
@@ -84,7 +84,7 @@ const LessonAttachmentsManager = ({ lessonId }: Props) => {
   // Delete attachment mutation
   const deleteMutation = useMutation({
     mutationFn: async (attachmentId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('lesson_attachments')
         .delete()
         .eq('id', attachmentId);

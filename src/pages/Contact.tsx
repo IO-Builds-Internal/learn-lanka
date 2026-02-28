@@ -56,7 +56,7 @@ const Contact = () => {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("contact_messages").insert({
+      const { error } = await (supabase as any).from("contact_messages").insert({
         name: data.name,
         phone: data.phone,
         email: data.email || null,

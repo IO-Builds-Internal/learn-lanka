@@ -56,7 +56,7 @@ const AdminContactMessages = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as ContactMessage[];
+      return (data as unknown) as ContactMessage[];
     },
   });
 

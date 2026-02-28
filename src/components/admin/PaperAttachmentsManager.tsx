@@ -64,13 +64,13 @@ const PaperAttachmentsManager = ({ paperId, paperTitle, open, onOpenChange }: Pa
   const { data: attachments = [], isLoading } = useQuery({
     queryKey: ['paper-attachments', paperId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('paper_attachments')
         .select('*')
         .eq('paper_id', paperId)
         .order('sort_order', { ascending: true });
       if (error) throw error;
-      return data as Attachment[];
+      return (data || []) as Attachment[];
     },
     enabled: open,
   });
@@ -96,7 +96,7 @@ const PaperAttachmentsManager = ({ paperId, paperTitle, open, onOpenChange }: Pa
         ? Math.max(...attachments.map(a => a.sort_order)) 
         : 0;
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('paper_attachments')
         .insert({
           paper_id: paperId,
@@ -110,7 +110,7 @@ const PaperAttachmentsManager = ({ paperId, paperTitle, open, onOpenChange }: Pa
         .select()
         .single();
       if (error) throw error;
-      return data;
+      return data as Attachment;
     },
     onSuccess: (data) => {
       toast.success('Attachment added!');
@@ -129,7 +129,7 @@ const PaperAttachmentsManager = ({ paperId, paperTitle, open, onOpenChange }: Pa
   // Delete attachment mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('paper_attachments')
         .delete()
         .eq('id', id);

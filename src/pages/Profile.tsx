@@ -178,7 +178,7 @@ const Profile = () => {
       const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: avatarUrl })
+        .update({ avatar_url: avatarUrl } as any)
         .eq('id', user.id);
 
       if (updateError) throw updateError;
