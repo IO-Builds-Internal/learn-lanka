@@ -64,7 +64,7 @@ const ClassScheduleGantt = () => {
       if (classError) throw classError;
 
       // Get class months for notification status
-      const { data: classMonths } = await supabase
+      const { data: classMonths } = await (supabase as any)
         .from('class_months')
         .select('class_id, schedule_notified_at')
         .eq('year_month', yearMonth);
@@ -124,7 +124,7 @@ const ClassScheduleGantt = () => {
       });
 
       // Update class_month to mark as notified
-      await supabase
+      await (supabase as any)
         .from('class_months')
         .update({ schedule_notified_at: new Date().toISOString() })
         .eq('class_id', classData.id)

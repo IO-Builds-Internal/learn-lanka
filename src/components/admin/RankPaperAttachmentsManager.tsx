@@ -52,13 +52,13 @@ const RankPaperAttachmentsManager = ({ rankPaperId, paperTitle }: Props) => {
   const { data: attachments = [], isLoading } = useQuery({
     queryKey: ['rank-paper-attachments', rankPaperId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('rank_paper_attachments')
         .select('*')
         .eq('rank_paper_id', rankPaperId)
         .order('sort_order');
       if (error) throw error;
-      return data as Attachment[];
+      return (data || []) as Attachment[];
     },
   });
 
@@ -66,7 +66,7 @@ const RankPaperAttachmentsManager = ({ rankPaperId, paperTitle }: Props) => {
   const addMutation = useMutation({
     mutationFn: async () => {
       const maxOrder = Math.max(0, ...attachments.map(a => a.sort_order));
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('rank_paper_attachments')
         .insert({
           rank_paper_id: rankPaperId,
@@ -92,7 +92,7 @@ const RankPaperAttachmentsManager = ({ rankPaperId, paperTitle }: Props) => {
   // Delete attachment mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('rank_paper_attachments')
         .delete()
         .eq('id', id);

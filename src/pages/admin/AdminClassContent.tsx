@@ -141,7 +141,7 @@ const AdminClassContent = () => {
         .eq('class_month_id', classMonth.id)
         .order('date', { ascending: true });
       if (error) throw error;
-      return data || [];
+      return (data || []) as any[];
     },
     enabled: !!classMonth,
   });
@@ -201,7 +201,7 @@ const AdminClassContent = () => {
             end_time: dayEndTime || null,
             is_extra: dayIsExtra,
             meeting_link: dayMeetingLink || null,
-          })
+          } as any)
           .eq('id', editingDay.id);
         if (error) throw error;
         
@@ -243,7 +243,7 @@ const AdminClassContent = () => {
           });
 
           // Update meeting_link_notified_at
-          await supabase
+          await (supabase as any)
             .from('class_days')
             .update({ meeting_link_notified_at: new Date().toISOString() })
             .eq('id', editingDay.id);
@@ -277,7 +277,7 @@ const AdminClassContent = () => {
             end_time: dayEndTime || null,
             is_extra: dayIsExtra,
             meeting_link: dayMeetingLink || null,
-          })
+          } as any)
           .select()
           .single();
         if (error) throw error;
@@ -291,7 +291,7 @@ const AdminClassContent = () => {
             target_ref: id,
           });
 
-          await supabase
+          await (supabase as any)
             .from('class_days')
             .update({ meeting_link_notified_at: new Date().toISOString() })
             .eq('id', newDay.id);

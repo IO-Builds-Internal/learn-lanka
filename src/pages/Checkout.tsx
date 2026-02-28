@@ -247,7 +247,7 @@ const Checkout = () => {
     setIsSubmitting(true);
     try {
       // Create order
-      const { data: order, error: orderError } = await supabase
+      const { data: order, error: orderError } = await (supabase as any)
         .from('shop_orders')
         .insert({
           user_id: user.id,
@@ -274,7 +274,7 @@ const Checkout = () => {
         };
       });
 
-      const { error: itemsError } = await supabase
+      const { error: itemsError } = await (supabase as any)
         .from('shop_order_items')
         .insert(orderItems);
 

@@ -72,13 +72,13 @@ const BulkSmsManager = () => {
   const { data: templates = [] } = useQuery({
     queryKey: ['sms-templates-active'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('sms_templates')
         .select('*')
         .eq('is_active', true)
         .order('template_name');
       if (error) throw error;
-      return data as SmsTemplate[];
+      return (data || []) as SmsTemplate[];
     },
   });
 
@@ -121,13 +121,13 @@ const BulkSmsManager = () => {
   const { data: smsLogs = [], refetch: refetchLogs } = useQuery({
     queryKey: ['sms-logs'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('sms_logs')
         .select('*')
         .order('sent_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return data as SmsLog[];
+      return (data || []) as SmsLog[];
     },
   });
 

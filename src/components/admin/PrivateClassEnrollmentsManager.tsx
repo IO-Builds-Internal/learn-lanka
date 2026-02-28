@@ -87,7 +87,7 @@ const PrivateClassEnrollmentsManager = ({ classId, className }: Props) => {
             .select('first_name, last_name, phone')
             .eq('id', enrollment.user_id)
             .single(),
-          supabase
+          (supabase as any)
             .from('enrollment_payments')
             .select('*')
             .eq('enrollment_id', enrollment.id)
@@ -108,7 +108,7 @@ const PrivateClassEnrollmentsManager = ({ classId, className }: Props) => {
   const addPaymentMutation = useMutation({
     mutationFn: async () => {
       if (!selectedEnrollment || !paymentDate || !paymentAmount) return;
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('enrollment_payments')
         .insert({
           enrollment_id: selectedEnrollment.id,
@@ -131,7 +131,7 @@ const PrivateClassEnrollmentsManager = ({ classId, className }: Props) => {
 
   const deletePaymentMutation = useMutation({
     mutationFn: async (paymentId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('enrollment_payments')
         .delete()
         .eq('id', paymentId);

@@ -66,7 +66,7 @@ const SmsTemplatesManager = () => {
         .select('*')
         .order('template_name');
       if (error) throw error;
-      return data as SmsTemplate[];
+      return (data as unknown) as SmsTemplate[];
     },
   });
 

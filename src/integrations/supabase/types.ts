@@ -47,8 +47,6 @@ export type Database = {
       class_days: {
         Row: {
           class_month_id: string
-          conducted_at: string | null
-          conducted_by: string | null
           created_at: string
           date: string
           end_time: string | null
@@ -59,13 +57,10 @@ export type Database = {
           meeting_link_notified_at: string | null
           start_time: string | null
           title: string
-          zoom_join_url: string | null
           zoom_meeting_id: string | null
         }
         Insert: {
           class_month_id: string
-          conducted_at?: string | null
-          conducted_by?: string | null
           created_at?: string
           date: string
           end_time?: string | null
@@ -76,13 +71,10 @@ export type Database = {
           meeting_link_notified_at?: string | null
           start_time?: string | null
           title: string
-          zoom_join_url?: string | null
           zoom_meeting_id?: string | null
         }
         Update: {
           class_month_id?: string
-          conducted_at?: string | null
-          conducted_by?: string | null
           created_at?: string
           date?: string
           end_time?: string | null
@@ -93,7 +85,6 @@ export type Database = {
           meeting_link_notified_at?: string | null
           start_time?: string | null
           title?: string
-          zoom_join_url?: string | null
           zoom_meeting_id?: string | null
         }
         Relationships: [
@@ -112,7 +103,6 @@ export type Database = {
           class_id: string
           enrolled_at: string
           id: string
-          payment_amount: number | null
           payment_received_at: string | null
           status: string
           user_id: string
@@ -122,7 +112,6 @@ export type Database = {
           class_id: string
           enrolled_at?: string
           id?: string
-          payment_amount?: number | null
           payment_received_at?: string | null
           status?: string
           user_id: string
@@ -132,7 +121,6 @@ export type Database = {
           class_id?: string
           enrolled_at?: string
           id?: string
-          payment_amount?: number | null
           payment_received_at?: string | null
           status?: string
           user_id?: string
@@ -286,39 +274,42 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_read: boolean
           message: string
           name: string
-          phone: string
+          phone: string | null
           responded_at: string | null
           responded_by: string | null
           status: string
-          subject: string
+          subject: string | null
         }
         Insert: {
           admin_note?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          is_read?: boolean
           message: string
           name: string
-          phone: string
+          phone?: string | null
           responded_at?: string | null
           responded_by?: string | null
           status?: string
-          subject: string
+          subject?: string | null
         }
         Update: {
           admin_note?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          is_read?: boolean
           message?: string
           name?: string
-          phone?: string
+          phone?: string | null
           responded_at?: string | null
           responded_by?: string | null
           status?: string
-          subject?: string
+          subject?: string | null
         }
         Relationships: []
       }
@@ -621,25 +612,54 @@ export type Database = {
       paper_attachment_user_access: {
         Row: {
           attachment_id: string
-          created_at: string
+          granted_at: string
           id: string
           user_id: string
         }
         Insert: {
           attachment_id: string
-          created_at?: string
+          granted_at?: string
           id?: string
           user_id: string
         }
         Update: {
           attachment_id?: string
-          created_at?: string
+          granted_at?: string
           id?: string
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "paper_attachment_user_access_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "paper_attachments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paper_attachment_users: {
+        Row: {
+          attachment_id: string
+          granted_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          attachment_id: string
+          granted_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          attachment_id?: string
+          granted_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paper_attachment_users_attachment_id_fkey"
             columns: ["attachment_id"]
             isOneToOne: false
             referencedRelation: "paper_attachments"
@@ -1212,33 +1232,33 @@ export type Database = {
       }
       shop_orders: {
         Row: {
+          address: string | null
           created_at: string
-          delivery_address: string | null
           id: string
-          notes: string | null
-          phone: string | null
+          note: string | null
+          slip_url: string | null
           status: string
           total_amount: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
-          delivery_address?: string | null
           id?: string
-          notes?: string | null
-          phone?: string | null
+          note?: string | null
+          slip_url?: string | null
           status?: string
           total_amount: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           created_at?: string
-          delivery_address?: string | null
           id?: string
-          notes?: string | null
-          phone?: string | null
+          note?: string | null
+          slip_url?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -1284,64 +1304,61 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          description: string | null
+          id: string
           key: string
           updated_at: string
           updated_by: string | null
-          value: string
+          value: string | null
         }
         Insert: {
+          description?: string | null
+          id?: string
           key: string
           updated_at?: string
           updated_by?: string | null
-          value: string
+          value?: string | null
         }
         Update: {
+          description?: string | null
+          id?: string
           key?: string
           updated_at?: string
           updated_by?: string | null
-          value?: string
+          value?: string | null
         }
         Relationships: []
       }
       sms_logs: {
         Row: {
-          api_response: Json | null
           class_id: string | null
           error_message: string | null
           id: string
           message: string
           recipient_phone: string
-          recipient_user_id: string | null
           sent_at: string
           sent_by: string | null
           status: string
-          template_key: string | null
         }
         Insert: {
-          api_response?: Json | null
           class_id?: string | null
           error_message?: string | null
           id?: string
           message: string
           recipient_phone: string
-          recipient_user_id?: string | null
           sent_at?: string
           sent_by?: string | null
           status?: string
-          template_key?: string | null
         }
         Update: {
-          api_response?: Json | null
           class_id?: string | null
           error_message?: string | null
           id?: string
           message?: string
           recipient_phone?: string
-          recipient_user_id?: string | null
           sent_at?: string
           sent_by?: string | null
           status?: string
-          template_key?: string | null
         }
         Relationships: [
           {
@@ -1355,6 +1372,7 @@ export type Database = {
       }
       sms_templates: {
         Row: {
+          created_at: string
           description: string | null
           id: string
           is_active: boolean
@@ -1363,9 +1381,10 @@ export type Database = {
           template_name: string
           updated_at: string
           updated_by: string | null
-          variables: string[] | null
+          variables: string[]
         }
         Insert: {
+          created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
@@ -1374,9 +1393,10 @@ export type Database = {
           template_name: string
           updated_at?: string
           updated_by?: string | null
-          variables?: string[] | null
+          variables?: string[]
         }
         Update: {
+          created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
@@ -1385,44 +1405,9 @@ export type Database = {
           template_name?: string
           updated_at?: string
           updated_by?: string | null
-          variables?: string[] | null
+          variables?: string[]
         }
         Relationships: []
-      }
-      student_meeting_links: {
-        Row: {
-          class_day_id: string
-          created_at: string
-          id: string
-          join_url: string
-          registrant_id: string
-          user_id: string
-        }
-        Insert: {
-          class_day_id: string
-          created_at?: string
-          id?: string
-          join_url: string
-          registrant_id: string
-          user_id: string
-        }
-        Update: {
-          class_day_id?: string
-          created_at?: string
-          id?: string
-          join_url?: string
-          registrant_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_meeting_links_class_day_id_fkey"
-            columns: ["class_day_id"]
-            isOneToOne: false
-            referencedRelation: "class_days"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_notification_reads: {
         Row: {

@@ -39,12 +39,12 @@ const UserAccessSelector = ({ attachmentId, attachmentTitle, open, onOpenChange 
   const { data: currentAccess = [], isLoading: loadingAccess } = useQuery({
     queryKey: ['attachment-user-access', attachmentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('paper_attachment_user_access')
         .select('user_id')
         .eq('attachment_id', attachmentId);
       if (error) throw error;
-      return data.map(d => d.user_id);
+      return (data || []).map((d: any) => d.user_id);
     },
     enabled: open,
   });
@@ -79,7 +79,7 @@ const UserAccessSelector = ({ attachmentId, attachmentTitle, open, onOpenChange 
   // Add user access mutation
   const addAccessMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('paper_attachment_user_access')
         .insert({
           attachment_id: attachmentId,
@@ -99,7 +99,7 @@ const UserAccessSelector = ({ attachmentId, attachmentTitle, open, onOpenChange 
   // Remove user access mutation
   const removeAccessMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('paper_attachment_user_access')
         .delete()
         .eq('attachment_id', attachmentId)

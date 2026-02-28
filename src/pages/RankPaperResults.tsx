@@ -115,13 +115,13 @@ const RankPaperResults = () => {
   const { data: attachments = [] } = useQuery({
     queryKey: ['rank-paper-attachments', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('rank_paper_attachments')
         .select('*')
         .eq('rank_paper_id', id)
         .order('sort_order');
       if (error) throw error;
-      return data as Attachment[];
+      return (data || []) as Attachment[];
     },
     enabled: !!id && !!marks?.published_at,
   });

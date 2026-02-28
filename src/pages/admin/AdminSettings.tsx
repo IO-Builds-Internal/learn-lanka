@@ -40,7 +40,7 @@ const AdminSettings = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('site_settings')
           .select('key, value');
         
@@ -65,7 +65,7 @@ const AdminSettings = () => {
     setIsSaving(true);
     try {
       for (const entry of entries) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('site_settings')
           .upsert({ key: entry.key, value: entry.value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
         if (error) throw error;

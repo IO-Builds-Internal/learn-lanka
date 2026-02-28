@@ -91,13 +91,13 @@ const ClassDetail = () => {
     queryKey: ['enrollment-payments', enrollment?.id],
     queryFn: async () => {
       if (!enrollment?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('enrollment_payments')
         .select('*')
         .eq('enrollment_id', enrollment.id)
         .order('payment_date', { ascending: false });
       if (error) throw error;
-      return data || [];
+      return (data || []) as any[];
     },
     enabled: !!enrollment?.id,
   });
@@ -142,7 +142,7 @@ const ClassDetail = () => {
         .eq('class_month_id', classMonth.id)
         .order('date', { ascending: true });
       if (error) throw error;
-      return data || [];
+      return (data || []) as any[];
     },
     enabled: !!id && !!enrollment,
   });
