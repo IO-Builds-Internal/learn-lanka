@@ -820,6 +820,7 @@ const Playground = () => {
   const [hasRun, setHasRun] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [addingFile, setAddingFile] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -835,15 +836,20 @@ const Playground = () => {
   const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Run SQL' : 'Run';
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setUserId(s?.user.id ?? null));
+    // getSession() restores from storage first — sets auth as ready
+    supabase.auth.getSession().then(({ data }) => {
+      setUserId(data.session?.user.id ?? null);
+      setAuthReady(true);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => {
+      setUserId(s?.user.id ?? null);
+    });
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load files from DB whenever userId becomes available (or changes)
+  // Load files from DB only after auth is fully ready
   useEffect(() => {
-    if (!userId) return;
-    // Always reload from DB when userId is set - don't use a ref guard so re-logins work
+    if (!authReady || !userId) return;
     supabase.from('playground_files' as any).select('*').eq('user_id', userId).order('sort_order')
       .then(({ data, error }: any) => {
         if (!error && data && data.length > 0) {
@@ -859,9 +865,9 @@ const Playground = () => {
           setHasRun(false);
           setShowPreview(false);
         }
-        // If no DB files found, keep whatever is in state (default files)
+        // If no DB files found, keep default files in state
       });
-  }, [userId]);
+  }, [authReady, userId]);
 
   useEffect(() => { if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight; }, [output]);
 
