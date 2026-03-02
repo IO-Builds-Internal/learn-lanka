@@ -325,7 +325,6 @@ const Playground = () => {
   const [renameVal, setRenameVal] = useState('');
   const outputRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const didCloudLoad = useRef(false);
 
   const activeFile = files.find(f => f.id === activeId) ?? files[0];
   const usedBytes = totalBytes(files);
@@ -340,22 +339,28 @@ const Playground = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Load files from DB whenever userId becomes available (or changes)
   useEffect(() => {
-    if (!userId || didCloudLoad.current) return;
-    didCloudLoad.current = true;
-    (supabase.from as any)('playground_files').select('*').eq('user_id', userId).order('sort_order')
+    if (!userId) return;
+    // Always reload from DB when userId is set - don't use a ref guard so re-logins work
+    supabase.from('playground_files' as any).select('*').eq('user_id', userId).order('sort_order')
       .then(({ data, error }: any) => {
-        if (!error && data?.length > 0) {
-          const mapped: PlayFile[] = data.map((r: any) => ({ id: r.id, name: r.name, code: r.code, sortOrder: r.sort_order }));
-          setFiles(mapped); setActiveId(mapped[0].id);
-          setOutput(''); setHasRun(false); setShowPreview(false);
+        if (!error && data && data.length > 0) {
+          const mapped: PlayFile[] = data.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            code: r.code,
+            sortOrder: r.sort_order,
+          }));
+          setFiles(mapped);
+          setActiveId(mapped[0].id);
+          setOutput('');
+          setHasRun(false);
+          setShowPreview(false);
         }
+        // If no DB files found, keep whatever is in state (default files)
       });
   }, [userId]);
-
-  useEffect(() => {
-    if (!userId && files.length > 0) sessionStorage.setItem(SESSION_KEY, JSON.stringify(files));
-  }, [files, userId]);
 
   useEffect(() => { if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight; }, [output]);
 
