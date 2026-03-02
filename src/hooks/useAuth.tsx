@@ -28,12 +28,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchProfileAndRoles = async (userId: string): Promise<string[]> => {
     setRolesLoading(true);
     try {
-      const [profileResult, rolesResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('user_roles').select('role').eq('user_id', userId),
-      ]);
-      setProfile(profileResult.data);
-      const userRoles = rolesResult.data?.map((r: any) => r.role) || ['student'];
+      // Add a 5s timeout so a network hang never blocks the app forever
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 5000)
+      );
+      const [profileResult, rolesResult] = await Promise.race([
+        Promise.all([
+          supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+          supabase.from('user_roles').select('role').eq('user_id', userId),
+        ]),
+        timeout,
+      ]) as any;
+      setProfile(profileResult?.data ?? null);
+      const userRoles = rolesResult?.data?.map((r: any) => r.role) || ['student'];
       setRoles(userRoles);
       return userRoles;
     } catch (error) {
@@ -52,32 +59,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!isMounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfileAndRoles(session.user.id);
-        } else {
-          setRolesLoading(false);
-        }
-      } catch (error) {
-        console.error('Error during initial auth setup:', error);
-        setRolesLoading(false);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!isMounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchProfileAndRoles(session.user.id);
+          // Use setTimeout to avoid Supabase deadlock from awaiting inside onAuthStateChange
+          setTimeout(() => {
+            if (isMounted) fetchProfileAndRoles(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
           setRoles([]);
@@ -86,7 +78,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    initializeAuth();
+    // Then get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfileAndRoles(session.user.id).finally(() => {
+          if (isMounted) setLoading(false);
+        });
+      } else {
+        setRolesLoading(false);
+        setLoading(false);
+      }
+    }).catch(() => {
+      if (isMounted) {
+        setLoading(false);
+        setRolesLoading(false);
+      }
+    });
 
     return () => {
       isMounted = false;
