@@ -64,9 +64,6 @@ const BACKUP_TABLES = [
   'contact_messages',
   'sms_logs',
   'otp_requests',
-  
-  // Zoom meeting links
-  'student_meeting_links',
 ];
 
 Deno.serve(async (req) => {

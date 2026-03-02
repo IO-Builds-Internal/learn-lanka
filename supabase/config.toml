@@ -8,3 +8,36 @@ verify_jwt = false
 
 [functions.register-zoom-meeting]
 verify_jwt = false
+
+[functions.seed-database]
+verify_jwt = false
+
+[functions.database-backup]
+verify_jwt = false
+
+[functions.database-backup]
+verify_jwt = false
+
+[functions.download-class-paper]
+verify_jwt = false
+
+[functions.download-pdf-watermark]
+verify_jwt = false
+
+[functions.reset-password]
+verify_jwt = false
+
+[functions.send-bulk-sms]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.send-sms-notification]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.confirm-user-email]
+verify_jwt = false
