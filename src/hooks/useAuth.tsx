@@ -113,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setProfile(null);
     setRoles([]);
+    window.location.href = '/login';
   };
 
   const isAdmin = roles.includes('admin');

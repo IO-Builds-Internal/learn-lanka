@@ -176,7 +176,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAdmin, isModerator, loading } = useAuth();
+  const { isAdmin, isModerator, loading, signOut } = useAuth();
   const { data: settings } = useSiteSettings();
   const siteName = settings?.site_name || 'Admin';
 
@@ -241,16 +241,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <ThemeToggle />
             {!collapsed && <span className="text-sm text-sidebar-foreground">Theme</span>}
           </div>
-          <Link
-            to="/login"
+          <button
+            onClick={async () => { await signOut(); }}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive",
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive w-full",
               collapsed && "justify-center"
             )}
           >
             <LogOut className="w-5 h-5" />
             {!collapsed && <span>Sign Out</span>}
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -302,14 +302,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 ))}
               </nav>
               <div className="p-2 border-t border-sidebar-border flex-shrink-0">
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive"
+                <button
+                  onClick={async () => { setMobileMenuOpen(false); await signOut(); }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive w-full"
                 >
                   <LogOut className="w-5 h-5" />
                   <span>Sign Out</span>
-                </Link>
+                </button>
               </div>
             </div>
           </div>
