@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import StudentLayout from '@/components/layouts/StudentLayout';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -513,11 +513,9 @@ const RankPaperAttempt = () => {
 
   if (loading) {
     return (
-      <StudentLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </StudentLayout>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
@@ -526,7 +524,7 @@ const RankPaperAttempt = () => {
   }
 
   return (
-    <StudentLayout>
+    <div className="min-h-screen bg-background px-4 py-4 max-w-4xl mx-auto">
       {/* Watermark overlay - deters screenshots */}
       <div 
         className="fixed inset-0 pointer-events-none z-40 select-none"
@@ -896,7 +894,7 @@ const RankPaperAttempt = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </StudentLayout>
+    </div>
   );
 };
 
