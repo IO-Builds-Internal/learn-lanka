@@ -282,6 +282,7 @@ export type Database = {
           responded_by: string | null
           status: string
           subject: string | null
+          user_id: string | null
         }
         Insert: {
           admin_note?: string | null
@@ -296,6 +297,7 @@ export type Database = {
           responded_by?: string | null
           status?: string
           subject?: string | null
+          user_id?: string | null
         }
         Update: {
           admin_note?: string | null
@@ -310,8 +312,44 @@ export type Database = {
           responded_by?: string | null
           status?: string
           subject?: string | null
+          user_id?: string | null
         }
         Relationships: []
+      }
+      contact_replies: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          message_id: string
+          sender_id: string | null
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          message_id: string
+          sender_id?: string | null
+          sender_role?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          sender_id?: string | null
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_replies_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coupon_usages: {
         Row: {
