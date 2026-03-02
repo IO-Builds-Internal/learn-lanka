@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Play, RotateCcw, Copy, Check, Loader2, Terminal, FilePlus, Trash2,
-  ChevronRight, Save, Cloud, CloudOff, AlertCircle
+  Save, Cloud, CloudOff, AlertCircle, Code2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import StudentLayout from '@/components/layouts/StudentLayout';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PlayFile { id: string; name: string; code: string; sortOrder: number; }
 type Language = 'python' | 'html' | 'css' | 'sql' | 'javascript' | 'text';
 
-// ─── File type helpers ────────────────────────────────────────────────────────
 const extToLang = (name: string): Language => {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
   if (ext === 'py') return 'python';
@@ -21,18 +23,15 @@ const extToLang = (name: string): Language => {
   return 'text';
 };
 
-const langMeta: Record<Language, { label: string; color: string; dot: string }> = {
-  python:     { label: 'Python',     color: '#3b82f6', dot: '🐍' },
-  html:       { label: 'HTML',       color: '#f97316', dot: '🌐' },
-  css:        { label: 'CSS',        color: '#a855f7', dot: '🎨' },
-  sql:        { label: 'SQL',        color: '#22c55e', dot: '🗄️' },
-  javascript: { label: 'JavaScript', color: '#eab308', dot: '⚡' },
-  text:       { label: 'Text',       color: '#6b7280', dot: '📄' },
+const langMeta: Record<Language, { label: string; color: string; bg: string; emoji: string }> = {
+  python:     { label: 'Python',     color: '#3b82f6', bg: '#3b82f620', emoji: '🐍' },
+  html:       { label: 'HTML',       color: '#f97316', bg: '#f9731620', emoji: '🌐' },
+  css:        { label: 'CSS',        color: '#a855f7', bg: '#a855f720', emoji: '🎨' },
+  sql:        { label: 'SQL',        color: '#22c55e', bg: '#22c55e20', emoji: '🗄️' },
+  javascript: { label: 'JavaScript', color: '#eab308', bg: '#eab30820', emoji: '⚡' },
+  text:       { label: 'Text',       color: '#6b7280', bg: '#6b728020', emoji: '📄' },
 };
 
-const fileBadge = (name: string) => langMeta[extToLang(name)].color;
-
-// ─── Default starter files ────────────────────────────────────────────────────
 const DEFAULT_FILES: Omit<PlayFile, 'id'>[] = [
   { name: 'main.py', sortOrder: 0, code: `# Python Playground - A/L ICT
 name = "ICT Student"
@@ -148,7 +147,6 @@ SELECT grade, COUNT(*) AS total, AVG(marks) AS avg_marks
 FROM students GROUP BY grade;` },
 ];
 
-// ─── Skulpt loader ────────────────────────────────────────────────────────────
 declare global { interface Window { Sk: any; } }
 const loadSkulpt = (): Promise<void> =>
   new Promise((resolve, reject) => {
@@ -166,7 +164,6 @@ const loadSkulpt = (): Promise<void> =>
     document.head.appendChild(s);
   });
 
-// ─── Storage helpers ──────────────────────────────────────────────────────────
 const MAX_BYTES = 10 * 1024 * 1024;
 const totalBytes = (files: PlayFile[]) => files.reduce((a, f) => a + new Blob([f.code]).size, 0);
 const fmtBytes = (b: number) =>
@@ -174,7 +171,6 @@ const fmtBytes = (b: number) =>
 const SESSION_KEY = 'ict_playground_files';
 const makeId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-// ─── Component ────────────────────────────────────────────────────────────────
 const Playground = () => {
   const initFiles = (): PlayFile[] => {
     try {
@@ -206,16 +202,15 @@ const Playground = () => {
   const usedBytes = totalBytes(files);
   const usedPct = Math.min(100, (usedBytes / MAX_BYTES) * 100);
   const lang = activeFile ? extToLang(activeFile.name) : 'text';
+  const meta = langMeta[lang];
   const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Reference' : 'Run';
 
-  // Auth
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setUserId(s?.user.id ?? null));
     return () => subscription.unsubscribe();
   }, []);
 
-  // Cloud load on login
   useEffect(() => {
     if (!userId || didCloudLoad.current) return;
     didCloudLoad.current = true;
@@ -229,15 +224,12 @@ const Playground = () => {
       });
   }, [userId]);
 
-  // Guest session storage
   useEffect(() => {
     if (!userId && files.length > 0) sessionStorage.setItem(SESSION_KEY, JSON.stringify(files));
   }, [files, userId]);
 
-  // Scroll output
   useEffect(() => { if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight; }, [output]);
 
-  // Save to DB
   const saveToDb = useCallback(async (filesToSave: PlayFile[]) => {
     if (!userId) return;
     setSaving(true);
@@ -257,9 +249,8 @@ const Playground = () => {
 
   const updateFiles = (nf: PlayFile[]) => { setFiles(nf); scheduleSave(nf); };
 
-  // File CRUD
   const addFile = async () => {
-    if (!userId) { toast.error('Please log in to create files'); setAddingFile(false); return; }
+    if (!userId) { toast.error('Log in to create new files'); setAddingFile(false); return; }
     const raw = newFileName.trim();
     if (!raw) { setAddingFile(false); return; }
     const name = raw.includes('.') ? raw : `${raw}.py`;
@@ -294,7 +285,6 @@ const Playground = () => {
     updateFiles(files.map(f => f.id === activeId ? { ...f, code: val } : f));
   };
 
-  // Run
   const handleRun = async () => {
     if (!activeFile) return;
     setHasRun(true); setShowPreview(false);
@@ -346,120 +336,78 @@ const Playground = () => {
     await saveToDb(files); toast.success('Workspace saved!');
   };
 
-  // Language tab groups
-  const langGroups = [
-    { id: 'python' as Language,     label: 'Python',     exts: ['py'],             emoji: '🐍', color: '#3b82f6' },
-    { id: 'html'   as Language,     label: 'HTML & CSS', exts: ['html','htm','css'],emoji: '🌐', color: '#f97316' },
-    { id: 'sql'    as Language,     label: 'MySQL',      exts: ['sql'],             emoji: '🗄️', color: '#22c55e' },
-    { id: 'javascript' as Language, label: 'JavaScript', exts: ['js','ts'],         emoji: '⚡', color: '#eab308' },
-  ];
-  const activeGroup = langGroups.find(g => g.exts.includes(activeFile?.name.split('.').pop() ?? ''));
-
-  // ─── JSX ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#0f1117' }}>
-
-      {/* ── HEADER ── */}
-      <header className="flex-shrink-0 flex items-center justify-between px-4 h-11"
-        style={{ background: '#0d1117', borderBottom: '1px solid #1e2433' }}>
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-            <Terminal className="w-3.5 h-3.5 text-white" />
+    <StudentLayout>
+      {/* Page Header */}
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
+            <Code2 className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-none">ICT Playground</p>
-            <p className="text-xs leading-none mt-0.5" style={{ color: '#6b7280' }}>A/L ICT Code Practice</p>
+            <h1 className="text-xl font-bold text-foreground">ICT Playground</h1>
+            <p className="text-sm text-muted-foreground">A/L ICT Code Practice</p>
           </div>
         </div>
 
-        {/* Right controls */}
-        <div className="flex items-center gap-3">
-          {/* Storage bar */}
-          <div className="hidden sm:flex items-center gap-2">
-            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: '#1e2433' }}>
+        {/* Storage + save status */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
               <div className="h-full rounded-full transition-all"
                 style={{ width: `${usedPct}%`, background: usedPct > 80 ? '#ef4444' : usedPct > 60 ? '#eab308' : '#22c55e' }} />
             </div>
-            <span className="text-xs" style={{ color: '#6b7280' }}>{fmtBytes(usedBytes)} / 10 MB</span>
-            {usedPct > 80 && <AlertCircle className="w-3 h-3 text-yellow-400" />}
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{fmtBytes(usedBytes)} / 10 MB</span>
+            {usedPct > 80 && <AlertCircle className="w-3.5 h-3.5 text-yellow-500" />}
           </div>
 
           {userId ? (
-            <>
-              {!saving && <div className="hidden sm:flex items-center gap-1 text-xs" style={{ color: '#22c55e' }}><Cloud className="w-3 h-3" /> Auto-saved</div>}
-              <button onClick={manualSave} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                style={{ background: '#161b27', border: '1px solid #1e2433', color: saving ? '#58a6ff' : '#8b949e' }}>
-                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </>
+            <Button variant="outline" size="sm" onClick={manualSave} disabled={saving} className="gap-1.5">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-              style={{ background: '#161b27', border: '1px solid #1e2433', color: '#6b7280' }}>
-              <CloudOff className="w-3 h-3" /> Session only
-            </div>
+            <Link to="/login">
+              <Button variant="outline" size="sm" className="gap-1.5 text-muted-foreground">
+                <CloudOff className="w-3.5 h-3.5" />
+                Log in to save
+              </Button>
+            </Link>
           )}
         </div>
-      </header>
-
-      {/* ── LANGUAGE TABS ── */}
-      <div className="flex-shrink-0 flex items-center gap-1.5 px-4 h-10"
-        style={{ background: '#0d1117', borderBottom: '1px solid #1e2433' }}>
-        {langGroups.map(g => {
-          const isActive = activeGroup?.id === g.id;
-          return (
-            <button key={g.id}
-              onClick={() => {
-                const match = files.find(f => g.exts.includes(f.name.split('.').pop() ?? ''));
-                if (match) { setActiveId(match.id); setOutput(''); setHasRun(false); setShowPreview(false); }
-              }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-medium transition-all"
-              style={{
-                background: isActive ? g.color + '20' : 'transparent',
-                color: isActive ? g.color : '#6b7280',
-                border: isActive ? `1px solid ${g.color}40` : '1px solid transparent',
-              }}>
-              <span style={{ fontSize: 13 }}>{g.emoji}</span>
-              <span className="hidden sm:inline">{g.label}</span>
-            </button>
-          );
-        })}
       </div>
 
-      {/* ── MAIN 3-PANEL ── */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Guest banner */}
+      {!userId && (
+        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5">
+          <Cloud className="w-4 h-4 text-primary flex-shrink-0" />
+          <p className="text-sm text-foreground">
+            <Link to="/login" className="font-semibold text-primary hover:underline">Log in</Link>
+            {' '}to save your workspace, create new files, and sync across devices. Guest files are lost when you close the browser.
+          </p>
+        </div>
+      )}
 
-        {/* FILE EXPLORER */}
-        <div className="w-44 flex-shrink-0 flex flex-col" style={{ background: '#0d1117', borderRight: '1px solid #1e2433' }}>
-          <div className="flex items-center justify-between px-3 py-2"
-            style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
-            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6b7280' }}>Explorer</span>
+      {/* 3 Cards Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_1fr] gap-4">
+
+        {/* ── Card 1: File Explorer ── */}
+        <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
+          <div className="flex items-center justify-between px-3 py-2.5 border-b bg-muted/30">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Explorer</span>
             <button
-              onClick={() => { if (!userId) { toast.error('Log in to create files'); return; } setAddingFile(true); }}
-              className="p-1 rounded transition-colors"
               title={userId ? 'New file' : 'Log in to create files'}
-              style={{ opacity: userId ? 1 : 0.4, cursor: userId ? 'pointer' : 'not-allowed' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)') }
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent') }
+              onClick={() => { if (!userId) { toast.error('Log in to create new files'); return; } setAddingFile(true); }}
+              className="p-1 rounded-md hover:bg-muted transition-colors"
+              style={{ opacity: userId ? 1 : 0.4 }}
             >
-              <FilePlus className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
+              <FilePlus className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           </div>
 
-          {!userId && (
-            <a href="/login"
-              className="mx-2 mt-2 flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs leading-snug transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #1d2b4a, #162037)', border: '1px solid #2563eb55', color: '#93c5fd', textDecoration: 'none' }}>
-              <Cloud className="w-3.5 h-3.5 flex-shrink-0 text-blue-400" />
-              <span><strong style={{ color: '#60a5fa' }}>Log in</strong> to save workspace &amp; create files</span>
-            </a>
-          )}
-
           <div className="flex-1 overflow-y-auto py-1">
             {files.map(file => {
-              const color = fileBadge(file.name);
+              const m = langMeta[extToLang(file.name)];
               const isActive = file.id === activeId;
               return (
                 <div key={file.id} className="group relative">
@@ -468,86 +416,98 @@ const Playground = () => {
                       onChange={e => setRenameVal(e.target.value)}
                       onBlur={() => renameFile(file.id)}
                       onKeyDown={e => { if (e.key === 'Enter') renameFile(file.id); if (e.key === 'Escape') setRenamingId(null); }}
-                      className="w-full px-3 py-1.5 text-xs font-mono outline-none"
-                      style={{ background: '#1c2333', color: '#e6edf3', border: 'none' }}
+                      className="w-full px-3 py-1.5 text-xs font-mono bg-muted outline-none text-foreground"
                     />
                   ) : (
                     <button
                       onClick={() => { setActiveId(file.id); setOutput(''); setHasRun(false); setShowPreview(false); }}
                       onDoubleClick={() => { setRenamingId(file.id); setRenameVal(file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors"
                       style={{
-                        background: isActive ? '#1c2333' : 'transparent',
-                        color: isActive ? '#e6edf3' : '#8b949e',
-                        borderLeft: isActive ? `2px solid ${color}` : '2px solid transparent',
+                        background: isActive ? m.bg : 'transparent',
+                        borderLeft: `2px solid ${isActive ? m.color : 'transparent'}`,
                       }}>
-                      <span className="flex-shrink-0 w-5 h-4 rounded flex items-center justify-center font-bold"
-                        style={{ background: color + '22', color, fontSize: 8 }}>
-                        {file.name.split('.').pop()?.toUpperCase()?.slice(0, 2) ?? '??'}
-                      </span>
-                      <span className="truncate flex-1">{file.name}</span>
+                      <span className="text-base leading-none">{m.emoji}</span>
+                      <span className="truncate flex-1 font-mono text-foreground">{file.name}</span>
                     </button>
                   )}
                   {renamingId !== file.id && (
                     <button onClick={() => deleteFile(file.id)}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20">
-                      <Trash2 className="w-3 h-3 text-red-400" />
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10">
+                      <Trash2 className="w-3 h-3 text-destructive" />
                     </button>
                   )}
                 </div>
               );
             })}
+
             {addingFile && userId && (
-              <div className="px-2 py-1.5">
+              <div className="px-2 py-2">
                 <input autoFocus placeholder="filename.py" value={newFileName}
                   onChange={e => setNewFileName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') addFile(); if (e.key === 'Escape') { setAddingFile(false); setNewFileName(''); } }}
                   onBlur={addFile}
-                  className="w-full px-2 py-1 text-xs font-mono rounded outline-none"
-                  style={{ background: '#1c2333', color: '#e6edf3', border: `1px solid ${fileBadge(newFileName || 'f.py')}` }}
+                  className="w-full px-2 py-1.5 text-xs font-mono rounded-md border bg-background text-foreground outline-none focus:border-primary"
                 />
-                <p className="text-xs mt-1" style={{ color: '#4b5563' }}>.py .html .css .sql .js</p>
+                <p className="text-xs mt-1 text-muted-foreground">.py .html .css .sql .js</p>
               </div>
             )}
           </div>
+
+          {/* Language tabs at bottom of explorer */}
+          <div className="border-t p-2 flex flex-wrap gap-1">
+            {(['python','html','sql','javascript'] as Language[]).map(l => {
+              const m = langMeta[l];
+              const isActive = lang === l || (l === 'html' && lang === 'css');
+              return (
+                <button key={l}
+                  onClick={() => {
+                    const ext = l === 'html' ? ['html','htm','css'] : l === 'sql' ? ['sql'] : l === 'python' ? ['py'] : ['js','ts'];
+                    const match = files.find(f => ext.includes(f.name.split('.').pop() ?? ''));
+                    if (match) { setActiveId(match.id); setOutput(''); setHasRun(false); setShowPreview(false); }
+                  }}
+                  className="text-xs px-2 py-0.5 rounded-full transition-all"
+                  style={{
+                    background: isActive ? m.bg : 'transparent',
+                    color: isActive ? m.color : 'var(--muted-foreground)',
+                    border: `1px solid ${isActive ? m.color + '60' : 'transparent'}`,
+                  }}>
+                  {m.emoji}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* CODE EDITOR */}
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ borderRight: '1px solid #1e2433' }}>
+        {/* ── Card 2: Code Editor ── */}
+        <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
           {/* Title bar */}
-          <div className="flex-shrink-0 flex items-center justify-between px-4 py-2"
-            style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
-            <div className="flex items-center gap-2.5">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ background: '#ff5f57' }} />
-                <div className="w-3 h-3 rounded-full" style={{ background: '#ffbd2e' }} />
-                <div className="w-3 h-3 rounded-full" style={{ background: '#28c840' }} />
-              </div>
-              <ChevronRight className="w-3 h-3" style={{ color: '#4b5563' }} />
-              <span className="text-xs font-mono" style={{ color: '#8b949e' }}>{activeFile?.name ?? '—'}</span>
+          <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-mono font-medium text-foreground">{activeFile?.name ?? '—'}</span>
               {activeFile && (
-                <span className="text-xs px-1.5 py-0.5 rounded font-bold"
-                  style={{ background: fileBadge(activeFile.name) + '22', color: fileBadge(activeFile.name), fontSize: 9 }}>
-                  {extToLang(activeFile.name).toUpperCase()}
+                <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                  style={{ background: meta.bg, color: meta.color }}>
+                  {lang.toUpperCase()}
                 </span>
               )}
             </div>
             <div className="flex gap-1">
-              <button onClick={handleCopy} className="p-1.5 rounded hover:bg-white/10 transition-colors">
-                {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+              <button onClick={handleCopy} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Copy code">
+                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
               </button>
-              <button onClick={handleReset} className="p-1.5 rounded hover:bg-white/10 transition-colors" title="Clear output">
-                <RotateCcw className="w-3.5 h-3.5 text-gray-500" />
+              <button onClick={handleReset} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Clear output">
+                <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             </div>
           </div>
 
-          {/* Editor textarea */}
+          {/* Editor */}
           <textarea
             value={activeFile?.code ?? ''}
             onChange={e => updateCode(e.target.value)}
-            className="flex-1 font-mono text-sm p-4 resize-none outline-none leading-relaxed overflow-auto"
-            style={{ background: '#0d1117', color: '#e6edf3', caretColor: '#58a6ff', tabSize: 4 }}
+            className="flex-1 font-mono text-sm p-4 resize-none outline-none leading-relaxed bg-[#0d1117] text-[#e6edf3] caret-blue-400"
+            style={{ tabSize: 4, minHeight: 380 }}
             spellCheck={false}
             onKeyDown={e => {
               if (e.key === 'Tab') {
@@ -562,39 +522,44 @@ const Playground = () => {
           />
 
           {/* Run bar */}
-          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5"
-            style={{ background: '#161b27', borderTop: '1px solid #1e2433' }}>
-            <button onClick={handleRun} disabled={running}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
-              style={{ background: `linear-gradient(135deg, ${fileBadge(activeFile?.name ?? 'f.py')}, ${fileBadge(activeFile?.name ?? 'f.py')}99)` }}>
-              {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+          <div className="flex items-center gap-3 px-4 py-2.5 border-t bg-muted/30">
+            <Button onClick={handleRun} disabled={running} size="sm" className="gap-2"
+              style={{ background: meta.color, color: '#fff', border: 'none' }}>
+              {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
               {running ? 'Running…' : runLabel}
-            </button>
-            <span className="text-xs" style={{ color: '#4b5563' }}>
-              {langMeta[lang].dot} {langMeta[lang].label}
-            </span>
+            </Button>
+            <span className="text-xs text-muted-foreground">{meta.emoji} {meta.label}</span>
+            {saving && (
+              <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" /> Saving…
+              </div>
+            )}
+            {!saving && userId && (
+              <div className="ml-auto flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                <Cloud className="w-3 h-3" /> Auto-saved
+              </div>
+            )}
           </div>
         </div>
 
-        {/* OUTPUT PANEL */}
-        <div className="w-5/12 flex flex-col overflow-hidden" style={{ minWidth: 260 }}>
-          <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2"
-            style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
-            <Terminal className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
-            <span className="text-xs font-medium" style={{ color: '#6b7280' }}>
+        {/* ── Card 3: Output / Preview ── */}
+        <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b bg-muted/30">
+            <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
               {lang === 'html' && showPreview ? 'Preview' : 'Output'}
             </span>
-            {running && <Loader2 className="w-3 h-3 animate-spin text-blue-400 ml-auto" />}
+            {running && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto" />}
           </div>
 
           {lang === 'html' && showPreview ? (
             <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
           ) : (
-            <div ref={outputRef} className="flex-1 overflow-auto p-4">
+            <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#0d1117]" style={{ minHeight: 380 }}>
               {!hasRun ? (
-                <div className="h-full flex flex-col items-center justify-center gap-2 select-none" style={{ opacity: 0.35 }}>
-                  <span className="text-3xl font-mono font-bold" style={{ color: '#6b7280' }}>&lt;/&gt;</span>
-                  <p className="text-xs text-center" style={{ color: '#6b7280' }}>
+                <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-30">
+                  <span className="text-4xl font-mono font-bold text-gray-500">&lt;/&gt;</span>
+                  <p className="text-xs text-center text-gray-500">
                     {lang === 'html' ? 'Click Preview to render HTML'
                       : lang === 'sql' ? 'Click Reference for SQL links'
                       : lang === 'css' ? 'Click Run to view CSS'
@@ -607,18 +572,18 @@ const Playground = () => {
                   {output}
                 </pre>
               ) : running ? (
-                <div className="flex items-center gap-2 text-xs" style={{ color: '#6b7280' }}>
+                <div className="flex items-center gap-2 text-xs text-gray-400">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" /> Running…
                 </div>
               ) : (
-                <p className="text-xs italic" style={{ color: '#6b7280' }}>No output produced.</p>
+                <p className="text-xs italic text-gray-500">No output produced.</p>
               )}
             </div>
           )}
         </div>
 
       </div>
-    </div>
+    </StudentLayout>
   );
 };
 
