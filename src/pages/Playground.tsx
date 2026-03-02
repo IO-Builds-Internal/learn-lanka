@@ -712,47 +712,47 @@ const SESSION_KEY = 'ict_playground_files';
 const makeId = () => crypto.randomUUID();
 
 // ─── Language References ───────────────────────────────────────────────────────
-const LANG_REFS: Record<Language, { title: string; url: string; desc: string }[]> = {
+interface CodeRef { title: string; desc: string; code: string; }
+const LANG_REFS: Record<Language, CodeRef[]> = {
   python: [
-    { title: 'Python 3 Docs', url: 'https://docs.python.org/3/', desc: 'Official Python 3 documentation' },
-    { title: 'Built-in Functions', url: 'https://docs.python.org/3/library/functions.html', desc: 'len, range, print, input…' },
-    { title: 'Data Structures', url: 'https://docs.python.org/3/tutorial/datastructures.html', desc: 'Lists, dicts, sets, tuples' },
-    { title: 'OOP in Python', url: 'https://docs.python.org/3/tutorial/classes.html', desc: 'Classes, inheritance, methods' },
-    { title: 'String Methods', url: 'https://docs.python.org/3/library/stdtypes.html#string-methods', desc: 'upper, split, join, format…' },
+    { title: 'Variables & Types', desc: 'str, int, float, bool', code: `name = "Kamal"      # str\nage  = 17           # int\ngpa  = 3.85         # float\nactive = True       # bool\nprint(type(name))   # <class 'str'>` },
+    { title: 'List & Loop', desc: 'list iteration with for', code: `marks = [92, 88, 76, 85]\nfor m in marks:\n    print(m)\nprint(sum(marks) / len(marks))  # avg` },
+    { title: 'Dictionary', desc: 'key-value pairs', code: `student = {"name": "Nimal", "grade": 13}\nprint(student["name"])       # Nimal\nfor k, v in student.items():\n    print(k, ":", v)` },
+    { title: 'Function', desc: 'def, parameters, return', code: `def greet(name, grade=13):\n    return f"Hello {name}, Grade {grade}"\n\nprint(greet("Amali"))\nprint(greet("Kamal", 12))` },
+    { title: 'Class (OOP)', desc: 'class, __init__, method', code: `class Student:\n    def __init__(self, name, marks):\n        self.name  = name\n        self.marks = marks\n    def average(self):\n        return sum(self.marks) / len(self.marks)\n\ns = Student("Nimal", [90, 85, 78])\nprint(s.average())` },
   ],
   html: [
-    { title: 'HTML Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element', desc: 'All HTML elements — MDN' },
-    { title: 'HTML Forms', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form', desc: 'form, input, select, button' },
-    { title: 'Semantic HTML', url: 'https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html', desc: 'header, main, section, article' },
-    { title: 'HTML Tables', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table', desc: 'table, tr, th, td' },
+    { title: 'Basic Structure', desc: 'HTML5 boilerplate', code: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>My Page</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>` },
+    { title: 'Form Elements', desc: 'input, select, button', code: `<form action="/submit" method="POST">\n  <input type="text" name="name" placeholder="Name">\n  <select name="grade">\n    <option value="12">Grade 12</option>\n    <option value="13">Grade 13</option>\n  </select>\n  <button type="submit">Submit</button>\n</form>` },
+    { title: 'Table', desc: 'table, tr, th, td', code: `<table border="1">\n  <thead>\n    <tr><th>Name</th><th>Mark</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Kamal</td><td>92</td></tr>\n    <tr><td>Nimal</td><td>88</td></tr>\n  </tbody>\n</table>` },
+    { title: 'Semantic Tags', desc: 'header, main, section, footer', code: `<header><nav>Menu</nav></header>\n<main>\n  <section id="about">\n    <h2>About</h2>\n    <p>Content here...</p>\n  </section>\n</main>\n<footer>© 2024</footer>` },
   ],
   css: [
-    { title: 'CSS Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Reference', desc: 'All CSS properties — MDN' },
-    { title: 'Flexbox Guide', url: 'https://css-tricks.com/snippets/css/a-guide-to-flexbox/', desc: 'display:flex, align, justify' },
-    { title: 'CSS Grid Guide', url: 'https://css-tricks.com/snippets/css/complete-guide-grid/', desc: 'grid-template, gap, areas' },
-    { title: 'CSS Selectors', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors', desc: 'class, id, pseudo, combinator' },
+    { title: 'Selectors', desc: 'class, id, element, pseudo', code: `/* element */\np { color: blue; }\n\n/* class */\n.card { padding: 16px; }\n\n/* id */\n#header { background: #111; }\n\n/* pseudo */\na:hover { text-decoration: none; }` },
+    { title: 'Flexbox', desc: 'display:flex, align, justify', code: `.container {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  align-items: center;\n  gap: 16px;\n}` },
+    { title: 'CSS Grid', desc: 'grid-template-columns, gap', code: `.grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 20px;\n}\n.grid-item { background: #eee; }` },
+    { title: 'Box Model', desc: 'margin, padding, border, shadow', code: `.box {\n  width: 200px;\n  padding: 16px;\n  border: 2px solid #333;\n  margin: 10px auto;\n  border-radius: 8px;\n  box-shadow: 0 4px 12px rgba(0,0,0,0.1);\n}` },
   ],
   javascript: [
-    { title: 'JS Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference', desc: 'Full JS reference — MDN' },
-    { title: 'Array Methods', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array', desc: 'map, filter, reduce, find…' },
-    { title: 'DOM Manipulation', url: 'https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model', desc: 'getElementById, querySelector' },
-    { title: 'Events', url: 'https://developer.mozilla.org/en-US/docs/Web/Events', desc: 'click, submit, keydown…' },
+    { title: 'Variables & Arrow Fn', desc: 'let, const, arrow function', code: `const name = "Kamal";\nlet marks = [90, 85, 78];\n\nconst avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;\nconsole.log(avg(marks));  // 84.33` },
+    { title: 'DOM Manipulation', desc: 'getElementById, addEventListener', code: `const btn = document.getElementById('myBtn');\nconst para = document.querySelector('p');\n\nbtn.addEventListener('click', () => {\n  para.textContent = 'Clicked!';\n  para.style.color = 'green';\n});` },
+    { title: 'Array Methods', desc: 'map, filter, find', code: `const marks = [92, 55, 88, 40, 76];\n\nconst passed  = marks.filter(m => m >= 50);\nconst doubled = marks.map(m => m * 2);\nconst top     = marks.find(m => m > 90);\n\nconsole.log(passed);  // [92,55,88,76]` },
+    { title: 'Async / Fetch', desc: 'async, await, fetch, JSON', code: `async function getData(url) {\n  const res  = await fetch(url);\n  const data = await res.json();\n  return data;\n}\n// getData('https://api.example.com/data');` },
   ],
   sql: [
-    { title: 'SQL Basics', url: 'https://www.w3schools.com/sql/', desc: 'SELECT, INSERT, UPDATE, DELETE' },
-    { title: 'SQL Joins', url: 'https://www.w3schools.com/sql/sql_join.asp', desc: 'INNER, LEFT, RIGHT, FULL join' },
-    { title: 'Aggregate Functions', url: 'https://www.w3schools.com/sql/sql_count_avg_sum.asp', desc: 'COUNT, SUM, AVG, MAX, MIN' },
-    { title: 'MySQL Data Types', url: 'https://www.w3schools.com/mysql/mysql_datatypes.asp', desc: 'INT, VARCHAR, DATE, ENUM…' },
-  ],
-  text: [
-    { title: 'ICT Theory Notes', url: 'https://www.nis.edu.lk/', desc: 'A/L ICT study resources' },
+    { title: 'CREATE & INSERT', desc: 'DDL + DML basics', code: `CREATE TABLE students (\n  id    INT PRIMARY KEY AUTO_INCREMENT,\n  name  VARCHAR(100) NOT NULL,\n  grade INT,\n  marks DECIMAL(5,2)\n);\n\nINSERT INTO students (name, grade, marks)\nVALUES ('Kamal', 13, 92.5),\n       ('Nimal', 12, 78.0);` },
+    { title: 'SELECT & WHERE', desc: 'basic query with filter', code: `-- All rows\nSELECT * FROM students;\n\n-- With condition\nSELECT name, marks\nFROM students\nWHERE marks >= 80\nORDER BY marks DESC;` },
+    { title: 'JOIN', desc: 'INNER JOIN two tables', code: `SELECT s.name, c.class_name, s.marks\nFROM students s\nINNER JOIN classes c\n  ON s.class_id = c.id\nWHERE s.marks > 70\nORDER BY s.name;` },
+    { title: 'Aggregate Functions', desc: 'COUNT, AVG, MAX, MIN, GROUP BY', code: `SELECT\n  grade,\n  COUNT(*)     AS total,\n  AVG(marks)   AS average,\n  MAX(marks)   AS highest,\n  MIN(marks)   AS lowest\nFROM students\nGROUP BY grade;` },
   ],
   php: [
-    { title: 'PHP Manual', url: 'https://www.php.net/manual/en/', desc: 'Official PHP documentation' },
-    { title: 'PHP String Functions', url: 'https://www.php.net/manual/en/ref.strings.php', desc: 'strlen, str_replace, explode…' },
-    { title: 'PHP Array Functions', url: 'https://www.php.net/manual/en/ref.array.php', desc: 'array_map, array_sum, sort…' },
-    { title: 'PHP Form Handling', url: 'https://www.w3schools.com/php/php_forms.asp', desc: '$_POST, $_GET, $_SESSION' },
-    { title: 'PHP OOP', url: 'https://www.php.net/manual/en/language.oop5.php', desc: 'Classes, objects, inheritance' },
+    { title: 'Variables & Echo', desc: '$var, echo, printf', code: `<?php\n$name  = "Kamal";\n$grade = 13;\n$gpa   = 3.85;\n\necho "Name  : $name\\n";\necho "Grade : " . $grade . "\\n";\nprintf("GPA   : %.2f\\n", $gpa);\n?>` },
+    { title: 'Arrays & Foreach', desc: 'indexed + associative arrays', code: `<?php\n$marks = [92, 88, 76, 85];\n$avg   = array_sum($marks) / count($marks);\necho "Average: $avg\\n";\n\nforeach ($marks as $i => $m) {\n    echo "[$i] => $m\\n";\n}\n?>` },
+    { title: 'Function', desc: 'function, params, return', code: `<?php\nfunction grade($mark) {\n    if ($mark >= 85) return "A";\n    if ($mark >= 70) return "B";\n    if ($mark >= 55) return "C";\n    return "F";\n}\necho grade(92) . "\\n";  // A\necho grade(65) . "\\n";  // C\n?>` },
+    { title: 'If / Foreach', desc: 'conditions and loops', code: `<?php\n$students = ["Kamal"=>92, "Nimal"=>78, "Amali"=>55];\n\nforeach ($students as $name => $mark) {\n    if ($mark >= 80) {\n        echo "$name: Distinction\\n";\n    } else {\n        echo "$name: Pass\\n";\n    }\n}\n?>` },
+  ],
+  text: [
+    { title: 'Tip', desc: 'Open a code file to see references', code: `// Select a .py .html .css .js .sql or .php\n// file to see code examples here.` },
   ],
 };
 
@@ -1251,6 +1251,19 @@ const Playground = () => {
             code: r.code,
             sortOrder: r.sort_order,
           }));
+          // Seed any missing default files (e.g. school_db.sql added later)
+          const missingDefaults = DEFAULT_FILES.filter(
+            df => !mapped.some(f => f.name === df.name)
+          );
+          if (missingDefaults.length > 0) {
+            const newFiles = missingDefaults.map(f => ({ ...f, id: makeId() }));
+            const insertData = newFiles.map(f => ({
+              id: f.id, user_id: userId, name: f.name, code: f.code, sort_order: f.sortOrder,
+            }));
+            await (supabase.from as any)('playground_files').insert(insertData);
+            mapped.push(...newFiles);
+            mapped.sort((a, b) => a.sortOrder - b.sortOrder);
+          }
           setFiles(mapped);
           setActiveId(mapped[0].id);
           setOutput('');
@@ -1692,13 +1705,15 @@ const Playground = () => {
                 {meta.emoji} <span className="font-semibold text-foreground">{meta.label}</span> quick references
               </p>
               {(LANG_REFS[lang] ?? LANG_REFS.text).map((ref, i) => (
-                <a key={i} href={ref.url} target="_blank" rel="noopener noreferrer"
-                  className="group flex flex-col gap-0.5 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors">
-                  <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                    {ref.title} ↗
-                  </span>
-                  <span className="text-xs text-muted-foreground">{ref.desc}</span>
-                </a>
+                <div key={i} className="flex flex-col gap-1 rounded-lg border border-border overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 bg-muted/40">
+                    <span className="text-xs font-semibold text-foreground">{ref.title}</span>
+                    <span className="text-xs text-muted-foreground">{ref.desc}</span>
+                  </div>
+                  <pre className="text-xs font-mono px-3 py-2 bg-[#0d1117] text-[#e6edf3] overflow-x-auto whitespace-pre leading-relaxed">
+                    {ref.code}
+                  </pre>
+                </div>
               ))}
             </div>
           ) : isWebLang && showPreview ? (
