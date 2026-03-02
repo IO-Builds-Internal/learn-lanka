@@ -259,15 +259,14 @@ const Playground = () => {
 
   // File CRUD
   const addFile = async () => {
+    if (!userId) { toast.error('Please log in to create files'); setAddingFile(false); return; }
     const raw = newFileName.trim();
     if (!raw) { setAddingFile(false); return; }
     const name = raw.includes('.') ? raw : `${raw}.py`;
     if (files.find(f => f.name === name)) { toast.error('File already exists'); return; }
     const nf: PlayFile = { id: makeId(), name, code: `# ${name}\n\n`, sortOrder: files.length };
-    if (userId) {
-      const { error } = await (supabase.from as any)('playground_files').insert({ id: nf.id, user_id: userId, name: nf.name, code: nf.code, sort_order: nf.sortOrder });
-      if (error) { toast.error('Could not create file'); return; }
-    }
+    const { error } = await (supabase.from as any)('playground_files').insert({ id: nf.id, user_id: userId, name: nf.name, code: nf.code, sort_order: nf.sortOrder });
+    if (error) { toast.error('Could not create file'); return; }
     setFiles(p => [...p, nf]); setActiveId(nf.id);
     setNewFileName(''); setAddingFile(false); setOutput(''); setHasRun(false); setShowPreview(false);
   };
@@ -437,16 +436,25 @@ const Playground = () => {
           <div className="flex items-center justify-between px-3 py-2"
             style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
             <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6b7280' }}>Explorer</span>
-            <button onClick={() => setAddingFile(true)} className="p-1 rounded hover:bg-white/10 transition-colors" title="New file">
+            <button
+              onClick={() => { if (!userId) { toast.error('Log in to create files'); return; } setAddingFile(true); }}
+              className="p-1 rounded transition-colors"
+              title={userId ? 'New file' : 'Log in to create files'}
+              style={{ opacity: userId ? 1 : 0.4, cursor: userId ? 'pointer' : 'not-allowed' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)') }
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent') }
+            >
               <FilePlus className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
             </button>
           </div>
 
           {!userId && (
-            <div className="mx-2 mt-1.5 px-2 py-1 rounded text-xs leading-snug"
-              style={{ background: '#1c1a10', border: '1px solid #3d3010', color: '#d97706' }}>
-              ⚠️ Login to save files
-            </div>
+            <a href="/login"
+              className="mx-2 mt-2 flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs leading-snug transition-all hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #1d2b4a, #162037)', border: '1px solid #2563eb55', color: '#93c5fd', textDecoration: 'none' }}>
+              <Cloud className="w-3.5 h-3.5 flex-shrink-0 text-blue-400" />
+              <span><strong style={{ color: '#60a5fa' }}>Log in</strong> to save workspace &amp; create files</span>
+            </a>
           )}
 
           <div className="flex-1 overflow-y-auto py-1">
@@ -489,7 +497,7 @@ const Playground = () => {
                 </div>
               );
             })}
-            {addingFile && (
+            {addingFile && userId && (
               <div className="px-2 py-1.5">
                 <input autoFocus placeholder="filename.py" value={newFileName}
                   onChange={e => setNewFileName(e.target.value)}
