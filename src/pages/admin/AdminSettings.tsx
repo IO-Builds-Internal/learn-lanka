@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   GraduationCap, 
   Palette, 
@@ -8,7 +8,8 @@ import {
   Globe,
   Image as ImageIcon,
   Database,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,8 @@ import SmsTemplatesManager from '@/components/admin/SmsTemplatesManager';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const BUCKET = 'site-assets';
+
 const AdminSettings = () => {
   const [siteName, setSiteName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -35,6 +38,26 @@ const AdminSettings = () => {
   const [rankPapersEnabled, setRankPapersEnabled] = useState(true);
   const [shopEnabled, setShopEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  // Asset URLs
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
+  const [loginBgUrl, setLoginBgUrl] = useState<string | null>(null);
+
+  // Upload loading states
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [uploadingLoginBg, setUploadingLoginBg] = useState(false);
+
+  // File input refs
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+  const loginBgInputRef = useRef<HTMLInputElement>(null);
+
+  const getPublicUrl = (path: string) => {
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  };
 
   // Load settings from database
   useEffect(() => {
@@ -52,6 +75,9 @@ const AdminSettings = () => {
         setSiteName(settings['site_name'] || 'ICT Academy');
         setContactPhone(settings['contact_phone'] || '');
         setContactEmail(settings['contact_email'] || '');
+        if (settings['logo_url']) setLogoUrl(settings['logo_url']);
+        if (settings['favicon_url']) setFaviconUrl(settings['favicon_url']);
+        if (settings['login_bg_url']) setLoginBgUrl(settings['login_bg_url']);
       } catch (err) {
         console.error('Failed to load settings:', err);
       } finally {
@@ -76,6 +102,50 @@ const AdminSettings = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const uploadFile = async (
+    file: File,
+    path: string,
+    settingKey: string,
+    setUrl: (url: string) => void,
+    setUploading: (v: boolean) => void
+  ) => {
+    setUploading(true);
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const publicUrl = getPublicUrl(path);
+      setUrl(publicUrl);
+
+      await saveSettings([{ key: settingKey, value: publicUrl }]);
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadFile(file, 'logo.png', 'logo_url', setLogoUrl, setUploadingLogo);
+  };
+
+  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadFile(file, 'favicon.png', 'favicon_url', setFaviconUrl, setUploadingFavicon);
+  };
+
+  const handleLoginBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadFile(file, 'login-bg.jpg', 'login_bg_url', setLoginBgUrl, setUploadingLoginBg);
   };
 
   return (
@@ -118,43 +188,104 @@ const AdminSettings = () => {
                   />
                 </div>
 
+                {/* Logo */}
                 <div className="space-y-2">
                   <Label>Logo</Label>
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <GraduationCap className="w-8 h-8 text-primary" />
+                    <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden border border-border">
+                      {logoUrl ? (
+                        <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                      ) : (
+                        <GraduationCap className="w-8 h-8 text-primary" />
+                      )}
                     </div>
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Logo
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                    >
+                      {uploadingLogo ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">Recommended: 512x512px PNG</p>
                 </div>
 
+                {/* Favicon */}
                 <div className="space-y-2">
                   <Label>Favicon</Label>
                   <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
-                      <GraduationCap className="w-4 h-4 text-primary" />
+                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center overflow-hidden border border-border">
+                      {faviconUrl ? (
+                        <img src={faviconUrl} alt="Favicon" className="w-full h-full object-contain" />
+                      ) : (
+                        <GraduationCap className="w-4 h-4 text-primary" />
+                      )}
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Favicon
+                    <input
+                      ref={faviconInputRef}
+                      type="file"
+                      accept="image/*,.ico"
+                      className="hidden"
+                      onChange={handleFaviconUpload}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => faviconInputRef.current?.click()}
+                      disabled={uploadingFavicon}
+                    >
+                      {uploadingFavicon ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">Recommended: 32x32px ICO or PNG</p>
                 </div>
 
+                {/* Login Background */}
                 <div className="space-y-2">
                   <Label>Login Background</Label>
                   <div className="flex items-center gap-4">
-                    <div className="w-32 h-20 rounded-lg bg-muted flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                    <div className="w-32 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden border border-border">
+                      {loginBgUrl ? (
+                        <img src={loginBgUrl} alt="Login Background" className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                      )}
                     </div>
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Image
+                    <input
+                      ref={loginBgInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLoginBgUpload}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => loginBgInputRef.current?.click()}
+                      disabled={uploadingLoginBg}
+                    >
+                      {uploadingLoginBg ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {uploadingLoginBg ? 'Uploading...' : 'Upload Image'}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">Recommended: 1920x1080px JPG</p>
