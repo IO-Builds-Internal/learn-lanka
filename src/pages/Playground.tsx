@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Code2, Globe, Database, Play, RotateCcw, Copy, Check } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Code2, Globe, Database, Play, RotateCcw, Copy, Check, Loader2, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -9,47 +9,35 @@ const defaultCode: Record<Language, string> = {
   python: `# Python Playground - A/L ICT
 # Try some basic Python code!
 
-# Variables & Data Types
 name = "ICT Student"
 grade = 12
-gpa = 3.8
-is_active = True
+marks = [85, 90, 78, 92, 88]
 
 print(f"Hello, {name}!")
-print(f"Grade: {grade}, GPA: {gpa}")
+print(f"Grade: {grade}")
 
-# Lists
-subjects = ["ICT", "Maths", "Science", "English"]
-print("\\nSubjects:", subjects)
-print("First subject:", subjects[0])
+# Calculate average
+avg = sum(marks) / len(marks)
+print(f"Average marks: {avg:.2f}")
 
-# Loop
-print("\\nAll subjects:")
+# Loop example
+subjects = ["ICT", "Maths", "Science"]
+print("\\nSubjects:")
 for i, subject in enumerate(subjects, 1):
     print(f"  {i}. {subject}")
 
 # Function
-def calculate_average(marks):
-    return sum(marks) / len(marks)
+def is_pass(score):
+    return "Pass" if score >= 50 else "Fail"
 
-marks = [85, 90, 78, 92, 88]
-avg = calculate_average(marks)
-print(f"\\nAverage marks: {avg:.2f}")
-
-# Dictionary
-student = {
-    "name": "Kamal",
-    "age": 17,
-    "grade": "A/L",
-    "subjects": subjects
-}
-print("\\nStudent Info:", student)
+print("\\nResults:")
+for m in marks:
+    print(f"  {m} -> {is_pass(m)}")
 `,
   html: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HTML & CSS Playground</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -95,7 +83,6 @@ print("\\nStudent Info:", student)
       cursor: pointer;
       font-weight: bold;
     }
-    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
     th, td { padding: 10px; border: 1px solid #eee; text-align: left; font-size: 14px; }
     th { background: #f5f5f5; font-weight: bold; color: #333; }
@@ -124,7 +111,7 @@ print("\\nStudent Info:", student)
 -- Practice SQL queries here!
 
 -- Create a students table
-CREATE TABLE IF NOT EXISTS students (
+CREATE TABLE students (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     grade INT,
@@ -150,107 +137,133 @@ WHERE marks > 85
 ORDER BY marks DESC;
 
 -- Count students per grade
-SELECT grade, COUNT(*) as total_students, AVG(marks) as avg_marks
+SELECT grade, COUNT(*) as total, AVG(marks) as avg_marks
 FROM students
 GROUP BY grade;
-
--- Find highest marks
-SELECT name, MAX(marks) as highest_marks
-FROM students;
-
--- Update a record
-UPDATE students SET marks = 90 WHERE name = 'Saman Fernando';
-
--- Join example (with another table)
-CREATE TABLE IF NOT EXISTS subjects (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    subject_name VARCHAR(50),
-    teacher VARCHAR(100)
-);
-
-INSERT INTO subjects VALUES (1, 'ICT', 'Mr. Jayawardena');
-
-SELECT s.name, s.marks, sub.teacher
-FROM students s
-JOIN subjects sub ON s.subject = sub.subject_name
-WHERE s.marks >= 85;
 `,
 };
-
-const PYTHON_IFRAME = `https://trinket.io/embed/python3/a5bd54f9b4?outputOnly=false&runOption=run&start=result`;
 
 const languageConfig = {
   python: {
     label: 'Python',
     icon: Code2,
-    color: 'from-blue-500 to-indigo-600',
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    border: 'border-blue-200 dark:border-blue-800',
-    active: 'bg-blue-600 text-white',
-    desc: 'Run Python code in the browser',
-    runnable: true,
+    gradient: 'from-blue-500 to-indigo-600',
+    activeTab: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg',
+    filename: 'main.py',
+    runLabel: 'Run',
   },
   html: {
     label: 'HTML & CSS',
     icon: Globe,
-    color: 'from-orange-500 to-pink-600',
-    bg: 'bg-orange-50 dark:bg-orange-950/30',
-    border: 'border-orange-200 dark:border-orange-800',
-    active: 'bg-orange-500 text-white',
-    desc: 'Preview HTML & CSS instantly',
-    runnable: true,
+    gradient: 'from-orange-500 to-pink-600',
+    activeTab: 'bg-gradient-to-r from-orange-500 to-pink-600 text-white shadow-lg',
+    filename: 'index.html',
+    runLabel: 'Preview',
   },
   mysql: {
     label: 'MySQL',
     icon: Database,
-    color: 'from-green-500 to-teal-600',
-    bg: 'bg-green-50 dark:bg-green-950/30',
-    border: 'border-green-200 dark:border-green-800',
-    active: 'bg-green-600 text-white',
-    desc: 'Write and study SQL queries',
-    runnable: false,
+    gradient: 'from-green-500 to-teal-600',
+    activeTab: 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg',
+    filename: 'query.sql',
+    runLabel: 'Reference',
   },
+};
+
+// Skulpt-based Python runner
+declare global {
+  interface Window {
+    Sk: any;
+  }
+}
+
+const loadSkulpt = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (window.Sk) { resolve(); return; }
+    const skulpt = document.createElement('script');
+    skulpt.src = 'https://skulpt.org/js/skulpt.min.js';
+    skulpt.onload = () => {
+      const stdlib = document.createElement('script');
+      stdlib.src = 'https://skulpt.org/js/skulpt-stdlib.js';
+      stdlib.onload = () => resolve();
+      stdlib.onerror = reject;
+      document.head.appendChild(stdlib);
+    };
+    skulpt.onerror = reject;
+    document.head.appendChild(skulpt);
+  });
+};
+
+const runPython = async (code: string, onOutput: (line: string) => void): Promise<void> => {
+  await loadSkulpt();
+  return new Promise((resolve, reject) => {
+    window.Sk.configure({
+      output: (text: string) => onOutput(text),
+      read: (x: string) => {
+        if (window.Sk.builtinFiles?.files[x] === undefined) throw new Error(`File not found: '${x}'`);
+        return window.Sk.builtinFiles.files[x];
+      },
+      __future__: window.Sk.python3,
+    });
+    window.Sk.misceval.asyncToPromise(() =>
+      window.Sk.importMainWithBody('<stdin>', false, code, true)
+    ).then(resolve).catch((err: any) => reject(new Error(err.toString())));
+  });
 };
 
 const Playground = () => {
   const [lang, setLang] = useState<Language>('python');
   const [code, setCode] = useState(defaultCode);
-  const [output, setOutput] = useState('');
+  const [output, setOutput] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const [copied, setCopied] = useState(false);
   const [htmlPreview, setHtmlPreview] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [hasRun, setHasRun] = useState(false);
+  const outputRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [output]);
 
   const currentCode = code[lang];
   const config = languageConfig[lang];
 
   const handleRun = async () => {
+    setHasRun(true);
     if (lang === 'html') {
       setHtmlPreview(currentCode);
       setShowPreview(true);
+      setOutput([]);
       return;
     }
     if (lang === 'mysql') {
-      setOutput('-- MySQL queries shown above are for study reference.\n-- In a real environment, connect to a MySQL server to run these queries.\n-- Tools: MySQL Workbench, phpMyAdmin, or CLI');
+      setOutput([
+        '-- MySQL reference mode',
+        '-- Use the links below to run SQL in a live environment.',
+        '',
+        '-- Tools that support MySQL online:',
+        '--  • DB Fiddle: https://www.db-fiddle.com/',
+        '--  • SQLite Online: https://sqliteonline.com/',
+        '--  • OneCompiler: https://onecompiler.com/mysql',
+      ]);
+      setShowPreview(false);
       return;
     }
-    // Python - use Skulpt
+
+    // Python via Skulpt
     setRunning(true);
-    setOutput('');
+    setOutput([]);
     setShowPreview(false);
+    const lines: string[] = [];
     try {
-      const lines = currentCode.split('\n');
-      let simOutput = '';
-      // Simple simulation for demo
-      for (const line of lines) {
-        if (line.trim().startsWith('print(')) {
-          const inner = line.trim().slice(6, -1);
-          // Very basic eval simulation - show message
-          simOutput += `[Running Python via online compiler...]\n\nTo execute Python code interactively, use:\n• repl.it/languages/python3\n• python.org/shell\n• Trinket.io\n\nYour code is ready to copy and run!`;
-          break;
-        }
-      }
-      setOutput(simOutput || '# Code ready - copy and paste into a Python environment to run');
+      await runPython(currentCode, (text) => {
+        lines.push(text);
+        setOutput([...lines]);
+      });
+    } catch (err: any) {
+      lines.push(`\nTraceback (most recent call last):\n  ${err.message}`);
+      setOutput([...lines]);
     } finally {
       setRunning(false);
     }
@@ -258,9 +271,10 @@ const Playground = () => {
 
   const handleReset = () => {
     setCode(prev => ({ ...prev, [lang]: defaultCode[lang] }));
-    setOutput('');
+    setOutput([]);
     setShowPreview(false);
     setHtmlPreview('');
+    setHasRun(false);
   };
 
   const handleCopy = async () => {
@@ -270,43 +284,81 @@ const Playground = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const openExternal = () => {
-    const urls: Record<Language, string> = {
-      python: 'https://repl.it/languages/python3',
-      html: 'https://codepen.io/pen/',
-      mysql: 'https://www.db-fiddle.com/',
-    };
-    window.open(urls[lang], '_blank');
+  const openExternal = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
+
+  const externalLinks: Record<Language, { name: string; url: string }[]> = {
+    python: [
+      { name: 'Replit Python', url: 'https://repl.it/languages/python3' },
+      { name: 'Trinket.io', url: 'https://trinket.io/python' },
+      { name: 'OneCompiler Python', url: 'https://onecompiler.com/python' },
+    ],
+    html: [
+      { name: 'CodePen', url: 'https://codepen.io/pen/' },
+      { name: 'JSFiddle', url: 'https://jsfiddle.net/' },
+      { name: 'OneCompiler HTML', url: 'https://onecompiler.com/html' },
+    ],
+    mysql: [
+      { name: 'DB Fiddle', url: 'https://www.db-fiddle.com/' },
+      { name: 'SQLiteOnline', url: 'https://sqliteonline.com/' },
+      { name: 'OneCompiler MySQL', url: 'https://onecompiler.com/mysql' },
+    ],
   };
 
+  const quickRef: Record<Language, [string, string][]> = {
+    python: [
+      ['Variables', 'x = 10'],
+      ['List', 'lst = [1, 2, 3]'],
+      ['For Loop', 'for i in range(5):'],
+      ['Function', 'def func(x): return x'],
+      ['If/Else', 'if x > 0:\n  ...\nelse:\n  ...'],
+      ['Dictionary', 'd = {"key": "val"}'],
+      ['Input', 'x = input("Enter: ")'],
+      ['f-string', 'print(f"Hello {name}")'],
+    ],
+    html: [
+      ['Heading', '<h1>Title</h1>'],
+      ['Paragraph', '<p>Text</p>'],
+      ['Link', '<a href="#">Link</a>'],
+      ['Image', '<img src="url" alt="">'],
+      ['Div', '<div class="box">'],
+      ['Button', '<button>Click</button>'],
+      ['CSS color', 'color: #333;'],
+      ['Flexbox', 'display: flex;'],
+    ],
+    mysql: [
+      ['SELECT', 'SELECT * FROM table;'],
+      ['WHERE', 'WHERE column = value'],
+      ['INSERT', 'INSERT INTO t VALUES (...)'],
+      ['UPDATE', 'UPDATE t SET col=val'],
+      ['DELETE', 'DELETE FROM t WHERE id=1'],
+      ['JOIN', 'JOIN t2 ON t1.id=t2.id'],
+      ['GROUP BY', 'GROUP BY column'],
+      ['ORDER BY', 'ORDER BY col DESC'],
+    ],
+  };
+
+  const accentColor = lang === 'python' ? 'text-blue-400' : lang === 'html' ? 'text-orange-400' : 'text-green-400';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#0f1117' }}>
       {/* Header */}
-      <header className="border-b border-slate-700 bg-slate-900/80 backdrop-blur px-4 py-3">
+      <header className="border-b px-4 py-3" style={{ borderColor: '#1e2433', background: '#0d1117' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-              <Code2 className="w-5 h-5 text-white" />
+              <Terminal className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg leading-none">ICT Playground</h1>
-              <p className="text-slate-400 text-xs">A/L ICT Code Practice</p>
+              <h1 className="text-white font-bold text-base leading-none">ICT Playground</h1>
+              <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>A/L ICT Code Practice</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs"
-            onClick={openExternal}
-          >
-            Open in Full IDE ↗
-          </Button>
         </div>
       </header>
 
-      <div className="flex-1 max-w-7xl mx-auto w-full p-4 flex flex-col gap-4">
+      <div className="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-4 flex flex-col gap-3">
         {/* Language Tabs */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2">
           {(Object.keys(languageConfig) as Language[]).map((l) => {
             const cfg = languageConfig[l];
             const Icon = cfg.icon;
@@ -314,12 +366,13 @@ const Playground = () => {
             return (
               <button
                 key={l}
-                onClick={() => { setLang(l); setOutput(''); setShowPreview(false); }}
+                onClick={() => { setLang(l); setOutput([]); setShowPreview(false); setHasRun(false); }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? `bg-gradient-to-r ${cfg.color} text-white shadow-lg`
-                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                    ? `bg-gradient-to-r ${cfg.gradient} text-white shadow-lg`
+                    : 'text-gray-400 hover:text-white'
                 }`}
+                style={!isActive ? { background: '#1a1f2e' } : {}}
               >
                 <Icon className="w-4 h-4" />
                 {cfg.label}
@@ -328,190 +381,133 @@ const Playground = () => {
           })}
         </div>
 
-        {/* Editor + Output */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
+        {/* Main Editor + Output */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1">
           {/* Code Editor */}
-          <div className="flex flex-col rounded-xl overflow-hidden border border-slate-700 bg-slate-900">
-            <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col rounded-xl overflow-hidden" style={{ border: '1px solid #1e2433', background: '#0d1117' }}>
+            {/* Editor Titlebar */}
+            <div className="flex items-center justify-between px-4 py-2.5" style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
+              <div className="flex items-center gap-3">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <div className="w-3 h-3 rounded-full" style={{ background: '#ff5f57' }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: '#ffbd2e' }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: '#28c840' }} />
                 </div>
-                <span className="text-slate-400 text-xs ml-2">
-                  {lang === 'python' ? 'main.py' : lang === 'html' ? 'index.html' : 'query.sql'}
-                </span>
+                <span className="text-xs" style={{ color: '#6b7280' }}>{config.filename}</span>
               </div>
-              <div className="flex gap-2">
-                <button onClick={handleCopy} className="text-slate-400 hover:text-white transition-colors p-1">
-                  {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+              <div className="flex gap-1">
+                <button onClick={handleCopy} className="p-1.5 rounded hover:bg-white/10 transition-colors" title="Copy code">
+                  {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-gray-500" />}
                 </button>
-                <button onClick={handleReset} className="text-slate-400 hover:text-white transition-colors p-1">
-                  <RotateCcw className="w-4 h-4" />
+                <button onClick={handleReset} className="p-1.5 rounded hover:bg-white/10 transition-colors" title="Reset">
+                  <RotateCcw className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
             </div>
+
+            {/* Textarea */}
             <textarea
               value={currentCode}
               onChange={(e) => setCode(prev => ({ ...prev, [lang]: e.target.value }))}
-              className="flex-1 bg-slate-900 text-slate-100 font-mono text-sm p-4 resize-none outline-none min-h-[400px] leading-relaxed"
+              className="flex-1 font-mono text-sm p-4 resize-none outline-none leading-relaxed min-h-[360px]"
+              style={{ background: '#0d1117', color: '#e6edf3', caretColor: '#58a6ff' }}
               spellCheck={false}
             />
-            <div className="px-4 py-2 bg-slate-800 border-t border-slate-700 flex gap-2">
-              <Button
+
+            {/* Run Bar */}
+            <div className="flex gap-2 px-4 py-2.5" style={{ background: '#161b27', borderTop: '1px solid #1e2433' }}>
+              <button
                 onClick={handleRun}
                 disabled={running}
-                size="sm"
-                className={`bg-gradient-to-r ${config.color} text-white border-0 hover:opacity-90`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all bg-gradient-to-r ${config.gradient} hover:opacity-90 disabled:opacity-60`}
               >
-                <Play className="w-4 h-4 mr-1" />
-                {lang === 'html' ? 'Preview' : lang === 'mysql' ? 'View Info' : 'Run'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openExternal}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                Run in IDE ↗
-              </Button>
+                {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                {running ? 'Running...' : config.runLabel}
+              </button>
             </div>
           </div>
 
-          {/* Output / Preview */}
-          <div className="flex flex-col rounded-xl overflow-hidden border border-slate-700 bg-slate-900">
-            <div className="px-4 py-2 bg-slate-800 border-b border-slate-700">
-              <span className="text-slate-400 text-xs font-medium">
-                {lang === 'html' ? 'Preview' : 'Output / Reference'}
-              </span>
+          {/* Output Panel */}
+          <div className="flex flex-col rounded-xl overflow-hidden" style={{ border: '1px solid #1e2433', background: '#0d1117' }}>
+            <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
+              <Terminal className="w-4 h-4 text-gray-500" />
+              <span className="text-xs font-medium" style={{ color: '#6b7280' }}>Output / Reference</span>
+              {running && <Loader2 className="w-3 h-3 animate-spin text-blue-400 ml-auto" />}
             </div>
 
+            {/* HTML Live Preview */}
             {lang === 'html' && showPreview ? (
               <iframe
                 srcDoc={htmlPreview}
                 className="flex-1 w-full bg-white"
                 title="HTML Preview"
                 sandbox="allow-scripts"
+                style={{ minHeight: 360 }}
               />
-            ) : lang === 'html' && !showPreview ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-3 p-8">
-                <Globe className="w-12 h-12 opacity-30" />
-                <p className="text-sm text-center">Click <strong className="text-orange-400">Preview</strong> to see your HTML & CSS rendered live</p>
-              </div>
-            ) : output ? (
-              <pre className="flex-1 p-4 text-sm font-mono text-green-400 overflow-auto whitespace-pre-wrap">
-                {output}
-              </pre>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-3 p-8">
-                {lang === 'python' && <Code2 className="w-12 h-12 opacity-30" />}
-                {lang === 'mysql' && <Database className="w-12 h-12 opacity-30" />}
-                <p className="text-sm text-center">
-                  {lang === 'python'
-                    ? 'Click Run to execute your Python code'
-                    : 'Click "View Info" to see SQL reference notes'}
-                </p>
-                {lang === 'mysql' && (
-                  <div className="mt-2 space-y-2 w-full max-w-xs">
-                    {[
-                      { name: 'DB Fiddle', url: 'https://www.db-fiddle.com/' },
-                      { name: 'SQLiteOnline', url: 'https://sqliteonline.com/' },
-                      { name: 'OneCompiler MySQL', url: 'https://onecompiler.com/mysql' },
-                    ].map(tool => (
-                      <button
-                        key={tool.name}
-                        onClick={() => window.open(tool.url, '_blank')}
-                        className="w-full text-left px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm flex items-center justify-between"
-                      >
-                        <span>{tool.name}</span>
-                        <span className="text-slate-500">↗</span>
-                      </button>
-                    ))}
+              /* Output / Empty State */
+              <div ref={outputRef} className="flex-1 overflow-auto p-4" style={{ minHeight: 360 }}>
+                {!hasRun ? (
+                  /* Empty state — show icon + links */
+                  <div className="h-full flex flex-col items-center justify-center gap-4">
+                    <div className="flex flex-col items-center gap-2 opacity-40">
+                      <span className="text-3xl font-mono font-bold" style={{ color: '#6b7280' }}>&lt;/&gt;</span>
+                      <p className="text-sm text-center" style={{ color: '#6b7280' }}>
+                        {lang === 'python'
+                          ? 'Click Run to execute your Python code'
+                          : lang === 'html'
+                          ? 'Click Preview to render HTML & CSS'
+                          : 'Click Reference to view SQL info'}
+                      </p>
+                    </div>
+
+                    {/* External Links */}
+                    <div className="w-full max-w-xs space-y-2 mt-2">
+                      {externalLinks[lang].map(link => (
+                        <button
+                          key={link.name}
+                          onClick={() => openExternal(link.url)}
+                          className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+                          style={{ background: '#161b27', border: '1px solid #1e2433', color: '#c9d1d9' }}
+                        >
+                          <span>{link.name}</span>
+                          <span style={{ color: '#6b7280' }}>↗</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                )}
-                {lang === 'python' && (
-                  <div className="mt-2 space-y-2 w-full max-w-xs">
-                    {[
-                      { name: 'Replit Python', url: 'https://repl.it/languages/python3' },
-                      { name: 'Trinket.io', url: 'https://trinket.io/python' },
-                      { name: 'OneCompiler Python', url: 'https://onecompiler.com/python' },
-                    ].map(tool => (
-                      <button
-                        key={tool.name}
-                        onClick={() => window.open(tool.url, '_blank')}
-                        className="w-full text-left px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm flex items-center justify-between"
-                      >
-                        <span>{tool.name}</span>
-                        <span className="text-slate-500">↗</span>
-                      </button>
-                    ))}
+                ) : output.length > 0 ? (
+                  /* Actual output */
+                  <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap" style={{ color: '#3fb950' }}>
+                    {output.join('')}
+                  </pre>
+                ) : running ? (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: '#6b7280' }}>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Running...
                   </div>
+                ) : (
+                  <p className="text-sm italic" style={{ color: '#6b7280' }}>No output produced.</p>
                 )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Quick Reference */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
-          <h3 className="text-slate-300 font-semibold text-sm mb-3">📚 A/L ICT Quick Reference — {config.label}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {lang === 'python' && [
-              ['Variables', 'x = 10'],
-              ['List', 'lst = [1, 2, 3]'],
-              ['For Loop', 'for i in range(5):'],
-              ['Function', 'def func(x): return x'],
-              ['If/Else', 'if x > 0: ... else: ...'],
-              ['Dictionary', '{"key": "value"}'],
-              ['Input', 'x = input("Enter: ")'],
-              ['Print', 'print(f"Hello {name}")'],
-            ].map(([label, snippet]) => (
+        {/* Quick Reference Chips */}
+        <div className="rounded-xl p-3" style={{ border: '1px solid #1e2433', background: '#0d1117' }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: '#6b7280' }}>
+            📚 Quick Reference — click to copy snippet
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {quickRef[lang].map(([label, snippet]) => (
               <button
                 key={label}
-                onClick={() => { navigator.clipboard.writeText(snippet); toast.success(`Copied: ${snippet}`); }}
-                className="text-left p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
+                onClick={() => { navigator.clipboard.writeText(snippet); toast.success(`Copied: ${label}`); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+                style={{ background: '#161b27', border: '1px solid #1e2433', color: '#c9d1d9' }}
               >
-                <div className="text-slate-300 text-xs font-medium">{label}</div>
-                <div className="text-blue-400 text-xs font-mono mt-0.5 truncate">{snippet}</div>
-              </button>
-            ))}
-            {lang === 'html' && [
-              ['Heading', '<h1>Title</h1>'],
-              ['Paragraph', '<p>Text</p>'],
-              ['Link', '<a href="#">Link</a>'],
-              ['Image', '<img src="url" alt="">'],
-              ['Div', '<div class="box">'],
-              ['Button', '<button>Click</button>'],
-              ['Input', '<input type="text">'],
-              ['CSS Class', '.class { color: red; }'],
-            ].map(([label, snippet]) => (
-              <button
-                key={label}
-                onClick={() => { navigator.clipboard.writeText(snippet); toast.success(`Copied: ${snippet}`); }}
-                className="text-left p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
-              >
-                <div className="text-slate-300 text-xs font-medium">{label}</div>
-                <div className="text-orange-400 text-xs font-mono mt-0.5 truncate">{snippet}</div>
-              </button>
-            ))}
-            {lang === 'mysql' && [
-              ['SELECT', 'SELECT * FROM table;'],
-              ['WHERE', 'WHERE column = value'],
-              ['INSERT', 'INSERT INTO t VALUES'],
-              ['UPDATE', 'UPDATE t SET col=val'],
-              ['DELETE', 'DELETE FROM t WHERE'],
-              ['JOIN', 'JOIN t2 ON t1.id=t2.id'],
-              ['GROUP BY', 'GROUP BY column'],
-              ['ORDER BY', 'ORDER BY col DESC'],
-            ].map(([label, snippet]) => (
-              <button
-                key={label}
-                onClick={() => { navigator.clipboard.writeText(snippet); toast.success(`Copied: ${snippet}`); }}
-                className="text-left p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
-              >
-                <div className="text-slate-300 text-xs font-medium">{label}</div>
-                <div className="text-green-400 text-xs font-mono mt-0.5 truncate">{snippet}</div>
+                <span className={`font-mono ${accentColor}`}>{label}</span>
               </button>
             ))}
           </div>
