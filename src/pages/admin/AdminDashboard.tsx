@@ -107,58 +107,58 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="w-5 h-5 text-primary" />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.totalUsers || 0}</p>
-                  <p className="text-sm text-muted-foreground">Total Users</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold">{stats?.totalUsers || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Users</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-success/10">
-                  <BookOpen className="w-5 h-5 text-success" />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-success/10 flex-shrink-0">
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.activeClasses || 0}</p>
-                  <p className="text-sm text-muted-foreground">Active Classes</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-warning/10">
-                  <Clock className="w-5 h-5 text-warning" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.pendingPayments || 0}</p>
-                  <p className="text-sm text-muted-foreground">Pending Payments</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold">{stats?.activeClasses || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Classes</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-accent/10">
-                  <DollarSign className="w-5 h-5 text-accent" />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-warning/10 flex-shrink-0">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">Rs. {((stats?.monthlyRevenue || 0) / 1000).toFixed(0)}k</p>
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold">{stats?.pendingPayments || 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-elevated">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10 flex-shrink-0">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold truncate">Rs. {((stats?.monthlyRevenue || 0) / 1000).toFixed(0)}k</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Revenue</p>
                 </div>
               </div>
             </CardContent>
@@ -178,30 +178,30 @@ const AdminDashboard = () => {
             {recentPayments.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No recent payments</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {recentPayments.map((payment: any) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <CreditCard className="w-5 h-5 text-primary" />
+                  <div key={payment.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground text-sm truncate">
                           {payment.profiles?.first_name} {payment.profiles?.last_name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{payment.payment_type}</p>
+                        <p className="text-xs text-muted-foreground">{payment.payment_type}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="font-semibold">Rs. {payment.amount?.toLocaleString()}</span>
+                    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                      <span className="font-semibold text-sm">Rs. {payment.amount?.toLocaleString()}</span>
                       <Badge 
                         variant="outline"
                         className={payment.status === 'APPROVED' ? 'badge-paid' : 'badge-pending'}
                       >
                         {payment.status === 'APPROVED' ? (
-                          <><CheckCircle className="w-3 h-3 mr-1" /> Approved</>
+                          <><CheckCircle className="w-3 h-3 mr-1" /><span className="hidden sm:inline">Approved</span></>
                         ) : (
-                          <><Clock className="w-3 h-3 mr-1" /> Pending</>
+                          <><Clock className="w-3 h-3 mr-1" /><span className="hidden sm:inline">Pending</span></>
                         )}
                       </Badge>
                     </div>
@@ -222,20 +222,18 @@ const AdminDashboard = () => {
             {classStats.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No classes yet</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {classStats.map((cls: any) => (
-                  <div key={cls.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="font-medium text-foreground">{cls.title}</p>
-                      <p className="text-sm text-muted-foreground">
+                  <div key={cls.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground text-sm truncate">{cls.title}</p>
+                      <p className="text-xs text-muted-foreground">
                         Grade {cls.grade_min === cls.grade_max ? cls.grade_min : `${cls.grade_min}-${cls.grade_max}`}
                       </p>
                     </div>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div className="text-center">
-                        <p className="font-semibold text-foreground">{cls.enrolledCount}</p>
-                        <p className="text-muted-foreground">Students</p>
-                      </div>
+                    <div className="flex-shrink-0 text-center">
+                      <p className="font-semibold text-foreground text-sm">{cls.enrolledCount}</p>
+                      <p className="text-xs text-muted-foreground">Students</p>
                     </div>
                   </div>
                 ))}

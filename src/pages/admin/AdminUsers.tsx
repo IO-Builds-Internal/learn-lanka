@@ -240,18 +240,19 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
 
-        {/* Users Table */}
+        {/* Users List */}
         <Card className="card-elevated">
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Phone</TableHead>
-                    <TableHead>School</TableHead>
+                    <TableHead className="hidden lg:table-cell">School</TableHead>
                     <TableHead>Grade</TableHead>
-                    <TableHead>Classes</TableHead>
+                    <TableHead className="hidden lg:table-cell">Classes</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="w-10"></TableHead>
@@ -263,7 +264,7 @@ const AdminUsers = () => {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center",
+                            "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
                             user.roles.includes('admin') 
                               ? "bg-destructive/10" 
                               : user.roles.includes('moderator')
@@ -271,42 +272,30 @@ const AdminUsers = () => {
                               : "bg-primary/10"
                           )}>
                             {user.roles.includes('admin') || user.roles.includes('moderator') ? (
-                              <Shield className={cn(
-                                "w-4 h-4",
-                                user.roles.includes('admin') ? "text-destructive" : "text-warning"
-                              )} />
+                              <Shield className={cn("w-4 h-4", user.roles.includes('admin') ? "text-destructive" : "text-warning")} />
                             ) : (
                               <User className="w-4 h-4 text-primary" />
                             )}
                           </div>
-                          <span className="font-medium">{user.first_name} {user.last_name}</span>
+                          <span className="font-medium text-sm">{user.first_name} {user.last_name}</span>
                         </div>
                       </TableCell>
                       <TableCell className="font-mono text-sm">{formatPhoneDisplay(user.phone)}</TableCell>
-                      <TableCell>{user.school_name || '-'}</TableCell>
-                      <TableCell>{user.grade ? `Grade ${user.grade}` : '-'}</TableCell>
-                      <TableCell>{user.enrolled_classes}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">{user.school_name || '-'}</TableCell>
+                      <TableCell className="text-sm">{user.grade ? `G${user.grade}` : '-'}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">{user.enrolled_classes}</TableCell>
                       <TableCell>
                         {user.roles.includes('admin') ? (
-                          <Badge variant="destructive">Admin</Badge>
+                          <Badge variant="destructive" className="text-xs">Admin</Badge>
                         ) : user.roles.includes('moderator') ? (
-                          <Badge className="bg-warning text-warning-foreground">Moderator</Badge>
+                          <Badge className="bg-warning text-warning-foreground text-xs">Mod</Badge>
                         ) : (
-                          <Badge variant="secondary">Student</Badge>
+                          <Badge variant="secondary" className="text-xs">Student</Badge>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge 
-                          variant="outline"
-                          className={cn(
-                            user.status === 'ACTIVE' ? 'badge-paid' : 'badge-unpaid'
-                          )}
-                        >
-                          {user.status === 'ACTIVE' ? (
-                            <><CheckCircle className="w-3 h-3 mr-1" /> Active</>
-                          ) : (
-                            <><Ban className="w-3 h-3 mr-1" /> Suspended</>
-                          )}
+                        <Badge variant="outline" className={cn("text-xs", user.status === 'ACTIVE' ? 'badge-paid' : 'badge-unpaid')}>
+                          {user.status === 'ACTIVE' ? <CheckCircle className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -317,22 +306,15 @@ const AdminUsers = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {/* Only admins can manage moderator roles */}
                             {isAdmin && !user.roles.includes('admin') && (
                               <>
                                 {user.roles.includes('moderator') ? (
-                                  <DropdownMenuItem 
-                                    onClick={() => setConfirmAction({ type: 'remove_mod', user })}
-                                  >
-                                    <ShieldOff className="w-4 h-4 mr-2" />
-                                    Remove Moderator
+                                  <DropdownMenuItem onClick={() => setConfirmAction({ type: 'remove_mod', user })}>
+                                    <ShieldOff className="w-4 h-4 mr-2" />Remove Moderator
                                   </DropdownMenuItem>
                                 ) : (
-                                  <DropdownMenuItem 
-                                    onClick={() => setConfirmAction({ type: 'add_mod', user })}
-                                  >
-                                    <Shield className="w-4 h-4 mr-2" />
-                                    Make Moderator
+                                  <DropdownMenuItem onClick={() => setConfirmAction({ type: 'add_mod', user })}>
+                                    <Shield className="w-4 h-4 mr-2" />Make Moderator
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuSeparator />
@@ -342,26 +324,15 @@ const AdminUsers = () => {
                               <>
                                 <DropdownMenuItem 
                                   className={user.status === 'ACTIVE' ? 'text-destructive' : 'text-success'}
-                                  onClick={() => setConfirmAction({ 
-                                    type: user.status === 'ACTIVE' ? 'suspend' : 'activate', 
-                                    user 
-                                  })}
+                                  onClick={() => setConfirmAction({ type: user.status === 'ACTIVE' ? 'suspend' : 'activate', user })}
                                 >
-                                  {user.status === 'ACTIVE' ? (
-                                    <><Ban className="w-4 h-4 mr-2" /> Suspend User</>
-                                  ) : (
-                                    <><CheckCircle className="w-4 h-4 mr-2" /> Activate User</>
-                                  )}
+                                  {user.status === 'ACTIVE' ? <><Ban className="w-4 h-4 mr-2" />Suspend</> : <><CheckCircle className="w-4 h-4 mr-2" />Activate</>}
                                 </DropdownMenuItem>
                                 {isAdmin && (
                                   <>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem 
-                                      className="text-destructive"
-                                      onClick={() => setConfirmAction({ type: 'delete', user })}
-                                    >
-                                      <Trash2 className="w-4 h-4 mr-2" />
-                                      Delete User
+                                    <DropdownMenuItem className="text-destructive" onClick={() => setConfirmAction({ type: 'delete', user })}>
+                                      <Trash2 className="w-4 h-4 mr-2" />Delete User
                                     </DropdownMenuItem>
                                   </>
                                 )}
@@ -376,55 +347,107 @@ const AdminUsers = () => {
               </Table>
             </div>
 
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-border">
+              {paginatedUsers.map((user) => (
+                <div key={user.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                        user.roles.includes('admin') ? "bg-destructive/10" : user.roles.includes('moderator') ? "bg-warning/10" : "bg-primary/10"
+                      )}>
+                        {user.roles.includes('admin') || user.roles.includes('moderator') 
+                          ? <Shield className={cn("w-4 h-4", user.roles.includes('admin') ? "text-destructive" : "text-warning")} />
+                          : <User className="w-4 h-4 text-primary" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{user.first_name} {user.last_name}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{formatPhoneDisplay(user.phone)}</p>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isAdmin && !user.roles.includes('admin') && (
+                          <>
+                            {user.roles.includes('moderator') ? (
+                              <DropdownMenuItem onClick={() => setConfirmAction({ type: 'remove_mod', user })}>
+                                <ShieldOff className="w-4 h-4 mr-2" />Remove Moderator
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => setConfirmAction({ type: 'add_mod', user })}>
+                                <Shield className="w-4 h-4 mr-2" />Make Moderator
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        {!user.roles.includes('admin') && (
+                          <>
+                            <DropdownMenuItem 
+                              className={user.status === 'ACTIVE' ? 'text-destructive' : 'text-success'}
+                              onClick={() => setConfirmAction({ type: user.status === 'ACTIVE' ? 'suspend' : 'activate', user })}
+                            >
+                              {user.status === 'ACTIVE' ? <><Ban className="w-4 h-4 mr-2" />Suspend</> : <><CheckCircle className="w-4 h-4 mr-2" />Activate</>}
+                            </DropdownMenuItem>
+                            {isAdmin && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive" onClick={() => setConfirmAction({ type: 'delete', user })}>
+                                  <Trash2 className="w-4 h-4 mr-2" />Delete User
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {user.roles.includes('admin') ? <Badge variant="destructive" className="text-xs">Admin</Badge>
+                      : user.roles.includes('moderator') ? <Badge className="bg-warning text-warning-foreground text-xs">Moderator</Badge>
+                      : <Badge variant="secondary" className="text-xs">Student</Badge>}
+                    <Badge variant="outline" className={cn("text-xs", user.status === 'ACTIVE' ? 'badge-paid' : 'badge-unpaid')}>
+                      {user.status === 'ACTIVE' ? 'Active' : 'Suspended'}
+                    </Badge>
+                    {user.grade && <span className="text-xs text-muted-foreground">Grade {user.grade}</span>}
+                    {user.school_name && <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.school_name}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
+              <div className="flex items-center justify-between px-4 py-3 border-t gap-2">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length}
                 </p>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(p => p - 1)}
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Previous
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                    <ChevronLeft className="w-4 h-4" />
                   </Button>
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
+                      if (totalPages <= 5) pageNum = i + 1;
+                      else if (currentPage <= 3) pageNum = i + 1;
+                      else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                      else pageNum = currentPage - 2 + i;
                       return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? 'default' : 'outline'}
-                          size="sm"
-                          className="w-8 h-8 p-0"
-                          onClick={() => setCurrentPage(pageNum)}
-                        >
+                        <Button key={pageNum} variant={currentPage === pageNum ? 'default' : 'outline'} size="sm" className="w-8 h-8 p-0" onClick={() => setCurrentPage(pageNum)}>
                           {pageNum}
                         </Button>
                       );
                     })}
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(p => p + 1)}
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                  <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                    <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
