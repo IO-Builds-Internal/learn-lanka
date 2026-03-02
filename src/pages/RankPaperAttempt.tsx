@@ -262,10 +262,25 @@ const RankPaperAttempt = () => {
     }, 500);
   }, [attempt]);
 
-  // Anti-cheating measures: Tab visibility, keyboard shortcuts, print screen, copy protection
+  // Anti-cheating measures: Tab visibility, window blur, keyboard shortcuts, print screen, copy protection
   useEffect(() => {
+    // Fires when switching browser tabs
     const handleVisibilityChange = () => {
       if (document.hidden && attempt) {
+        setTabBlurred(true);
+        setTabSwitchCount(prev => {
+          const newCount = prev + 1;
+          saveViolations(newCount, windowCloseCount);
+          return newCount;
+        });
+      } else if (!document.hidden) {
+        setTabBlurred(false);
+      }
+    };
+
+    // Fires when switching to another application (Alt+Tab, opening another browser, etc.)
+    const handleWindowBlur = () => {
+      if (attempt) {
         setTabBlurred(true);
         setTabSwitchCount(prev => {
           const newCount = prev + 1;
@@ -275,7 +290,13 @@ const RankPaperAttempt = () => {
       }
     };
 
+    const handleWindowFocus = () => {
+      setTabBlurred(false);
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
     
     // Disable right-click
     const handleContextMenu = (e: MouseEvent) => {
@@ -383,6 +404,8 @@ const RankPaperAttempt = () => {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('selectstart', handleSelectStart);
