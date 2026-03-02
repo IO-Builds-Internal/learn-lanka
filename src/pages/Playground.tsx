@@ -190,8 +190,23 @@ const makeId = () => Date.now().toString(36) + Math.random().toString(36).slice(
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Playground = () => {
-  const [files, setFiles] = useState<PlayFile[]>([]);
-  const [activeId, setActiveId] = useState('');
+  // Load initial files from sessionStorage or defaults — synchronously before any auth
+  const initFiles = (): PlayFile[] => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (raw) {
+        const parsed: PlayFile[] = JSON.parse(raw);
+        if (parsed.length > 0) return parsed;
+      }
+    } catch { /* ignore */ }
+    return DEFAULT_FILES.map((f, i) => ({ ...f, id: makeId() + i, sortOrder: i }));
+  };
+
+  const [files, setFiles] = useState<PlayFile[]>(initFiles);
+  const [activeId, setActiveId] = useState(() => {
+    const f = initFiles();
+    return f[0]?.id ?? '';
+  });
   const [output, setOutput] = useState('');
   const [running, setRunning] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -200,13 +215,14 @@ const Playground = () => {
   const [hasRun, setHasRun] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loadingFiles, setLoadingFiles] = useState(true);
+  const [syncingCloud, setSyncingCloud] = useState(false);
   const [addingFile, setAddingFile] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState('');
   const outputRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didCloudLoad = useRef(false);
 
   const activeFile = files.find(f => f.id === activeId) ?? files[0];
   const usedBytes = totalBytes(files);
@@ -224,50 +240,27 @@ const Playground = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── Load files ─────────────────────────────────────────────────────────────
+  // ── When user logs in, load their cloud files (background sync) ───────────
   useEffect(() => {
-    const load = async () => {
-      setLoadingFiles(true);
-      if (userId) {
-        // Load from DB
-        const { data, error } = await supabase
-          .from('playground_files')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order');
+    if (!userId || didCloudLoad.current) return;
+    didCloudLoad.current = true;
+    setSyncingCloud(true);
+    supabase
+      .from('playground_files' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .order('sort_order')
+      .then(({ data, error }) => {
         if (!error && data && data.length > 0) {
-          const mapped: PlayFile[] = data.map(r => ({
+          const mapped: PlayFile[] = (data as any[]).map(r => ({
             id: r.id, name: r.name, code: r.code, sortOrder: r.sort_order,
           }));
           setFiles(mapped);
           setActiveId(mapped[0].id);
-          setLoadingFiles(false);
-          return;
+          setOutput(''); setHasRun(false); setShowPreview(false);
         }
-      } else {
-        // Load from sessionStorage for guests
-        try {
-          const raw = sessionStorage.getItem(SESSION_KEY);
-          if (raw) {
-            const parsed: PlayFile[] = JSON.parse(raw);
-            if (parsed.length > 0) {
-              setFiles(parsed);
-              setActiveId(parsed[0].id);
-              setLoadingFiles(false);
-              return;
-            }
-          }
-        } catch { /* ignore */ }
-      }
-      // Default starter files
-      const defaults: PlayFile[] = DEFAULT_FILES.map((f, i) => ({
-        ...f, id: makeId() + i, sortOrder: i,
-      }));
-      setFiles(defaults);
-      setActiveId(defaults[0].id);
-      setLoadingFiles(false);
-    };
-    load();
+        setSyncingCloud(false);
+      });
   }, [userId]);
 
   // ── Auto-save for guests (sessionStorage) ─────────────────────────────────
@@ -295,7 +288,7 @@ const Playground = () => {
         code: f.code,
         sort_order: f.sortOrder,
       }));
-      const { error } = await supabase.from('playground_files').upsert(upsertData, { onConflict: 'id' });
+      const { error } = await (supabase.from as any)('playground_files').upsert(upsertData, { onConflict: 'id' });
       if (error) throw error;
     } catch (e: any) {
       toast.error('Save failed: ' + e.message);
@@ -327,7 +320,7 @@ const Playground = () => {
 
     if (userId) {
       // Insert to DB first
-      const { error } = await supabase.from('playground_files').insert({
+      const { error } = await (supabase.from as any)('playground_files').insert({
         id: newFile.id, user_id: userId, name: newFile.name,
         code: newFile.code, sort_order: newFile.sortOrder,
       });
@@ -343,7 +336,7 @@ const Playground = () => {
     if (files.length === 1) { toast.error("Can't delete the last file"); return; }
     const next = files.find(f => f.id !== id);
     if (userId) {
-      await supabase.from('playground_files').delete().eq('id', id);
+      await (supabase.from as any)('playground_files').delete().eq('id', id);
     }
     const updated = files.filter(f => f.id !== id);
     setFiles(updated);
@@ -356,7 +349,7 @@ const Playground = () => {
     const name = raw.includes('.') ? raw : `${raw}.py`;
     const updated = files.map(f => f.id === id ? { ...f, name } : f);
     if (userId) {
-      await supabase.from('playground_files').update({ name }).eq('id', id);
+      await (supabase.from as any)('playground_files').update({ name }).eq('id', id);
     }
     setFiles(updated);
     setRenamingId(null);
@@ -458,14 +451,6 @@ const Playground = () => {
 
   // ── Run button label ───────────────────────────────────────────────────────
   const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Reference' : 'Run';
-
-  if (loadingFiles) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f1117' }}>
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0f1117' }}>
