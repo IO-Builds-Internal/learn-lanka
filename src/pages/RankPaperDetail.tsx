@@ -175,9 +175,13 @@ const RankPaperDetail = () => {
     const origin = window.location.origin;
     const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
 
-    // Break out of iframe context if running inside preview
-    const opener = window.top || window;
-    const examWindow = opener.open(absoluteUrl, 'exam_window', features);
+    // Try to break out of iframe; fall back to window.open if cross-origin blocked
+    let examWindow: Window | null = null;
+    try {
+      examWindow = (window.top ?? window).open(absoluteUrl, 'exam_window', features);
+    } catch {
+      examWindow = window.open(absoluteUrl, 'exam_window', features);
+    }
 
     if (examWindow) {
       examWindow.focus();
