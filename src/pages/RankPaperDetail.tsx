@@ -163,19 +163,31 @@ const RankPaperDetail = () => {
     const sw = window.screen.availWidth;
     const sh = window.screen.availHeight;
 
-    // Chrome only shows popup-mode (no address bar) when width < screen width
-    // Use 95% of screen so Chrome treats it as a popup, not a tab
-    const popupWidth = Math.floor(sw * 0.95);
-    const popupHeight = Math.floor(sh * 0.95);
+    // Chrome forces popup mode (no address bar) ONLY when width is strictly less
+    // than the screen width. 85% reliably triggers popup vs tab behaviour.
+    const popupWidth = Math.floor(sw * 0.85);
+    const popupHeight = Math.floor(sh * 0.90);
     const left = Math.floor((sw - popupWidth) / 2);
     const top = Math.floor((sh - popupHeight) / 2);
 
-    const features = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`;
+    const features = [
+      `width=${popupWidth}`,
+      `height=${popupHeight}`,
+      `left=${left}`,
+      `top=${top}`,
+      'menubar=no',
+      'toolbar=no',
+      'location=no',
+      'status=no',
+      'titlebar=no',
+      'resizable=yes',
+      'scrollbars=yes',
+    ].join(',');
 
     const origin = window.location.origin;
     const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
 
-    // Try to break out of iframe; fall back to window.open if cross-origin blocked
+    // Try to open from the top-level window to escape any iframe restrictions
     let examWindow: Window | null = null;
     try {
       examWindow = (window.top ?? window).open(absoluteUrl, 'exam_window', features);
@@ -185,7 +197,6 @@ const RankPaperDetail = () => {
 
     if (examWindow) {
       examWindow.focus();
-      toast.success('Exam opened in a popup window');
     } else {
       toast.warning('Popup was blocked! Please allow popups for this site and try again.');
     }
