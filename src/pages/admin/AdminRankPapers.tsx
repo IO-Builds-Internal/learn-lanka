@@ -106,7 +106,9 @@ const AdminRankPapers = () => {
   const [reviewVideoUrl, setReviewVideoUrl] = useState('');
   const [editingPaper, setEditingPaper] = useState<RankPaper | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [filterGrade, setFilterGrade] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+
   // Form state
   const [title, setTitle] = useState('');
   const [grade, setGrade] = useState('');
@@ -462,15 +464,12 @@ const AdminRankPapers = () => {
     }
   };
 
-  // Filter papers by search query
+  // Filter papers
   const filteredPapers = papers.filter(paper => {
-    if (!searchQuery.trim()) return true;
-    const search = searchQuery.toLowerCase();
-    return (
-      paper.title.toLowerCase().includes(search) ||
-      `grade ${paper.grade}`.includes(search) ||
-      paper.publish_status.toLowerCase().includes(search)
-    );
+    if (searchQuery.trim() && !paper.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filterGrade && paper.grade.toString() !== filterGrade) return false;
+    if (filterStatus && paper.publish_status !== filterStatus) return false;
+    return true;
   });
 
   if (isLoading) {
@@ -492,16 +491,38 @@ const AdminRankPapers = () => {
             <h1 className="text-2xl font-bold text-foreground">Rank Papers</h1>
             <p className="text-muted-foreground">Manage timed exams and quizzes</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search papers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-64"
+                className="pl-9 w-48"
               />
             </div>
+            <Select value={filterGrade} onValueChange={setFilterGrade}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Grades" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Grades</SelectItem>
+                {[6,7,8,9,10,11,12,13].map(g => (
+                  <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="DRAFT">Draft</SelectItem>
+                <SelectItem value="PUBLISHED">Published</SelectItem>
+                <SelectItem value="CLOSED">Closed</SelectItem>
+              </SelectContent>
+            </Select>
             <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
               <Plus className="w-4 h-4 mr-2" />
               Create Paper

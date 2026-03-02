@@ -688,7 +688,9 @@ const RankPaperAttempt = () => {
 
                     {/* Options */}
                     <RadioGroup
-                      value={answers[questions[currentQuestion].id]?.toString()}
+                      value={answers[questions[currentQuestion].id] !== undefined
+                        ? answers[questions[currentQuestion].id].toString()
+                        : ""}
                       onValueChange={(value) => 
                         handleAnswerChange(questions[currentQuestion].id, parseInt(value))
                       }
