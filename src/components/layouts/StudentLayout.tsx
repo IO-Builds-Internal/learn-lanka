@@ -30,13 +30,9 @@ interface StudentLayoutProps {
 }
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/classes', label: 'Classes', icon: BookOpen },
   { path: '/rank-papers', label: 'Rank Papers', icon: FileText },
-  { path: '/papers', label: 'Papers', icon: FileText },
   { path: '/shop', label: 'Shop', icon: ShoppingBag },
   { path: '/playground', label: 'Playground', icon: Code2 },
-  { path: '/contact', label: 'Contact', icon: MessageCircle },
 ];
 
 const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ children }, ref) => {
