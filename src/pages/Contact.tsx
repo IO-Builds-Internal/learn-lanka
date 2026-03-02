@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Send, MessageSquare, Phone, Mail, MapPin, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import StudentLayout from "@/components/layouts/StudentLayout";
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
@@ -79,34 +80,8 @@ const Contact = () => {
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardContent className="pt-8 pb-8">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Message Sent!</h2>
-            <p className="text-muted-foreground mb-6">
-              Thank you for contacting us. We'll get back to you as soon as possible.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => setIsSubmitted(false)}>
-                Send Another
-              </Button>
-              <Button asChild>
-                <Link to="/login">Login</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
+  const formContent = (
+    <div className={user ? "" : "min-h-screen bg-background"}>
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-12">
         <div className="container mx-auto px-4 text-center">
@@ -177,108 +152,136 @@ const Contact = () => {
           )}
 
           {/* Contact Form */}
-          <Card className="lg:col-span-2">
+          <Card className={user ? "max-w-2xl mx-auto w-full" : "lg:col-span-2"}>
             <CardHeader>
               <CardTitle>Send a Message</CardTitle>
               <CardDescription>Fill out the form below and we'll get back to you shortly.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="07X XXX XXXX" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              {isSubmitted ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-primary" />
                   </div>
-
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email (Optional)</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="your@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <h2 className="text-xl font-bold text-foreground mb-2">Message Sent!</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Thank you for contacting us. We'll get back to you as soon as possible.
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button variant="outline" onClick={() => setIsSubmitted(false)}>
+                      Send Another
+                    </Button>
+                    {!user && (
+                      <Button asChild>
+                        <Link to="/login">Login</Link>
+                      </Button>
                     )}
-                  />
+                  </div>
+                </div>
+              ) : (
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Your name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="subject"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Subject *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="What is this about?" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="07X XXX XXXX" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <FormField
-                    control={form.control}
-                    name="message"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Message *</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Write your message here..."
-                            className="min-h-[120px] resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email (Optional)</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="your@email.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      "Sending..."
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Send Message
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </Form>
+                    <FormField
+                      control={form.control}
+                      name="subject"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Subject *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="What is this about?" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Message *</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Write your message here..."
+                              className="min-h-[120px] resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        "Sending..."
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Send Message
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
   );
+
+  if (user) {
+    return <StudentLayout>{formContent}</StudentLayout>;
+  }
+
+  return formContent;
 };
 
 export default Contact;
