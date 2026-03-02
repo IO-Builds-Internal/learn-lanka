@@ -162,10 +162,9 @@ const RankPaperDetail = () => {
   const openExamWindow = (url: string) => {
     const screenWidth = window.screen.availWidth;
     const screenHeight = window.screen.availHeight;
-    // Use slightly less than full screen to force browser to open as popup, not tab
-    const popupWidth = screenWidth - 2;
-    const popupHeight = screenHeight - 2;
-    
+    const popupWidth = screenWidth - 4;
+    const popupHeight = screenHeight - 4;
+
     const features = [
       `width=${popupWidth}`,
       `height=${popupHeight}`,
@@ -177,11 +176,16 @@ const RankPaperDetail = () => {
       `status=no`,
       `resizable=yes`,
       `scrollbars=yes`,
-      `noopener=no`,
     ].join(',');
 
-    const examWindow = window.open(url, 'exam_window', features);
-    
+    // Build absolute URL so it works whether called from iframe or top window
+    const origin = window.location.origin;
+    const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
+
+    // Use window.top to break out of any iframe context (e.g. Lovable preview)
+    const opener = window.top || window;
+    const examWindow = opener.open(absoluteUrl, 'exam_window', features);
+
     if (examWindow) {
       examWindow.focus();
       try {
@@ -190,7 +194,7 @@ const RankPaperDetail = () => {
       } catch (_) {
         // ignore cross-origin resize errors
       }
-      toast.success('Exam opened in a new popup window');
+      toast.success('Exam opened in a popup window');
     } else {
       toast.warning('Popup was blocked! Please allow popups for this site and try again.');
     }
