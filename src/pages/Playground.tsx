@@ -13,15 +13,15 @@ type Language = 'python' | 'html' | 'css' | 'sql' | 'javascript' | 'text';
 // ─── File type helpers ────────────────────────────────────────────────────────
 const extToLang = (name: string): Language => {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
-  if (['py'].includes(ext)) return 'python';
-  if (['html', 'htm'].includes(ext)) return 'html';
-  if (['css'].includes(ext)) return 'css';
-  if (['sql'].includes(ext)) return 'sql';
-  if (['js', 'ts', 'jsx', 'tsx'].includes(ext)) return 'javascript';
+  if (ext === 'py') return 'python';
+  if (ext === 'html' || ext === 'htm') return 'html';
+  if (ext === 'css') return 'css';
+  if (ext === 'sql') return 'sql';
+  if (['js','ts','jsx','tsx'].includes(ext)) return 'javascript';
   return 'text';
 };
 
-const langMeta: Record<Language, { label: string; color: string; dot: string; }> = {
+const langMeta: Record<Language, { label: string; color: string; dot: string }> = {
   python:     { label: 'Python',     color: '#3b82f6', dot: '🐍' },
   html:       { label: 'HTML',       color: '#f97316', dot: '🌐' },
   css:        { label: 'CSS',        color: '#a855f7', dot: '🎨' },
@@ -30,11 +30,7 @@ const langMeta: Record<Language, { label: string; color: string; dot: string; }>
   text:       { label: 'Text',       color: '#6b7280', dot: '📄' },
 };
 
-// Badge colors for file icons
-const fileBadge = (name: string) => {
-  const lang = extToLang(name);
-  return langMeta[lang].color;
-};
+const fileBadge = (name: string) => langMeta[extToLang(name)].color;
 
 // ─── Default starter files ────────────────────────────────────────────────────
 const DEFAULT_FILES: Omit<PlayFile, 'id'>[] = [
@@ -119,7 +115,6 @@ for fruit in fruits:
   gap: 16px;
 }
 
-/* Colors & Typography */
 body {
   font-family: Arial, sans-serif;
   color: #333;
@@ -143,23 +138,18 @@ INSERT INTO students (name, grade, marks) VALUES
   ('Dilani Rathnayake',13, 96),
   ('Sunil Bandara',    13, 78);
 
--- Select all
 SELECT * FROM students;
 
--- Filter
 SELECT name, marks FROM students
 WHERE marks > 85
 ORDER BY marks DESC;
 
--- Aggregate
 SELECT grade, COUNT(*) AS total, AVG(marks) AS avg_marks
-FROM students
-GROUP BY grade;` },
+FROM students GROUP BY grade;` },
 ];
 
-// ─── Skulpt Python runner ─────────────────────────────────────────────────────
+// ─── Skulpt loader ────────────────────────────────────────────────────────────
 declare global { interface Window { Sk: any; } }
-
 const loadSkulpt = (): Promise<void> =>
   new Promise((resolve, reject) => {
     if (window.Sk) { resolve(); return; }
@@ -176,37 +166,26 @@ const loadSkulpt = (): Promise<void> =>
     document.head.appendChild(s);
   });
 
-// ─── Size helpers ─────────────────────────────────────────────────────────────
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
-const totalBytes = (files: PlayFile[]) =>
-  files.reduce((acc, f) => acc + new Blob([f.code]).size, 0);
+// ─── Storage helpers ──────────────────────────────────────────────────────────
+const MAX_BYTES = 10 * 1024 * 1024;
+const totalBytes = (files: PlayFile[]) => files.reduce((a, f) => a + new Blob([f.code]).size, 0);
 const fmtBytes = (b: number) =>
-  b < 1024 ? `${b} B` : b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / (1024 * 1024)).toFixed(2)} MB`;
-
-// ─── Session storage key ──────────────────────────────────────────────────────
+  b < 1024 ? `${b} B` : b < 1048576 ? `${(b/1024).toFixed(1)} KB` : `${(b/1048576).toFixed(2)} MB`;
 const SESSION_KEY = 'ict_playground_files';
-
 const makeId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Playground = () => {
-  // Load initial files from sessionStorage or defaults — synchronously before any auth
   const initFiles = (): PlayFile[] => {
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
-      if (raw) {
-        const parsed: PlayFile[] = JSON.parse(raw);
-        if (parsed.length > 0) return parsed;
-      }
+      if (raw) { const p: PlayFile[] = JSON.parse(raw); if (p.length > 0) return p; }
     } catch { /* ignore */ }
-    return DEFAULT_FILES.map((f, i) => ({ ...f, id: makeId() + i, sortOrder: i }));
+    return DEFAULT_FILES.map((f, i) => ({ ...f, id: makeId() + i }));
   };
 
   const [files, setFiles] = useState<PlayFile[]>(initFiles);
-  const [activeId, setActiveId] = useState(() => {
-    const f = initFiles();
-    return f[0]?.id ?? '';
-  });
+  const [activeId, setActiveId] = useState(() => initFiles()[0]?.id ?? '');
   const [output, setOutput] = useState('');
   const [running, setRunning] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -215,7 +194,6 @@ const Playground = () => {
   const [hasRun, setHasRun] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [syncingCloud, setSyncingCloud] = useState(false);
   const [addingFile, setAddingFile] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -228,301 +206,246 @@ const Playground = () => {
   const usedBytes = totalBytes(files);
   const usedPct = Math.min(100, (usedBytes / MAX_BYTES) * 100);
   const lang = activeFile ? extToLang(activeFile.name) : 'text';
+  const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Reference' : 'Run';
 
-  // ── Auth listener ──────────────────────────────────────────────────────────
+  // Auth
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUserId(data.session?.user.id ?? null);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUserId(session?.user.id ?? null);
-    });
+    supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setUserId(s?.user.id ?? null));
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── When user logs in, load their cloud files (background sync) ───────────
+  // Cloud load on login
   useEffect(() => {
     if (!userId || didCloudLoad.current) return;
     didCloudLoad.current = true;
-    setSyncingCloud(true);
-    supabase
-      .from('playground_files' as any)
-      .select('*')
-      .eq('user_id', userId)
-      .order('sort_order')
-      .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          const mapped: PlayFile[] = (data as any[]).map(r => ({
-            id: r.id, name: r.name, code: r.code, sortOrder: r.sort_order,
-          }));
-          setFiles(mapped);
-          setActiveId(mapped[0].id);
+    (supabase.from as any)('playground_files').select('*').eq('user_id', userId).order('sort_order')
+      .then(({ data, error }: any) => {
+        if (!error && data?.length > 0) {
+          const mapped: PlayFile[] = data.map((r: any) => ({ id: r.id, name: r.name, code: r.code, sortOrder: r.sort_order }));
+          setFiles(mapped); setActiveId(mapped[0].id);
           setOutput(''); setHasRun(false); setShowPreview(false);
         }
-        setSyncingCloud(false);
       });
   }, [userId]);
 
-  // ── Auto-save for guests (sessionStorage) ─────────────────────────────────
+  // Guest session storage
   useEffect(() => {
-    if (!userId && files.length > 0) {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(files));
-    }
+    if (!userId && files.length > 0) sessionStorage.setItem(SESSION_KEY, JSON.stringify(files));
   }, [files, userId]);
 
-  // ── Scroll output ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
-  }, [output]);
+  // Scroll output
+  useEffect(() => { if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight; }, [output]);
 
-  // ── Save to DB (debounced) ─────────────────────────────────────────────────
+  // Save to DB
   const saveToDb = useCallback(async (filesToSave: PlayFile[]) => {
     if (!userId) return;
     setSaving(true);
     try {
-      // Upsert all files
-      const upsertData = filesToSave.map(f => ({
-        id: f.id,
-        user_id: userId,
-        name: f.name,
-        code: f.code,
-        sort_order: f.sortOrder,
-      }));
+      const upsertData = filesToSave.map(f => ({ id: f.id, user_id: userId, name: f.name, code: f.code, sort_order: f.sortOrder }));
       const { error } = await (supabase.from as any)('playground_files').upsert(upsertData, { onConflict: 'id' });
       if (error) throw error;
-    } catch (e: any) {
-      toast.error('Save failed: ' + e.message);
-    } finally {
-      setSaving(false);
-    }
+    } catch (e: any) { toast.error('Save failed: ' + e.message); }
+    finally { setSaving(false); }
   }, [userId]);
 
-  const scheduleSave = (newFiles: PlayFile[]) => {
+  const scheduleSave = (nf: PlayFile[]) => {
     if (!userId) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveToDb(newFiles), 1500);
+    saveTimer.current = setTimeout(() => saveToDb(nf), 1500);
   };
 
-  const updateFiles = (newFiles: PlayFile[]) => {
-    setFiles(newFiles);
-    scheduleSave(newFiles);
-  };
+  const updateFiles = (nf: PlayFile[]) => { setFiles(nf); scheduleSave(nf); };
 
-  // ── File CRUD ──────────────────────────────────────────────────────────────
+  // File CRUD
   const addFile = async () => {
     const raw = newFileName.trim();
     if (!raw) { setAddingFile(false); return; }
-    // ensure extension
     const name = raw.includes('.') ? raw : `${raw}.py`;
     if (files.find(f => f.name === name)) { toast.error('File already exists'); return; }
-    const newFile: PlayFile = { id: makeId(), name, code: `# ${name}\n\n`, sortOrder: files.length };
-    const updated = [...files, newFile];
-
+    const nf: PlayFile = { id: makeId(), name, code: `# ${name}\n\n`, sortOrder: files.length };
     if (userId) {
-      // Insert to DB first
-      const { error } = await (supabase.from as any)('playground_files').insert({
-        id: newFile.id, user_id: userId, name: newFile.name,
-        code: newFile.code, sort_order: newFile.sortOrder,
-      });
+      const { error } = await (supabase.from as any)('playground_files').insert({ id: nf.id, user_id: userId, name: nf.name, code: nf.code, sort_order: nf.sortOrder });
       if (error) { toast.error('Could not create file'); return; }
     }
-    setFiles(updated);
-    setActiveId(newFile.id);
-    setNewFileName(''); setAddingFile(false);
-    setOutput(''); setHasRun(false); setShowPreview(false);
+    setFiles(p => [...p, nf]); setActiveId(nf.id);
+    setNewFileName(''); setAddingFile(false); setOutput(''); setHasRun(false); setShowPreview(false);
   };
 
   const deleteFile = async (id: string) => {
     if (files.length === 1) { toast.error("Can't delete the last file"); return; }
     const next = files.find(f => f.id !== id);
-    if (userId) {
-      await (supabase.from as any)('playground_files').delete().eq('id', id);
-    }
-    const updated = files.filter(f => f.id !== id);
-    setFiles(updated);
+    if (userId) await (supabase.from as any)('playground_files').delete().eq('id', id);
+    setFiles(p => p.filter(f => f.id !== id));
     if (activeId === id && next) { setActiveId(next.id); setOutput(''); setHasRun(false); setShowPreview(false); }
   };
 
   const renameFile = async (id: string) => {
-    const raw = renameVal.trim();
-    if (!raw) { setRenamingId(null); return; }
+    const raw = renameVal.trim(); if (!raw) { setRenamingId(null); return; }
     const name = raw.includes('.') ? raw : `${raw}.py`;
-    const updated = files.map(f => f.id === id ? { ...f, name } : f);
-    if (userId) {
-      await (supabase.from as any)('playground_files').update({ name }).eq('id', id);
-    }
-    setFiles(updated);
-    setRenamingId(null);
-    setOutput(''); setHasRun(false); setShowPreview(false);
+    if (userId) await (supabase.from as any)('playground_files').update({ name }).eq('id', id);
+    setFiles(p => p.map(f => f.id === id ? { ...f, name } : f));
+    setRenamingId(null); setOutput(''); setHasRun(false); setShowPreview(false);
   };
 
   const updateCode = (val: string) => {
     const newSize = new Blob([val]).size;
     const otherSize = files.filter(f => f.id !== activeId).reduce((a, f) => a + new Blob([f.code]).size, 0);
-    if (otherSize + newSize > MAX_BYTES) {
-      toast.error('Storage limit reached (10 MB max)');
-      return;
-    }
-    const updated = files.map(f => f.id === activeId ? { ...f, code: val } : f);
-    updateFiles(updated);
+    if (otherSize + newSize > MAX_BYTES) { toast.error('Storage limit reached (10 MB max)'); return; }
+    updateFiles(files.map(f => f.id === activeId ? { ...f, code: val } : f));
   };
 
-  // ── Run ────────────────────────────────────────────────────────────────────
+  // Run
   const handleRun = async () => {
     if (!activeFile) return;
-    setHasRun(true);
-    setShowPreview(false);
+    setHasRun(true); setShowPreview(false);
     const code = activeFile.code;
-
-    if (lang === 'html') {
-      setHtmlPreview(code); setShowPreview(true); setOutput(''); return;
-    }
-    if (lang === 'css') {
-      setOutput(`/* CSS Preview */\n/* Paste this into an HTML file's <style> tag */\n\n${code.slice(0, 300)}...`);
-      return;
-    }
-    if (lang === 'sql') {
-      setOutput('-- SQL Reference Mode\n-- Run SQL live at:\n--   https://www.db-fiddle.com/\n--   https://sqliteonline.com/\n--   https://onecompiler.com/mysql\n\n-- Your SQL is ready to copy above ↑');
-      return;
-    }
+    if (lang === 'html') { setHtmlPreview(code); setShowPreview(true); setOutput(''); return; }
+    if (lang === 'css') { setOutput(`/* CSS info - paste into HTML <style> tag */\n\n${code}`); return; }
+    if (lang === 'sql') { setOutput('-- SQL Reference Mode\n-- Run live at:\n--  https://www.db-fiddle.com/\n--  https://sqliteonline.com/\n--  https://onecompiler.com/mysql'); return; }
     if (lang === 'javascript') {
-      // Run JS via Function constructor
       setRunning(true);
       const lines: string[] = [];
       try {
-        const origLog = console.log;
-        console.log = (...args: any[]) => lines.push(args.map(String).join(' ') + '\n');
+        const orig = console.log;
+        console.log = (...a: any[]) => lines.push(a.map(String).join(' ') + '\n');
         // eslint-disable-next-line no-new-func
         new Function(code)();
-        console.log = origLog;
-      } catch (e: any) {
-        lines.push(`Error: ${e.message}\n`);
-      }
-      setOutput(lines.join('') || '(no output)');
-      setRunning(false);
-      return;
+        console.log = orig;
+      } catch (e: any) { lines.push(`Error: ${e.message}\n`); }
+      setOutput(lines.join('') || '(no output)'); setRunning(false); return;
     }
     if (lang === 'python') {
       setRunning(true); setOutput('');
-      const collected: string[] = [];
+      const col: string[] = [];
       try {
         await loadSkulpt();
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((res, rej) => {
           window.Sk.configure({
-            output: (t: string) => collected.push(t),
-            read: (x: string) => {
-              if (!window.Sk.builtinFiles?.files[x]) throw new Error(`File not found: '${x}'`);
-              return window.Sk.builtinFiles.files[x];
-            },
+            output: (t: string) => col.push(t),
+            read: (x: string) => { if (!window.Sk.builtinFiles?.files[x]) throw new Error(`File not found: '${x}'`); return window.Sk.builtinFiles.files[x]; },
             __future__: window.Sk.python3,
           });
-          window.Sk.misceval.asyncToPromise(() =>
-            window.Sk.importMainWithBody('<stdin>', false, code, true)
-          ).then(resolve).catch((e: any) => reject(new Error(e.toString())));
+          window.Sk.misceval.asyncToPromise(() => window.Sk.importMainWithBody('<stdin>', false, code, true)).then(res).catch((e: any) => rej(new Error(e.toString())));
         });
-      } catch (err: any) {
-        collected.push(`\nError: ${err.message}`);
-      } finally {
-        setOutput(collected.join('') || '(no output)');
-        setRunning(false);
-      }
+      } catch (err: any) { col.push(`\nError: ${err.message}`); }
+      finally { setOutput(col.join('') || '(no output)'); setRunning(false); }
       return;
     }
     setOutput(code);
   };
 
-  const handleReset = () => {
-    setOutput(''); setShowPreview(false); setHtmlPreview(''); setHasRun(false);
-  };
-
+  const handleReset = () => { setOutput(''); setShowPreview(false); setHtmlPreview(''); setHasRun(false); };
   const handleCopy = async () => {
     if (!activeFile) return;
     await navigator.clipboard.writeText(activeFile.code);
-    setCopied(true); toast.success('Code copied!');
-    setTimeout(() => setCopied(false), 2000);
+    setCopied(true); toast.success('Copied!'); setTimeout(() => setCopied(false), 2000);
   };
-
   const manualSave = async () => {
-    if (!userId) { toast.error('Login to save your workspace'); return; }
+    if (!userId) { toast.error('Login to save workspace'); return; }
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    await saveToDb(files);
-    toast.success('Workspace saved!');
+    await saveToDb(files); toast.success('Workspace saved!');
   };
 
-  // ── Run button label ───────────────────────────────────────────────────────
-  const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Reference' : 'Run';
+  // Language tab groups
+  const langGroups = [
+    { id: 'python' as Language,     label: 'Python',     exts: ['py'],             emoji: '🐍', color: '#3b82f6' },
+    { id: 'html'   as Language,     label: 'HTML & CSS', exts: ['html','htm','css'],emoji: '🌐', color: '#f97316' },
+    { id: 'sql'    as Language,     label: 'MySQL',      exts: ['sql'],             emoji: '🗄️', color: '#22c55e' },
+    { id: 'javascript' as Language, label: 'JavaScript', exts: ['js','ts'],         emoji: '⚡', color: '#eab308' },
+  ];
+  const activeGroup = langGroups.find(g => g.exts.includes(activeFile?.name.split('.').pop() ?? ''));
 
+  // ─── JSX ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0f1117' }}>
-      {/* ── Header ── */}
-      <header className="border-b px-4 py-3 flex items-center justify-between"
-        style={{ borderColor: '#1e2433', background: '#0d1117' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-            <Terminal className="w-4 h-4 text-white" />
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#0f1117' }}>
+
+      {/* ── HEADER ── */}
+      <header className="flex-shrink-0 flex items-center justify-between px-4 h-11"
+        style={{ background: '#0d1117', borderBottom: '1px solid #1e2433' }}>
+        {/* Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+            <Terminal className="w-3.5 h-3.5 text-white" />
           </div>
           <div>
-            <h1 className="text-white font-bold text-base leading-none">ICT Playground</h1>
-            <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>A/L ICT Code Practice</p>
+            <p className="text-white font-bold text-sm leading-none">ICT Playground</p>
+            <p className="text-xs leading-none mt-0.5" style={{ color: '#6b7280' }}>A/L ICT Code Practice</p>
           </div>
         </div>
 
+        {/* Right controls */}
         <div className="flex items-center gap-3">
-          {/* Storage meter */}
-          <div className="hidden sm:flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs" style={{ color: '#6b7280' }}>
-                {fmtBytes(usedBytes)} / 10 MB
-              </span>
-              {usedPct > 80 && <AlertCircle className="w-3 h-3 text-yellow-400" />}
-            </div>
-            <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: '#1e2433' }}>
+          {/* Storage bar */}
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: '#1e2433' }}>
               <div className="h-full rounded-full transition-all"
-                style={{
-                  width: `${usedPct}%`,
-                  background: usedPct > 80 ? '#ef4444' : usedPct > 60 ? '#eab308' : '#22c55e',
-                }} />
+                style={{ width: `${usedPct}%`, background: usedPct > 80 ? '#ef4444' : usedPct > 60 ? '#eab308' : '#22c55e' }} />
             </div>
+            <span className="text-xs" style={{ color: '#6b7280' }}>{fmtBytes(usedBytes)} / 10 MB</span>
+            {usedPct > 80 && <AlertCircle className="w-3 h-3 text-yellow-400" />}
           </div>
 
-          {/* Save indicator */}
           {userId ? (
-            <button onClick={manualSave} disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-              style={{ background: '#161b27', border: '1px solid #1e2433', color: '#8b949e' }}>
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {saving ? 'Saving...' : 'Save'}
-            </button>
+            <>
+              {!saving && <div className="hidden sm:flex items-center gap-1 text-xs" style={{ color: '#22c55e' }}><Cloud className="w-3 h-3" /> Auto-saved</div>}
+              <button onClick={manualSave} disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                style={{ background: '#161b27', border: '1px solid #1e2433', color: saving ? '#58a6ff' : '#8b949e' }}>
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </>
           ) : (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
               style={{ background: '#161b27', border: '1px solid #1e2433', color: '#6b7280' }}>
-              <CloudOff className="w-3.5 h-3.5" />
-              <span>Session only</span>
-            </div>
-          )}
-          {userId && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: '#22c55e' }}>
-              <Cloud className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Auto-saved</span>
+              <CloudOff className="w-3 h-3" /> Session only
             </div>
           )}
         </div>
       </header>
 
-      <div className="flex-1 flex gap-0" style={{ minHeight: 0 }}>
-        {/* ── File Explorer ── */}
-        <div className="w-48 flex-shrink-0 flex flex-col" style={{ background: '#0d1117', borderRight: '1px solid #1e2433' }}>
-          <div className="flex items-center justify-between px-3 py-2.5" style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#6b7280' }}>Explorer</span>
-            <button onClick={() => setAddingFile(true)}
-              className="p-1 rounded hover:bg-white/10 transition-colors" title="New file">
-              <FilePlus className="w-3.5 h-3.5 text-gray-400 hover:text-white" />
+      {/* ── LANGUAGE TABS ── */}
+      <div className="flex-shrink-0 flex items-center gap-1.5 px-4 h-10"
+        style={{ background: '#0d1117', borderBottom: '1px solid #1e2433' }}>
+        {langGroups.map(g => {
+          const isActive = activeGroup?.id === g.id;
+          return (
+            <button key={g.id}
+              onClick={() => {
+                const match = files.find(f => g.exts.includes(f.name.split('.').pop() ?? ''));
+                if (match) { setActiveId(match.id); setOutput(''); setHasRun(false); setShowPreview(false); }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-medium transition-all"
+              style={{
+                background: isActive ? g.color + '20' : 'transparent',
+                color: isActive ? g.color : '#6b7280',
+                border: isActive ? `1px solid ${g.color}40` : '1px solid transparent',
+              }}>
+              <span style={{ fontSize: 13 }}>{g.emoji}</span>
+              <span className="hidden sm:inline">{g.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── MAIN 3-PANEL ── */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* FILE EXPLORER */}
+        <div className="w-44 flex-shrink-0 flex flex-col" style={{ background: '#0d1117', borderRight: '1px solid #1e2433' }}>
+          <div className="flex items-center justify-between px-3 py-2"
+            style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6b7280' }}>Explorer</span>
+            <button onClick={() => setAddingFile(true)} className="p-1 rounded hover:bg-white/10 transition-colors" title="New file">
+              <FilePlus className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
             </button>
           </div>
 
-          {/* Guest notice */}
           {!userId && (
-            <div className="mx-2 mt-2 px-2 py-1.5 rounded text-xs" style={{ background: '#1c1a10', border: '1px solid #3d3010', color: '#d97706' }}>
-              ⚠️ Files lost on close. Login to save.
+            <div className="mx-2 mt-1.5 px-2 py-1 rounded text-xs leading-snug"
+              style={{ background: '#1c1a10', border: '1px solid #3d3010', color: '#d97706' }}>
+              ⚠️ Login to save files
             </div>
           )}
 
@@ -550,9 +473,8 @@ const Playground = () => {
                         color: isActive ? '#e6edf3' : '#8b949e',
                         borderLeft: isActive ? `2px solid ${color}` : '2px solid transparent',
                       }}>
-                      {/* File type dot */}
-                      <span className="flex-shrink-0 w-4 h-4 rounded text-center leading-4 text-xs font-bold"
-                        style={{ background: color + '22', color, fontSize: 9 }}>
+                      <span className="flex-shrink-0 w-5 h-4 rounded flex items-center justify-center font-bold"
+                        style={{ background: color + '22', color, fontSize: 8 }}>
                         {file.name.split('.').pop()?.toUpperCase()?.slice(0, 2) ?? '??'}
                       </span>
                       <span className="truncate flex-1">{file.name}</span>
@@ -560,149 +482,133 @@ const Playground = () => {
                   )}
                   {renamingId !== file.id && (
                     <button onClick={() => deleteFile(file.id)}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
-                      title="Delete">
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20">
                       <Trash2 className="w-3 h-3 text-red-400" />
                     </button>
                   )}
                 </div>
               );
             })}
-
             {addingFile && (
-              <div className="px-2 py-1">
+              <div className="px-2 py-1.5">
                 <input autoFocus placeholder="filename.py" value={newFileName}
                   onChange={e => setNewFileName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') addFile(); if (e.key === 'Escape') { setAddingFile(false); setNewFileName(''); } }}
                   onBlur={addFile}
                   className="w-full px-2 py-1 text-xs font-mono rounded outline-none"
-                  style={{ background: '#1c2333', color: '#e6edf3', border: `1px solid ${fileBadge(newFileName || 'file.py')}` }}
+                  style={{ background: '#1c2333', color: '#e6edf3', border: `1px solid ${fileBadge(newFileName || 'f.py')}` }}
                 />
-                <p className="text-xs mt-1" style={{ color: '#6b7280' }}>
-                  .py .html .css .sql .js .txt
-                </p>
+                <p className="text-xs mt-1" style={{ color: '#4b5563' }}>.py .html .css .sql .js</p>
               </div>
             )}
           </div>
-
-          {/* Storage bar (mobile) */}
-          <div className="px-3 py-2.5 sm:hidden" style={{ borderTop: '1px solid #1e2433' }}>
-            <div className="flex justify-between text-xs mb-1" style={{ color: '#6b7280' }}>
-              <span>{fmtBytes(usedBytes)}</span><span>10 MB</span>
-            </div>
-            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: '#1e2433' }}>
-              <div className="h-full rounded-full" style={{ width: `${usedPct}%`, background: usedPct > 80 ? '#ef4444' : '#22c55e' }} />
-            </div>
-          </div>
         </div>
 
-        {/* ── Editor + Output ── */}
-        <div className="flex-1 flex flex-col lg:flex-row min-w-0">
-          {/* Code Editor */}
-          <div className="flex-1 flex flex-col min-w-0" style={{ borderRight: '1px solid #1e2433' }}>
-            <div className="flex items-center justify-between px-4 py-2"
-              style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full" style={{ background: '#ff5f57' }} />
-                  <div className="w-3 h-3 rounded-full" style={{ background: '#ffbd2e' }} />
-                  <div className="w-3 h-3 rounded-full" style={{ background: '#28c840' }} />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <ChevronRight className="w-3 h-3" style={{ color: '#4b5563' }} />
-                  <span className="text-xs font-mono" style={{ color: '#8b949e' }}>
-                    {activeFile?.name ?? '—'}
-                  </span>
-                  {activeFile && (
-                    <span className="text-xs px-1.5 py-0.5 rounded font-bold"
-                      style={{ background: fileBadge(activeFile.name) + '22', color: fileBadge(activeFile.name), fontSize: 9 }}>
-                      {extToLang(activeFile.name).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+        {/* CODE EDITOR */}
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ borderRight: '1px solid #1e2433' }}>
+          {/* Title bar */}
+          <div className="flex-shrink-0 flex items-center justify-between px-4 py-2"
+            style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
+            <div className="flex items-center gap-2.5">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full" style={{ background: '#ff5f57' }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: '#ffbd2e' }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: '#28c840' }} />
               </div>
-              <div className="flex gap-1">
-                <button onClick={handleCopy} className="p-1.5 rounded hover:bg-white/10 transition-colors">
-                  {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-gray-500" />}
-                </button>
-                <button onClick={handleReset} className="p-1.5 rounded hover:bg-white/10 transition-colors" title="Clear output">
-                  <RotateCcw className="w-4 h-4 text-gray-500" />
-                </button>
-              </div>
+              <ChevronRight className="w-3 h-3" style={{ color: '#4b5563' }} />
+              <span className="text-xs font-mono" style={{ color: '#8b949e' }}>{activeFile?.name ?? '—'}</span>
+              {activeFile && (
+                <span className="text-xs px-1.5 py-0.5 rounded font-bold"
+                  style={{ background: fileBadge(activeFile.name) + '22', color: fileBadge(activeFile.name), fontSize: 9 }}>
+                  {extToLang(activeFile.name).toUpperCase()}
+                </span>
+              )}
             </div>
-
-            <textarea
-              value={activeFile?.code ?? ''}
-              onChange={e => updateCode(e.target.value)}
-              className="flex-1 font-mono text-sm p-4 resize-none outline-none leading-relaxed"
-              style={{ background: '#0d1117', color: '#e6edf3', caretColor: '#58a6ff', minHeight: 400, tabSize: 4 }}
-              spellCheck={false}
-              onKeyDown={e => {
-                if (e.key === 'Tab') {
-                  e.preventDefault();
-                  const el = e.currentTarget;
-                  const start = el.selectionStart;
-                  const end = el.selectionEnd;
-                  const newVal = el.value.substring(0, start) + '    ' + el.value.substring(end);
-                  updateCode(newVal);
-                  requestAnimationFrame(() => { el.selectionStart = el.selectionEnd = start + 4; });
-                }
-              }}
-            />
-
-            <div className="flex gap-2 px-4 py-2.5" style={{ background: '#161b27', borderTop: '1px solid #1e2433' }}>
-              <button onClick={handleRun} disabled={running}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
-                style={{ background: `linear-gradient(135deg, ${fileBadge(activeFile?.name ?? 'file.py')}, ${fileBadge(activeFile?.name ?? 'file.py')}99)` }}>
-                {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                {running ? 'Running...' : runLabel}
+            <div className="flex gap-1">
+              <button onClick={handleCopy} className="p-1.5 rounded hover:bg-white/10 transition-colors">
+                {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
               </button>
-              <span className="flex items-center text-xs" style={{ color: '#4b5563' }}>
-                {langMeta[lang].dot} {langMeta[lang].label}
-              </span>
+              <button onClick={handleReset} className="p-1.5 rounded hover:bg-white/10 transition-colors" title="Clear output">
+                <RotateCcw className="w-3.5 h-3.5 text-gray-500" />
+              </button>
             </div>
           </div>
 
-          {/* Output Panel */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex items-center gap-2 px-4 py-2"
-              style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
-              <Terminal className="w-4 h-4 text-gray-500" />
-              <span className="text-xs font-medium" style={{ color: '#6b7280' }}>Output</span>
-              {running && <Loader2 className="w-3 h-3 animate-spin text-blue-400 ml-auto" />}
-            </div>
+          {/* Editor textarea */}
+          <textarea
+            value={activeFile?.code ?? ''}
+            onChange={e => updateCode(e.target.value)}
+            className="flex-1 font-mono text-sm p-4 resize-none outline-none leading-relaxed overflow-auto"
+            style={{ background: '#0d1117', color: '#e6edf3', caretColor: '#58a6ff', tabSize: 4 }}
+            spellCheck={false}
+            onKeyDown={e => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                const el = e.currentTarget;
+                const s = el.selectionStart, en = el.selectionEnd;
+                const nv = el.value.substring(0, s) + '    ' + el.value.substring(en);
+                updateCode(nv);
+                requestAnimationFrame(() => { el.selectionStart = el.selectionEnd = s + 4; });
+              }
+            }}
+          />
 
-            {lang === 'html' && showPreview ? (
-              <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview"
-                sandbox="allow-scripts" style={{ minHeight: 400 }} />
-            ) : (
-              <div ref={outputRef} className="flex-1 overflow-auto p-4" style={{ minHeight: 400 }}>
-                {!hasRun ? (
-                  <div className="h-full flex flex-col items-center justify-center gap-3 opacity-40">
-                    <span className="text-4xl font-mono font-bold" style={{ color: '#6b7280' }}>&lt;/&gt;</span>
-                    <p className="text-sm text-center" style={{ color: '#6b7280' }}>
-                      {lang === 'html' ? 'Click Preview to render HTML'
-                        : lang === 'sql' ? 'Click Reference for SQL links'
-                        : lang === 'css' ? 'Click Run to see CSS info'
-                        : 'Click Run to execute code'}
-                    </p>
-                  </div>
-                ) : output ? (
-                  <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap"
-                    style={{ color: output.startsWith('\nError') || output.startsWith('Error') ? '#f85149' : '#3fb950' }}>
-                    {output}
-                  </pre>
-                ) : running ? (
-                  <div className="flex items-center gap-2 text-sm" style={{ color: '#6b7280' }}>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Running...
-                  </div>
-                ) : (
-                  <p className="text-sm italic" style={{ color: '#6b7280' }}>No output produced.</p>
-                )}
-              </div>
-            )}
+          {/* Run bar */}
+          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5"
+            style={{ background: '#161b27', borderTop: '1px solid #1e2433' }}>
+            <button onClick={handleRun} disabled={running}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
+              style={{ background: `linear-gradient(135deg, ${fileBadge(activeFile?.name ?? 'f.py')}, ${fileBadge(activeFile?.name ?? 'f.py')}99)` }}>
+              {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              {running ? 'Running…' : runLabel}
+            </button>
+            <span className="text-xs" style={{ color: '#4b5563' }}>
+              {langMeta[lang].dot} {langMeta[lang].label}
+            </span>
           </div>
         </div>
+
+        {/* OUTPUT PANEL */}
+        <div className="w-5/12 flex flex-col overflow-hidden" style={{ minWidth: 260 }}>
+          <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2"
+            style={{ background: '#161b27', borderBottom: '1px solid #1e2433' }}>
+            <Terminal className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
+            <span className="text-xs font-medium" style={{ color: '#6b7280' }}>
+              {lang === 'html' && showPreview ? 'Preview' : 'Output'}
+            </span>
+            {running && <Loader2 className="w-3 h-3 animate-spin text-blue-400 ml-auto" />}
+          </div>
+
+          {lang === 'html' && showPreview ? (
+            <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
+          ) : (
+            <div ref={outputRef} className="flex-1 overflow-auto p-4">
+              {!hasRun ? (
+                <div className="h-full flex flex-col items-center justify-center gap-2 select-none" style={{ opacity: 0.35 }}>
+                  <span className="text-3xl font-mono font-bold" style={{ color: '#6b7280' }}>&lt;/&gt;</span>
+                  <p className="text-xs text-center" style={{ color: '#6b7280' }}>
+                    {lang === 'html' ? 'Click Preview to render HTML'
+                      : lang === 'sql' ? 'Click Reference for SQL links'
+                      : lang === 'css' ? 'Click Run to view CSS'
+                      : 'Click Run to execute code'}
+                  </p>
+                </div>
+              ) : output ? (
+                <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"
+                  style={{ color: output.includes('Error:') ? '#f85149' : '#3fb950' }}>
+                  {output}
+                </pre>
+              ) : running ? (
+                <div className="flex items-center gap-2 text-xs" style={{ color: '#6b7280' }}>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Running…
+                </div>
+              ) : (
+                <p className="text-xs italic" style={{ color: '#6b7280' }}>No output produced.</p>
+              )}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
