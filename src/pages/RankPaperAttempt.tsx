@@ -226,7 +226,7 @@ const RankPaperAttempt = () => {
 
   // Timer countdown
   useEffect(() => {
-    if (timeLeft <= 0 || !attempt) return;
+    if (!attempt || timeLeft <= 0) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -240,7 +240,7 @@ const RankPaperAttempt = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [attempt]);
+  }, [attempt, timeLeft > 0]);
 
   // Save violations to database
   const saveViolations = useCallback(async (newTabCount: number, newWindowCount: number) => {
