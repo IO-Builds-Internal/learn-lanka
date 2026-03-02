@@ -35,43 +35,26 @@ const langMeta: Record<Language, { label: string; color: string; bg: string; emo
 };
 
 const DEFAULT_FILES: Omit<PlayFile, 'id'>[] = [
-  { name: 'python_basics.py', sortOrder: 0, code: `# Python Basics - A/L ICT
-# Variables, Lists, Functions
-
+  { name: 'python_basics.py', sortOrder: 0, code: `# Python Basics
 name  = "Kamal"
 grade = 13
-marks = [92, 88, 76, 85]
+marks = [92, 88, 76]
 
-# Print info
-print("Name :", name)
-print("Grade:", grade)
-
-# Loop through marks
-print("\\nMarks:")
 for i, m in enumerate(marks):
-    print("  Subject", i + 1, "->", m)
+    print("Subject", i + 1, ":", m)
 
-# Average using a function
-def average(lst):
-    return sum(lst) / len(lst)
-
-avg = average(marks)
-print("\\nAverage:", avg)
+avg = sum(marks) / len(marks)
+print("Average:", avg)
 
 if avg >= 80:
-    print("Result: Distinction")
-elif avg >= 65:
-    print("Result: Merit")
+    print("Distinction")
 else:
-    print("Result: Pass")
+    print("Pass")
 ` },
-  { name: 'oop_python.py', sortOrder: 1, code: `# OOP in Python - A/L ICT
-# Class, Object, Inheritance
-
+  { name: 'oop_python.py', sortOrder: 1, code: `# OOP - Class & Inheritance
 class Animal:
     def __init__(self, name):
         self.name = name
-
     def speak(self):
         return self.name + " makes a sound."
 
@@ -83,17 +66,8 @@ class Cat(Animal):
     def speak(self):
         return self.name + " says: Meow!"
 
-# Create objects
-d = Dog("Rex")
-c = Cat("Luna")
-
-print(d.speak())
-print(c.speak())
-
-# List of animals (polymorphism)
-animals = [Dog("Buddy"), Cat("Kitty"), Dog("Max")]
-for a in animals:
-    print(a.speak())
+print(Dog("Rex").speak())
+print(Cat("Luna").speak())
 ` },
   { name: 'index.html', sortOrder: 2, code: `<!DOCTYPE html>
 <html lang="en">
@@ -101,124 +75,77 @@ for a in animals:
   <meta charset="UTF-8">
   <title>My Page</title>
   <style>
-    body { font-family: Arial; background: #f0f0f0; padding: 20px; }
-    h1   { color: #333; }
-    p    { color: #666; }
+    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
     button { padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #3730a3; }
   </style>
 </head>
 <body>
-
   <h1>Hello, ICT Student!</h1>
-  <p id="msg">Welcome to the Web Playground.</p>
-  <button onclick="changeMsg()">Click Me</button>
-
-  <script>
-    function changeMsg() {
-      document.getElementById('msg').textContent = 'Button clicked!';
-    }
-  </script>
-
+  <p id="msg">Click the button below.</p>
+  <button onclick="document.getElementById('msg').textContent='Hello World!'">Click Me</button>
 </body>
 </html>` },
-  { name: 'style.css', sortOrder: 3, code: `/* Basic CSS Examples */
-
-/* 1. Text styling */
-h1 {
-  color: #4f46e5;
-  font-size: 2rem;
-  text-align: center;
+  { name: 'style.css', sortOrder: 3, code: `/* CSS Basics */
+body {
+  font-family: Arial;
+  background: #f0f0f0;
+  padding: 20px;
 }
 
-/* 2. Box model */
+h1 { color: #4f46e5; }
+
 .card {
   background: white;
   padding: 16px;
-  margin: 10px;
-  border: 1px solid #ddd;
   border-radius: 8px;
+  border: 1px solid #ddd;
 }
 
-/* 3. Flexbox */
-.row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-/* 4. Hover effect */
 button {
   background: #4f46e5;
   color: white;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-}
-button:hover {
-  background: #3730a3;
 }` },
-  { name: 'script.js', sortOrder: 4, code: `// Basic JavaScript Examples
-
-// 1. Variables
+  { name: 'script.js', sortOrder: 4, code: `// JavaScript Basics
 let name = "Kamal";
-let age  = 17;
-console.log("Name:", name, "| Age:", age);
+let marks = [85, 92, 78];
 
-// 2. Function
+console.log("Name:", name);
+
+let total = 0;
+for (let m of marks) total += m;
+console.log("Average:", total / marks.length);
+
 function greet(person) {
   return "Hello, " + person + "!";
 }
 console.log(greet("Nimal"));
-
-// 3. Array
-let marks = [85, 92, 78, 60];
-let total = 0;
-for (let m of marks) {
-  total += m;
-}
-console.log("Average:", total / marks.length);
-
-// 4. DOM (works in index.html preview)
-// let btn = document.getElementById('myBtn');
-// btn.addEventListener('click', () => alert('Clicked!'));` },
+` },
   { name: 'student_form.php', sortOrder: 5, code: `<?php
-// Basic PHP Examples
-
-// 1. Variables
 $name  = "Kamal";
-$grade = 13;
 $marks = 85;
 
 echo "Name  : $name\\n";
-echo "Grade : $grade\\n";
 echo "Marks : $marks\\n";
 
-// 2. If/else
 if ($marks >= 75) {
     echo "Result: Distinction\\n";
 } elseif ($marks >= 55) {
-    echo "Result: Merit\\n";
-} else {
     echo "Result: Pass\\n";
+} else {
+    echo "Result: Fail\\n";
 }
 
-// 3. Array + foreach
 $students = ["Kamal", "Nimal", "Dilani"];
 foreach ($students as $s) {
     echo "Student: $s\\n";
 }
-
-// 4. Function
-function add($a, $b) {
-    return $a + $b;
-}
-echo "Sum: " . add(10, 20) . "\\n";
 ?>` },
-  { name: 'school_db.sql', sortOrder: 6, code: `-- Basic SQL Examples - A/L ICT
+  { name: 'school_db.sql', sortOrder: 6, code: `-- SQL Basics
 
--- 1. Create a table
 CREATE TABLE students (
   id    INT PRIMARY KEY,
   name  VARCHAR(50),
@@ -226,31 +153,13 @@ CREATE TABLE students (
   marks INT
 );
 
--- 2. Insert data
 INSERT INTO students VALUES (1, 'Kamal',  13, 92);
 INSERT INTO students VALUES (2, 'Nimal',  12, 78);
 INSERT INTO students VALUES (3, 'Dilani', 13, 85);
 
--- 3. Select all
 SELECT * FROM students;
-
--- 4. Filter
-SELECT name, marks
-FROM students
-WHERE marks >= 80;
-
--- 5. Order by
-SELECT name, marks
-FROM students
-ORDER BY marks DESC;
-
--- 6. Aggregate
-SELECT
-  COUNT(*) AS total,
-  AVG(marks) AS average,
-  MAX(marks) AS highest,
-  MIN(marks) AS lowest
-FROM students;
+SELECT name, marks FROM students WHERE marks >= 80;
+SELECT AVG(marks) AS average FROM students;
 ` },
 ];
 
@@ -1274,8 +1183,33 @@ const Playground = () => {
               {(LANG_REFS[lang] ?? LANG_REFS.text).map((ref, i) => (
                 <div key={i} className="flex flex-col gap-1 rounded-lg border border-border overflow-hidden">
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/40">
-                    <span className="text-xs font-semibold text-foreground">{ref.title}</span>
-                    <span className="text-xs text-muted-foreground">{ref.desc}</span>
+                    <div>
+                      <span className="text-xs font-semibold text-foreground">{ref.title}</span>
+                      <span className="text-xs text-muted-foreground ml-2">{ref.desc}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        title="Copy code"
+                        onClick={() => { navigator.clipboard.writeText(ref.code); toast.success('Copied!'); }}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Copy className="w-3 h-3" /> Copy
+                      </button>
+                      <button
+                        title="Load into editor and run"
+                        onClick={() => {
+                          if (activeFile) {
+                            updateCode(ref.code);
+                            setShowRefs(false);
+                            setTimeout(() => handleRun(), 100);
+                          }
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-xs hover:opacity-90 transition-colors text-white"
+                        style={{ background: meta.color }}
+                      >
+                        <Play className="w-3 h-3" /> Run
+                      </button>
+                    </div>
                   </div>
                   <pre className="text-xs font-mono px-3 py-2 bg-[#0d1117] text-[#e6edf3] overflow-x-auto whitespace-pre leading-relaxed">
                     {ref.code}
