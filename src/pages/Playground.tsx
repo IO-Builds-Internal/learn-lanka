@@ -1031,6 +1031,23 @@ const Playground = () => {
     if (lang === 'python') {
       setRunning(true); setOutput('');
       const col: string[] = [];
+
+      // Detect unsupported features in Skulpt and show helpful messages
+      const unsupportedPatterns: { pattern: RegExp; hint: string }[] = [
+        { pattern: /open\s*\(.*encoding\s*=/,    hint: '⚠ open() with encoding= is not supported in the browser Python engine (Skulpt). Remove the encoding keyword: open(filename, "w")' },
+        { pattern: /open\s*\(/,                  hint: '⚠ File I/O (open/read/write) is not supported in the browser Python engine (Skulpt).\nThis is a browser limitation — no real filesystem exists here.\n\nTip: Use print() to display output instead.' },
+        { pattern: /import\s+os\b/,              hint: '⚠ The "os" module is not supported in Skulpt (browser Python). Use print() for output.' },
+        { pattern: /import\s+sys\b/,             hint: '⚠ The "sys" module has limited support in Skulpt. sys.stdin and file I/O are not available.' },
+        { pattern: /import\s+json\b/,            hint: '⚠ The "json" module has limited support in Skulpt.' },
+      ];
+
+      for (const { pattern, hint } of unsupportedPatterns) {
+        if (pattern.test(code)) {
+          setOutput(hint);
+          setRunning(false);
+          return;
+        }
+      }
       try {
         await loadSkulpt();
         await new Promise<void>((res, rej) => {
@@ -1303,7 +1320,7 @@ const Playground = () => {
                 </div>
               ) : output ? (
                 <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"
-                  style={{ color: output.includes('Error:') ? '#f85149' : '#3fb950' }}>
+                  style={{ color: output.startsWith('⚠') ? '#eab308' : output.includes('Error:') ? '#f85149' : '#3fb950' }}>
                   {output}
                 </pre>
               ) : running ? (
