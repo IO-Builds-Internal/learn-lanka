@@ -195,105 +195,6 @@ for st in students:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ICT Student Portal</title>
-  <style>
-    /* ── Reset & Base ───────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-      min-height: 100vh;
-      color: #e2e8f0;
-      padding: 24px 16px;
-    }
-
-    /* ── Header ─────────────────────────────── */
-    header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    header h1 {
-      font-size: 2.2rem;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.5px;
-    }
-    header p { color: #94a3b8; margin-top: 6px; }
-
-    /* ── Card Grid ───────────────────────────── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: 0 auto 32px;
-    }
-    .card {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px;
-      padding: 24px 20px;
-      transition: transform 0.2s, background 0.2s;
-      cursor: pointer;
-    }
-    .card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.1); }
-    .card .icon { font-size: 2rem; margin-bottom: 12px; }
-    .card h3 { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
-    .card p  { font-size: 0.82rem; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
-    .card .badge {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: rgba(56,189,248,0.15);
-      color: #38bdf8;
-      border: 1px solid #38bdf840;
-    }
-
-    /* ── Progress Section ───────────────────── */
-    .progress-section {
-      max-width: 900px;
-      margin: 0 auto 32px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 24px;
-    }
-    .progress-section h2 { color: #f1f5f9; margin-bottom: 18px; font-size: 1rem; }
-    .progress-item { margin-bottom: 14px; }
-    .progress-item label {
-      display: flex; justify-content: space-between;
-      font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;
-    }
-    .bar-track {
-      height: 8px; background: rgba(255,255,255,0.1);
-      border-radius: 4px; overflow: hidden;
-    }
-    .bar-fill {
-      height: 100%; border-radius: 4px;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      transition: width 1s ease;
-    }
-
-    /* ── Button ──────────────────────────────── */
-    .btn {
-      display: block;
-      max-width: 200px;
-      margin: 0 auto;
-      padding: 12px 28px;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      color: #0f172a;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .btn:hover { opacity: 0.85; }
-  </style>
 </head>
 <body>
 
@@ -303,25 +204,25 @@ for st in students:
   </header>
 
   <div class="grid">
-    <div class="card" onclick="alert('Opening Python Module...')">
+    <div class="card" onclick="showAlert('Python')">
       <div class="icon">🐍</div>
       <h3>Python Programming</h3>
       <p>Variables, OOP, File I/O and algorithms for A/L ICT.</p>
       <span class="badge">12 Lessons</span>
     </div>
-    <div class="card" onclick="alert('Opening Database Module...')">
+    <div class="card" onclick="showAlert('Database')">
       <div class="icon">🗄️</div>
-      <h3>Database & SQL</h3>
+      <h3>Database &amp; SQL</h3>
       <p>MySQL, ERD, normalization and query writing practice.</p>
       <span class="badge">8 Lessons</span>
     </div>
-    <div class="card" onclick="alert('Opening Web Module...')">
+    <div class="card" onclick="showAlert('Web Dev')">
       <div class="icon">🌐</div>
       <h3>Web Development</h3>
       <p>HTML5, CSS3, PHP backend and form handling.</p>
       <span class="badge">10 Lessons</span>
     </div>
-    <div class="card" onclick="alert('Opening Networks Module...')">
+    <div class="card" onclick="showAlert('Networks')">
       <div class="icon">🔗</div>
       <h3>Networks</h3>
       <p>OSI model, TCP/IP, IP addressing and subnetting.</p>
@@ -332,27 +233,163 @@ for st in students:
   <div class="progress-section">
     <h2>📊 Your Progress</h2>
     <div class="progress-item">
-      <label><span>Python Programming</span><span>75%</span></label>
-      <div class="bar-track"><div class="bar-fill" style="width:75%"></div></div>
+      <label><span>Python Programming</span><span id="py-pct">75%</span></label>
+      <div class="bar-track"><div class="bar-fill" id="py-bar" style="width:0%"></div></div>
     </div>
     <div class="progress-item">
-      <label><span>Database & SQL</span><span>60%</span></label>
-      <div class="bar-track"><div class="bar-fill" style="width:60%"></div></div>
+      <label><span>Database &amp; SQL</span><span id="db-pct">60%</span></label>
+      <div class="bar-track"><div class="bar-fill" id="db-bar" style="width:0%"></div></div>
     </div>
     <div class="progress-item">
-      <label><span>Web Development</span><span>90%</span></label>
-      <div class="bar-track"><div class="bar-fill" style="width:90%"></div></div>
+      <label><span>Web Development</span><span id="web-pct">90%</span></label>
+      <div class="bar-track"><div class="bar-fill" id="web-bar" style="width:0%"></div></div>
     </div>
     <div class="progress-item">
-      <label><span>Networks</span><span>45%</span></label>
-      <div class="bar-track"><div class="bar-fill" style="width:45%"></div></div>
+      <label><span>Networks</span><span id="net-pct">45%</span></label>
+      <div class="bar-track"><div class="bar-fill" id="net-bar" style="width:0%"></div></div>
     </div>
   </div>
 
-  <button class="btn" onclick="this.textContent='✅ Saved!'">Save Progress</button>
+  <button class="btn" id="save-btn">Save Progress</button>
 
 </body>
 </html>` },
+  { name: 'style.css', sortOrder: 3, code: `/* ── ICT Student Portal — style.css ─────── */
+
+/* Reset & Base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  min-height: 100vh;
+  color: #e2e8f0;
+  padding: 24px 16px;
+}
+
+/* Header */
+header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+header h1 {
+  font-size: 2.2rem;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+header p { color: #94a3b8; margin-top: 6px; }
+
+/* Card Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto 32px;
+}
+.card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 24px 20px;
+  transition: transform 0.2s, background 0.2s;
+  cursor: pointer;
+}
+.card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.1); }
+.card .icon { font-size: 2rem; margin-bottom: 12px; }
+.card h3 { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
+.card p  { font-size: 0.82rem; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
+.card .badge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(56,189,248,0.15);
+  color: #38bdf8;
+  border: 1px solid #38bdf840;
+}
+
+/* Progress Section */
+.progress-section {
+  max-width: 900px;
+  margin: 0 auto 32px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px;
+}
+.progress-section h2 { color: #f1f5f9; margin-bottom: 18px; font-size: 1rem; }
+.progress-item { margin-bottom: 14px; }
+.progress-item label {
+  display: flex; justify-content: space-between;
+  font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;
+}
+.bar-track {
+  height: 8px; background: rgba(255,255,255,0.1);
+  border-radius: 4px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  transition: width 1s ease;
+}
+
+/* Button */
+.btn {
+  display: block;
+  max-width: 200px;
+  margin: 0 auto;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.85; }
+.btn.saved { background: #22c55e; color: #fff; }` },
+  { name: 'script.js', sortOrder: 4, code: `// ── ICT Student Portal — script.js ──────────
+
+// Animate progress bars on load
+window.addEventListener('DOMContentLoaded', () => {
+  const bars = [
+    { bar: 'py-bar',  pct: 75 },
+    { bar: 'db-bar',  pct: 60 },
+    { bar: 'web-bar', pct: 90 },
+    { bar: 'net-bar', pct: 45 },
+  ];
+
+  setTimeout(() => {
+    bars.forEach(({ bar, pct }) => {
+      const el = document.getElementById(bar);
+      if (el) el.style.width = pct + '%';
+    });
+  }, 200);
+
+  // Save button interaction
+  const btn = document.getElementById('save-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      btn.textContent = '✅ Progress Saved!';
+      btn.classList.add('saved');
+      setTimeout(() => {
+        btn.textContent = 'Save Progress';
+        btn.classList.remove('saved');
+      }, 2000);
+    });
+  }
+});
+
+// Show module alert
+function showAlert(module) {
+  alert('Opening ' + module + ' Module...');
+}` },
   { name: 'student_form.php', sortOrder: 3, code: `<?php
 // ================================================================
 // PHP Student Registration & Processing - A/L ICT
@@ -833,7 +870,9 @@ const Playground = () => {
   const usedPct = Math.min(100, (usedBytes / MAX_BYTES) * 100);
   const lang = activeFile ? extToLang(activeFile.name) : 'text';
   const meta = langMeta[lang];
-  const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Run SQL' : 'Run';
+  const hasHtmlFile = files.some(f => ['html','htm'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
+  const isWebLang = lang === 'html' || lang === 'css' || (lang === 'javascript' && hasHtmlFile);
+  const runLabel = lang === 'sql' ? 'Run SQL' : isWebLang ? 'Preview' : 'Run';
 
   useEffect(() => {
     // getSession() restores from storage first — sets auth as ready
@@ -938,12 +977,32 @@ const Playground = () => {
     updateFiles(files.map(f => f.id === activeId ? { ...f, code: val } : f));
   };
 
+  // Build combined HTML preview from html + css + js files
+  const buildWebPreview = () => {
+    const htmlFile = files.find(f => ['html','htm'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
+    const cssFile = files.find(f => f.name.split('.').pop()?.toLowerCase() === 'css');
+    const jsFile = files.find(f => ['js','ts'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
+    let html = htmlFile?.code ?? '<html><body></body></html>';
+    if (cssFile?.code) {
+      html = html.replace('</head>', `<style>\n${cssFile.code}\n</style>\n</head>`);
+      if (!html.includes('</head>')) html = `<style>\n${cssFile.code}\n</style>\n` + html;
+    }
+    if (jsFile?.code) {
+      html = html.replace('</body>', `<script>\n${jsFile.code}\n</script>\n</body>`);
+      if (!html.includes('</body>')) html += `<script>\n${jsFile.code}\n</script>`;
+    }
+    return html;
+  };
+
   const handleRun = async () => {
     if (!activeFile) return;
     setHasRun(true); setShowPreview(false);
     const code = activeFile.code;
-    if (lang === 'html') { setHtmlPreview(code); setShowPreview(true); setOutput(''); return; }
-    if (lang === 'css') { setOutput(`/* CSS info - paste into HTML <style> tag */\n\n${code}`); return; }
+    // HTML, CSS, JS all trigger combined web preview
+    const hasHtml = files.some(f => ['html','htm'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
+    if (lang === 'html' || lang === 'css' || (lang === 'javascript' && hasHtml)) {
+      setHtmlPreview(buildWebPreview()); setShowPreview(true); setOutput(''); return;
+    }
     if (lang === 'sql') {
       setRunning(true);
       setOutput('');
@@ -1127,25 +1186,28 @@ const Playground = () => {
             )}
           </div>
 
-          {/* Language tabs at bottom of explorer */}
+          {/* Language tabs at bottom of explorer — HTML/CSS/JS shown separately */}
           <div className="border-t p-2 flex flex-wrap gap-1">
-            {(['python','html','sql','javascript'] as Language[]).map(l => {
+            {(['python','html','css','javascript','sql'] as Language[]).map(l => {
               const m = langMeta[l];
-              const isActive = lang === l || (l === 'html' && lang === 'css');
+              const isActive = lang === l;
+              const extMap: Record<string, string[]> = {
+                html: ['html','htm'], css: ['css'], javascript: ['js','ts','jsx','tsx'],
+                python: ['py'], sql: ['sql'],
+              };
+              const match = files.find(f => (extMap[l] ?? []).includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
+              if (!match) return null;
               return (
                 <button key={l}
-                  onClick={() => {
-                    const ext = l === 'html' ? ['html','htm','css'] : l === 'sql' ? ['sql'] : l === 'python' ? ['py'] : ['js','ts'];
-                    const match = files.find(f => ext.includes(f.name.split('.').pop() ?? ''));
-                    if (match) { setActiveId(match.id); setOutput(''); setHasRun(false); setShowPreview(false); }
-                  }}
+                  onClick={() => { setActiveId(match.id); setOutput(''); setHasRun(false); setShowPreview(false); }}
+                  title={m.label}
                   className="text-xs px-2 py-0.5 rounded-full transition-all"
                   style={{
                     background: isActive ? m.bg : 'transparent',
                     color: isActive ? m.color : 'var(--muted-foreground)',
                     border: `1px solid ${isActive ? m.color + '60' : 'transparent'}`,
                   }}>
-                  {m.emoji}
+                  {m.emoji} {m.label}
                 </button>
               );
             })}
@@ -1220,12 +1282,12 @@ const Playground = () => {
           <div className="flex items-center gap-2 px-4 py-2.5 border-b bg-muted/30">
             <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">
-              {lang === 'html' && showPreview ? 'Preview' : lang === 'sql' ? 'SQL Output' : 'Output'}
+              {isWebLang && showPreview ? '🌐 Web Preview' : lang === 'sql' ? 'SQL Output' : 'Output'}
             </span>
             {running && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto" />}
           </div>
 
-          {lang === 'html' && showPreview ? (
+          {isWebLang && showPreview ? (
             <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
           ) : (
             <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#0d1117]" style={{ minHeight: 380 }}>
