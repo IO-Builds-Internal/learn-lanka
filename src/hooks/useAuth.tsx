@@ -25,24 +25,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
 
-  // Fetch profile and roles - returns the roles for immediate use
   const fetchProfileAndRoles = async (userId: string): Promise<string[]> => {
     setRolesLoading(true);
     try {
       const [profileResult, rolesResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single(),
-        supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('user_roles').select('role').eq('user_id', userId),
       ]);
-      
       setProfile(profileResult.data);
-      const userRoles = rolesResult.data?.map(r => r.role) || ['student'];
+      const userRoles = rolesResult.data?.map((r: any) => r.role) || ['student'];
       setRoles(userRoles);
       return userRoles;
     } catch (error) {
@@ -55,25 +46,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      await fetchProfileAndRoles(user.id);
-    }
+    if (user) await fetchProfileAndRoles(user.id);
   };
 
   useEffect(() => {
     let isMounted = true;
 
-    // INITIAL load - controls isLoading
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
         if (!isMounted) return;
-        
         setSession(session);
         setUser(session?.user ?? null);
-
-        // Fetch roles BEFORE setting loading false - critical for admin detection
         if (session?.user) {
           await fetchProfileAndRoles(session.user.id);
         } else {
@@ -83,22 +67,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error during initial auth setup:', error);
         setRolesLoading(false);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
-    // Listener for ONGOING auth changes - does NOT control isLoading
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!isMounted) return;
-        
         setSession(session);
         setUser(session?.user ?? null);
-        
         if (session?.user) {
-          // Await so roles are ready before any route checks
           await fetchProfileAndRoles(session.user.id);
         } else {
           setProfile(null);
