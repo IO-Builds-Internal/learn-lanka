@@ -180,9 +180,6 @@ Deno.serve(async (req) => {
       // Clear all data except auth/users related tables
       // Order matters due to foreign key constraints - delete children first
       const tablesToClear = [
-        // Zoom related
-        'student_meeting_links',
-        
         // Rank paper children (deepest first)
         'rank_answers_mcq',
         'rank_answers_uploads',
