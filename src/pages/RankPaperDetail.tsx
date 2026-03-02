@@ -160,40 +160,27 @@ const RankPaperDetail = () => {
   });
 
   const openExamWindow = (url: string) => {
-    const screenWidth = window.screen.availWidth;
-    const screenHeight = window.screen.availHeight;
-    const popupWidth = screenWidth - 4;
-    const popupHeight = screenHeight - 4;
+    const sw = window.screen.availWidth;
+    const sh = window.screen.availHeight;
 
-    const features = [
-      `width=${popupWidth}`,
-      `height=${popupHeight}`,
-      `left=0`,
-      `top=0`,
-      `menubar=no`,
-      `toolbar=no`,
-      `location=no`,
-      `status=no`,
-      `resizable=yes`,
-      `scrollbars=yes`,
-    ].join(',');
+    // Chrome only shows popup-mode (no address bar) when width < screen width
+    // Use 95% of screen so Chrome treats it as a popup, not a tab
+    const popupWidth = Math.floor(sw * 0.95);
+    const popupHeight = Math.floor(sh * 0.95);
+    const left = Math.floor((sw - popupWidth) / 2);
+    const top = Math.floor((sh - popupHeight) / 2);
 
-    // Build absolute URL so it works whether called from iframe or top window
+    const features = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`;
+
     const origin = window.location.origin;
     const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
 
-    // Use window.top to break out of any iframe context (e.g. Lovable preview)
+    // Break out of iframe context if running inside preview
     const opener = window.top || window;
     const examWindow = opener.open(absoluteUrl, 'exam_window', features);
 
     if (examWindow) {
       examWindow.focus();
-      try {
-        examWindow.moveTo(0, 0);
-        examWindow.resizeTo(popupWidth, popupHeight);
-      } catch (_) {
-        // ignore cross-origin resize errors
-      }
       toast.success('Exam opened in a popup window');
     } else {
       toast.warning('Popup was blocked! Please allow popups for this site and try again.');
