@@ -11,7 +11,8 @@ import {
   Menu, 
   X,
   LogOut,
-  Shield
+  Shield,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -32,6 +33,7 @@ const navItems = [
   { path: '/rank-papers', label: 'Rank Papers', icon: FileText },
   { path: '/papers', label: 'Papers', icon: FileText },
   { path: '/shop', label: 'Shop', icon: ShoppingBag },
+  { path: '/contact', label: 'Contact', icon: MessageCircle },
 ];
 
 const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ children }, ref) => {
