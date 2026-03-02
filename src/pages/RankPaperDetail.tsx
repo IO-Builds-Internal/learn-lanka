@@ -163,10 +163,11 @@ const RankPaperDetail = () => {
     const sw = window.screen.availWidth;
     const sh = window.screen.availHeight;
 
-    // Chrome forces popup mode (no address bar) ONLY when width is strictly less
-    // than the screen width. 85% reliably triggers popup vs tab behaviour.
-    const popupWidth = Math.floor(sw * 0.85);
-    const popupHeight = Math.floor(sh * 0.90);
+    // Chrome ONLY opens a real popup (no address bar) when explicit pixel
+    // dimensions are provided AND they are smaller than the full screen.
+    // Using percentage-based sizes that equal screen size opens a tab instead.
+    const popupWidth = Math.min(1400, Math.floor(sw * 0.82));
+    const popupHeight = Math.min(900, Math.floor(sh * 0.88));
     const left = Math.floor((sw - popupWidth) / 2);
     const top = Math.floor((sh - popupHeight) / 2);
 
@@ -180,6 +181,7 @@ const RankPaperDetail = () => {
       'location=no',
       'status=no',
       'titlebar=no',
+      'directories=no',
       'resizable=yes',
       'scrollbars=yes',
     ].join(',');
