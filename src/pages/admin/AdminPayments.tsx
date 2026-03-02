@@ -184,54 +184,54 @@ const AdminPayments = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Payments</h1>
-            <p className="text-muted-foreground">Verify and manage payments</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Payments</h1>
+            <p className="text-sm text-muted-foreground">Verify and manage payments</p>
           </div>
-          <Button variant="outline" onClick={fetchPayments} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={fetchPayments} disabled={loading}>
             <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
             Refresh
           </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-warning/10">
-                  <Clock className="w-5 h-5 text-warning" />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-warning/10 flex-shrink-0">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{pendingCount}</p>
-                  <p className="text-sm text-muted-foreground">Pending</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold">{pendingCount}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-success/10">
-                  <CheckCircle className="w-5 h-5 text-success" />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-success/10 flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{approvedCount}</p>
-                  <p className="text-sm text-muted-foreground">Approved</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold">{approvedCount}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Approved</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card className="card-elevated">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <XCircle className="w-5 h-5 text-destructive" />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-destructive/10 flex-shrink-0">
+                  <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{rejectedCount}</p>
-                  <p className="text-sm text-muted-foreground">Rejected</p>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold">{rejectedCount}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Rejected</p>
                 </div>
               </div>
             </CardContent>
@@ -277,16 +277,23 @@ const AdminPayments = () => {
           </CardContent>
         </Card>
 
-        {/* Payments Table */}
+        {/* Payments List */}
         <Card className="card-elevated">
           <CardContent className="p-0">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
+            ) : filteredPayments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <CreditCard className="w-12 h-12 text-muted-foreground mb-4" />
+                <h3 className="font-medium text-foreground mb-2">No payments found</h3>
+                <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+              </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Desktop Table */}
+                <div className="hidden sm:block overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -340,13 +347,46 @@ const AdminPayments = () => {
                   </Table>
                 </div>
 
-                {filteredPayments.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <CreditCard className="w-12 h-12 text-muted-foreground mb-4" />
-                    <h3 className="font-medium text-foreground mb-2">No payments found</h3>
-                    <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
-                  </div>
-                )}
+                {/* Mobile Cards */}
+                <div className="sm:hidden divide-y divide-border">
+                  {filteredPayments.map((payment) => (
+                    <div key={payment.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{payment.profiles?.first_name} {payment.profiles?.last_name}</p>
+                          <p className="text-xs text-muted-foreground">{payment.profiles?.phone}</p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewSlip(payment)}>
+                              <Eye className="w-4 h-4 mr-2" />View & Verify
+                            </DropdownMenuItem>
+                            {payment.slip_url && (
+                              <DropdownMenuItem onClick={() => handleDownloadSlip(payment)}>
+                                <Download className="w-4 h-4 mr-2" />Download Slip
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {getTypeBadge(payment.payment_type)}
+                          {getStatusBadge(payment.status)}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-sm">Rs. {payment.amount.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(payment.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </CardContent>

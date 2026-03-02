@@ -547,7 +547,7 @@ const RankPaperAttempt = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-4 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background px-3 sm:px-4 py-4 max-w-4xl mx-auto">
       {/* Watermark overlay - deters screenshots */}
       <div 
         className="fixed inset-0 pointer-events-none z-40 select-none"
@@ -597,47 +597,39 @@ const RankPaperAttempt = () => {
 
       <div className="space-y-6">
         {/* Header with Timer */}
-        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur py-4 border-b">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur py-3 border-b">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-success" />
-                <h1 className="text-xl font-bold text-foreground line-clamp-1">{paper.title}</h1>
+                <Shield className="w-4 h-4 text-success flex-shrink-0" />
+                <h1 className="text-sm sm:text-lg font-bold text-foreground truncate">{paper.title}</h1>
               </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span>{answeredCount} of {questions.length} answered</span>
-                {/* Violation indicator */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                <span>{answeredCount}/{questions.length} answered</span>
                 {(tabSwitchCount > 0 || windowCloseCount > 0) && (
-                  <Badge variant="destructive" className="gap-1">
+                  <Badge variant="destructive" className="gap-1 text-xs px-1.5 py-0">
                     <AlertTriangle className="w-3 h-3" />
-                    {tabSwitchCount + windowCloseCount} offenses
+                    {tabSwitchCount + windowCloseCount}
                   </Badge>
                 )}
-                {/* Save status indicator */}
                 <span className="flex items-center gap-1">
                   {isSaving ? (
-                    <>
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Saving...
-                    </>
+                    <><Loader2 className="w-3 h-3 animate-spin" />Saving...</>
                   ) : lastSaved ? (
-                    <>
-                      <CheckCircle2 className="w-3 h-3 text-success" />
-                      Saved
-                    </>
+                    <><CheckCircle2 className="w-3 h-3 text-success" />Saved</>
                   ) : null}
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Progress value={progress} className="w-32 hidden sm:block" />
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Progress value={progress} className="w-16 sm:w-24 hidden xs:block" />
               <div className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-lg font-bold transition-all",
+                "flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-mono text-base sm:text-lg font-bold transition-all",
                 timeLeft < 60 ? "bg-destructive text-destructive-foreground animate-pulse scale-110" :
                 timeLeft < 300 ? "bg-destructive/10 text-destructive animate-pulse" : 
                 timeLeft < 600 ? "bg-warning/10 text-warning" : "bg-muted"
               )}>
-                <Clock className="w-5 h-5" />
+                <Clock className="w-4 h-4" />
                 {formatTime(timeLeft)}
               </div>
             </div>
@@ -655,13 +647,13 @@ const RankPaperAttempt = () => {
           {paper.has_mcq && (
             <TabsContent value="mcq" className="space-y-6">
               {/* Question Navigation */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {questions.map((q, idx) => (
                   <button
                     key={q.id}
                     onClick={() => setCurrentQuestion(idx)}
                     className={cn(
-                      "w-10 h-10 rounded-lg font-medium text-sm transition-colors",
+                      "w-9 h-9 sm:w-10 sm:h-10 rounded-lg font-medium text-sm transition-colors",
                       idx === currentQuestion && "ring-2 ring-primary",
                       answers[q.id] 
                         ? "bg-primary text-primary-foreground" 
@@ -870,23 +862,18 @@ const RankPaperAttempt = () => {
         </Tabs>
 
         {/* Submit Button */}
-        <div className="sticky bottom-4 flex justify-center">
+        <div className="sticky bottom-4 flex justify-center px-4">
           <Button
             variant="hero"
             size="lg"
+            className="w-full sm:w-auto min-w-[200px]"
             onClick={() => setShowSubmitDialog(true)}
             disabled={submitting}
           >
             {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Submitting...
-              </>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</>
             ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Submit Paper
-              </>
+              <><Send className="w-4 h-4 mr-2" />Submit Paper</>
             )}
           </Button>
         </div>
