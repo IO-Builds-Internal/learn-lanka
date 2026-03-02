@@ -18,8 +18,12 @@ import {
   Lock,
   Unlock,
   Search,
-  Copy
+  Copy,
+  CheckSquare,
+  Square,
+  XCircle
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,6 +100,8 @@ const AdminRankPapers = () => {
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [reviewDialog, setReviewDialog] = useState<RankPaper | null>(null);
   const [reviewVideoUrl, setReviewVideoUrl] = useState('');
   const [editingPaper, setEditingPaper] = useState<RankPaper | null>(null);
@@ -280,6 +286,42 @@ const AdminRankPapers = () => {
       toast.error(error.message || 'Failed to delete paper');
     },
   });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('rank_papers')
+        .delete()
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`${selectedIds.size} paper(s) deleted!`);
+      queryClient.invalidateQueries({ queryKey: ['admin-rank-papers'] });
+      setSelectedIds(new Set());
+      setShowBulkDeleteDialog(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete papers');
+    },
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredPapers.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredPapers.map(p => p.id)));
+    }
+  };
 
   // Duplicate paper mutation - copies paper, questions, options, and attachments
   const duplicateMutation = useMutation({
@@ -611,12 +653,44 @@ const AdminRankPapers = () => {
           </Dialog>
         </div>
 
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2 rounded-lg border bg-muted/60 border-border">
+            <span className="text-sm font-medium text-foreground">
+              {selectedIds.size} selected
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowBulkDeleteDialog(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete Selected
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              Clear
+            </Button>
+          </div>
+        )}
+
         {/* Papers Table */}
         <Card className="card-elevated">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={filteredPapers.length > 0 && selectedIds.size === filteredPapers.length}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
                   <TableHead>Paper</TableHead>
                   <TableHead>Grade</TableHead>
                   <TableHead>Time</TableHead>
@@ -629,7 +703,17 @@ const AdminRankPapers = () => {
               </TableHeader>
               <TableBody>
                 {filteredPapers.map((paper) => (
-                  <TableRow key={paper.id}>
+                  <TableRow
+                    key={paper.id}
+                    className={selectedIds.has(paper.id) ? 'bg-muted/40' : ''}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(paper.id)}
+                        onCheckedChange={() => toggleSelect(paper.id)}
+                        aria-label={`Select ${paper.title}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -810,6 +894,32 @@ const AdminRankPapers = () => {
               onClick={() => deleteId && deleteMutation.mutate(deleteId)}
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} Papers?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedIds.size} selected paper(s) and all their related attempts. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              {bulkDeleteMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Deleting...</>
+              ) : (
+                `Delete ${selectedIds.size} Papers`
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
