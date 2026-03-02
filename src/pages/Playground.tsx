@@ -169,7 +169,7 @@ const totalBytes = (files: PlayFile[]) => files.reduce((a, f) => a + new Blob([f
 const fmtBytes = (b: number) =>
   b < 1024 ? `${b} B` : b < 1048576 ? `${(b/1024).toFixed(1)} KB` : `${(b/1048576).toFixed(2)} MB`;
 const SESSION_KEY = 'ict_playground_files';
-const makeId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const makeId = () => crypto.randomUUID();
 
 const Playground = () => {
   const initFiles = (): PlayFile[] => {
