@@ -77,7 +77,7 @@ const App = () => (
 
               {/* Papers - accessible without login (for free papers only) */}
               <Route path="/papers" element={<Papers />} />
-              <Route path="/playground" element={<Playground />} />
+              <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
 
               {/* Protected Student Routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

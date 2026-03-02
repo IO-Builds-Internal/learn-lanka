@@ -12,7 +12,8 @@ import {
   X,
   LogOut,
   Shield,
-  MessageCircle
+  MessageCircle,
+  Code2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ const navItems = [
   { path: '/rank-papers', label: 'Rank Papers', icon: FileText },
   { path: '/papers', label: 'Papers', icon: FileText },
   { path: '/shop', label: 'Shop', icon: ShoppingBag },
+  { path: '/playground', label: 'Playground', icon: Code2 },
   { path: '/contact', label: 'Contact', icon: MessageCircle },
 ];
 
