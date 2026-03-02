@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  rolesLoading: boolean;
   profile: any | null;
   roles: string[];
   isAdmin: boolean;
@@ -20,11 +21,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
 
   // Fetch profile and roles - returns the roles for immediate use
   const fetchProfileAndRoles = async (userId: string): Promise<string[]> => {
+    setRolesLoading(true);
     try {
       const [profileResult, rolesResult] = await Promise.all([
         supabase
@@ -46,6 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error fetching profile:', error);
       setRoles(['student']);
       return ['student'];
+    } finally {
+      setRolesLoading(false);
     }
   };
 
@@ -71,9 +76,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Fetch roles BEFORE setting loading false - critical for admin detection
         if (session?.user) {
           await fetchProfileAndRoles(session.user.id);
+        } else {
+          setRolesLoading(false);
         }
       } catch (error) {
         console.error('Error during initial auth setup:', error);
+        setRolesLoading(false);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -90,11 +98,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fire and forget - don't await to avoid deadlock
-          fetchProfileAndRoles(session.user.id);
+          // Await so roles are ready before any route checks
+          await fetchProfileAndRoles(session.user.id);
         } else {
           setProfile(null);
           setRoles([]);
+          setRolesLoading(false);
         }
       }
     );
@@ -124,6 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       session,
       loading,
+      rolesLoading,
       profile,
       roles,
       isAdmin,
