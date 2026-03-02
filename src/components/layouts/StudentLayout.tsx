@@ -44,25 +44,24 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
     queryKey: ['unread-notification-count', user?.id],
     queryFn: async () => {
       if (!user) return 0;
-      // Get notifications the user has NOT read
+
+      // Fetch all visible notifications (RLS filters automatically)
+      const { data: allNotifs } = await supabase
+        .from('notifications')
+        .select('id');
+
+      const allIds = allNotifs?.map(n => n.id) || [];
+      if (allIds.length === 0) return 0;
+
+      // Fetch read notification IDs for this user
       const { data: readNotifs } = await supabase
         .from('user_notification_reads')
         .select('notification_id')
         .eq('user_id', user.id);
-      
-      const readIds = readNotifs?.map(r => r.notification_id) || [];
-      
-      // Count total notifications minus the ones user already read
-      const { count: totalCount } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true });
-      
-      const { count: readCount } = await supabase
-        .from('user_notification_reads')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      
-      return Math.max(0, (totalCount || 0) - (readCount || 0));
+
+      const readIds = new Set(readNotifs?.map(r => r.notification_id) || []);
+
+      return allIds.filter(id => !readIds.has(id)).length;
     },
     enabled: !!user,
   });
