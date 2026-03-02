@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PlayFile { id: string; name: string; code: string; sortOrder: number; }
-type Language = 'python' | 'html' | 'css' | 'sql' | 'javascript' | 'text';
+type Language = 'python' | 'html' | 'css' | 'sql' | 'javascript' | 'php' | 'text';
 
 const extToLang = (name: string): Language => {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
@@ -20,6 +20,7 @@ const extToLang = (name: string): Language => {
   if (ext === 'css') return 'css';
   if (ext === 'sql') return 'sql';
   if (['js','ts','jsx','tsx'].includes(ext)) return 'javascript';
+  if (ext === 'php') return 'php';
   return 'text';
 };
 
@@ -29,6 +30,7 @@ const langMeta: Record<Language, { label: string; color: string; bg: string; emo
   css:        { label: 'CSS',        color: '#a855f7', bg: '#a855f720', emoji: '🎨' },
   sql:        { label: 'SQL',        color: '#22c55e', bg: '#22c55e20', emoji: '🗄️' },
   javascript: { label: 'JavaScript', color: '#eab308', bg: '#eab30820', emoji: '⚡' },
+  php:        { label: 'PHP',        color: '#7c3aed', bg: '#7c3aed20', emoji: '🐘' },
   text:       { label: 'Text',       color: '#6b7280', bg: '#6b728020', emoji: '📄' },
 };
 
@@ -709,6 +711,356 @@ const fmtBytes = (b: number) =>
 const SESSION_KEY = 'ict_playground_files';
 const makeId = () => crypto.randomUUID();
 
+// ─── Language References ───────────────────────────────────────────────────────
+const LANG_REFS: Record<Language, { title: string; url: string; desc: string }[]> = {
+  python: [
+    { title: 'Python 3 Docs', url: 'https://docs.python.org/3/', desc: 'Official Python 3 documentation' },
+    { title: 'Built-in Functions', url: 'https://docs.python.org/3/library/functions.html', desc: 'len, range, print, input…' },
+    { title: 'Data Structures', url: 'https://docs.python.org/3/tutorial/datastructures.html', desc: 'Lists, dicts, sets, tuples' },
+    { title: 'OOP in Python', url: 'https://docs.python.org/3/tutorial/classes.html', desc: 'Classes, inheritance, methods' },
+    { title: 'String Methods', url: 'https://docs.python.org/3/library/stdtypes.html#string-methods', desc: 'upper, split, join, format…' },
+  ],
+  html: [
+    { title: 'HTML Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element', desc: 'All HTML elements — MDN' },
+    { title: 'HTML Forms', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form', desc: 'form, input, select, button' },
+    { title: 'Semantic HTML', url: 'https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html', desc: 'header, main, section, article' },
+    { title: 'HTML Tables', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table', desc: 'table, tr, th, td' },
+  ],
+  css: [
+    { title: 'CSS Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Reference', desc: 'All CSS properties — MDN' },
+    { title: 'Flexbox Guide', url: 'https://css-tricks.com/snippets/css/a-guide-to-flexbox/', desc: 'display:flex, align, justify' },
+    { title: 'CSS Grid Guide', url: 'https://css-tricks.com/snippets/css/complete-guide-grid/', desc: 'grid-template, gap, areas' },
+    { title: 'CSS Selectors', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors', desc: 'class, id, pseudo, combinator' },
+  ],
+  javascript: [
+    { title: 'JS Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference', desc: 'Full JS reference — MDN' },
+    { title: 'Array Methods', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array', desc: 'map, filter, reduce, find…' },
+    { title: 'DOM Manipulation', url: 'https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model', desc: 'getElementById, querySelector' },
+    { title: 'Events', url: 'https://developer.mozilla.org/en-US/docs/Web/Events', desc: 'click, submit, keydown…' },
+  ],
+  sql: [
+    { title: 'SQL Basics', url: 'https://www.w3schools.com/sql/', desc: 'SELECT, INSERT, UPDATE, DELETE' },
+    { title: 'SQL Joins', url: 'https://www.w3schools.com/sql/sql_join.asp', desc: 'INNER, LEFT, RIGHT, FULL join' },
+    { title: 'Aggregate Functions', url: 'https://www.w3schools.com/sql/sql_count_avg_sum.asp', desc: 'COUNT, SUM, AVG, MAX, MIN' },
+    { title: 'MySQL Data Types', url: 'https://www.w3schools.com/mysql/mysql_datatypes.asp', desc: 'INT, VARCHAR, DATE, ENUM…' },
+  ],
+  text: [
+    { title: 'ICT Theory Notes', url: 'https://www.nis.edu.lk/', desc: 'A/L ICT study resources' },
+  ],
+  php: [
+    { title: 'PHP Manual', url: 'https://www.php.net/manual/en/', desc: 'Official PHP documentation' },
+    { title: 'PHP String Functions', url: 'https://www.php.net/manual/en/ref.strings.php', desc: 'strlen, str_replace, explode…' },
+    { title: 'PHP Array Functions', url: 'https://www.php.net/manual/en/ref.array.php', desc: 'array_map, array_sum, sort…' },
+    { title: 'PHP Form Handling', url: 'https://www.w3schools.com/php/php_forms.asp', desc: '$_POST, $_GET, $_SESSION' },
+    { title: 'PHP OOP', url: 'https://www.php.net/manual/en/language.oop5.php', desc: 'Classes, objects, inheritance' },
+  ],
+};
+
+// ─── PHP Simulator ────────────────────────────────────────────────────────────
+const runPhpInBrowser = (code: string): string => {
+  try {
+    const output: string[] = [];
+
+    // Remove PHP open/close tags
+    let php = code.replace(/<\?php/gi, '').replace(/\?>/g, '').trim();
+
+    // Simple line-by-line simulation
+    const lines = php.split('\n');
+    const vars: Record<string, any> = {};
+    const constants: Record<string, any> = {};
+    const functions: Record<string, { params: string[]; body: string[] }> = {};
+
+    const resolveVal = (raw: string): any => {
+      raw = raw.trim();
+      // null
+      if (raw.toLowerCase() === 'null') return null;
+      // bool
+      if (raw.toLowerCase() === 'true') return true;
+      if (raw.toLowerCase() === 'false') return false;
+      // quoted string
+      if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+        let s = raw.slice(1, -1);
+        // interpolate $vars in double-quoted strings
+        if (raw.startsWith('"')) {
+          s = s.replace(/\$(\w+)/g, (_, n) => String(vars['$' + n] ?? vars[n] ?? ''));
+        }
+        return s;
+      }
+      // number
+      if (!isNaN(Number(raw))) return Number(raw);
+      // variable
+      if (raw.startsWith('$')) return vars[raw] ?? '';
+      // constant
+      if (constants[raw] !== undefined) return constants[raw];
+      // string concatenation via .
+      if (raw.includes(' . ')) {
+        return raw.split(' . ').map(p => resolveVal(p.trim())).join('');
+      }
+      // str_repeat
+      const strRepeat = raw.match(/str_repeat\s*\(\s*(.+?),\s*(\d+)\s*\)/i);
+      if (strRepeat) return resolveVal(strRepeat[1]).repeat(Number(strRepeat[2]));
+      // count / sizeof
+      const countM = raw.match(/(?:count|sizeof)\s*\(\s*(\$\w+)\s*\)/i);
+      if (countM) { const v = vars[countM[1]]; return Array.isArray(v) ? v.length : 0; }
+      // array_sum
+      const sumM = raw.match(/array_sum\s*\(\s*(\$\w+)\s*\)/i);
+      if (sumM) { const v = vars[sumM[1]]; return Array.isArray(v) ? v.reduce((a: number, b: number) => a + Number(b), 0) : 0; }
+      // max / min of array
+      const maxM = raw.match(/max\s*\(\s*(\$\w+)\s*\)/i);
+      if (maxM) { const v = vars[maxM[1]]; return Array.isArray(v) ? Math.max(...v.map(Number)) : 0; }
+      const minM = raw.match(/min\s*\(\s*(\$\w+)\s*\)/i);
+      if (minM) { const v = vars[minM[1]]; return Array.isArray(v) ? Math.min(...v.map(Number)) : 0; }
+      // strtoupper / strtolower
+      const upperM = raw.match(/strtoupper\s*\(\s*(.+)\s*\)/i);
+      if (upperM) return String(resolveVal(upperM[1])).toUpperCase();
+      const lowerM = raw.match(/strtolower\s*\(\s*(.+)\s*\)/i);
+      if (lowerM) return String(resolveVal(lowerM[1])).toLowerCase();
+      // trim
+      const trimM = raw.match(/trim\s*\(\s*(.+)\s*\)/i);
+      if (trimM) return String(resolveVal(trimM[1])).trim();
+      // strlen
+      const lenM = raw.match(/strlen\s*\(\s*(.+)\s*\)/i);
+      if (lenM) return String(resolveVal(lenM[1])).length;
+      // str_replace
+      const replM = raw.match(/str_replace\s*\(\s*(.+?),\s*(.+?),\s*(.+?)\s*\)/i);
+      if (replM) return String(resolveVal(replM[3])).replace(new RegExp(resolveVal(replM[1]), 'g'), resolveVal(replM[2]));
+      // implode / join
+      const implodeM = raw.match(/implode\s*\(\s*(.+?),\s*(\$\w+)\s*\)/i);
+      if (implodeM) { const arr = vars[implodeM[2]]; return Array.isArray(arr) ? arr.join(resolveVal(implodeM[1])) : ''; }
+      // explode
+      const explodeM = raw.match(/explode\s*\(\s*(.+?),\s*(.+?)\s*\)/i);
+      if (explodeM) return String(resolveVal(explodeM[2])).split(String(resolveVal(explodeM[1])));
+      // round / floor / ceil
+      const roundM = raw.match(/round\s*\(\s*(.+?)\s*(?:,\s*(\d+))?\s*\)/i);
+      if (roundM) { const dp = Number(roundM[2] ?? 0); return Number(Number(resolveVal(roundM[1])).toFixed(dp)); }
+      // array_merge with spread
+      const mergeM = raw.match(/array_merge\s*\((.+)\)/i);
+      if (mergeM) {
+        return mergeM[1].split(',').flatMap(p => {
+          const v = resolveVal(p.trim());
+          return Array.isArray(v) ? v : [v];
+        });
+      }
+      // function call (user-defined)
+      const funcCallM = raw.match(/^(\w+)\s*\((.*)?\)$/);
+      if (funcCallM && functions[funcCallM[1].toLowerCase()]) {
+        const fn = functions[funcCallM[1].toLowerCase()];
+        const argVals = funcCallM[2] ? funcCallM[2].split(',').map(a => resolveVal(a.trim())) : [];
+        const localVars = { ...vars };
+        fn.params.forEach((p, i) => { localVars[p] = argVals[i] ?? null; });
+        const savedVars = { ...vars };
+        Object.assign(vars, localVars);
+        let ret: any = null;
+        for (const bl of fn.body) {
+          const retM = bl.trim().match(/^return\s+(.+);?$/i);
+          if (retM) { ret = resolveVal(retM[1]); break; }
+          processLine(bl, output);
+        }
+        Object.assign(vars, savedVars);
+        return ret;
+      }
+      // arithmetic
+      try {
+        const safe = raw.replace(/\$(\w+)/g, (_, n) => {
+          const v = vars['$' + n] ?? vars[n] ?? 0;
+          return typeof v === 'number' ? String(v) : `"${v}"`;
+        });
+        // eslint-disable-next-line no-new-func
+        return Function('"use strict"; return (' + safe + ')')();
+      } catch { return raw; }
+    };
+
+    const processLine = (line: string, out: string[]) => {
+      const t = line.trim();
+      if (!t || t.startsWith('//') || t.startsWith('#')) return;
+
+      // define('KEY', value)
+      const defineM = t.match(/^define\s*\(\s*['"](\w+)['"]\s*,\s*(.+?)\s*\);?$/i);
+      if (defineM) { constants[defineM[1]] = resolveVal(defineM[2]); return; }
+
+      // echo / print
+      const echoM = t.match(/^(?:echo|print)\s+(.+?);?$/i);
+      if (echoM) {
+        let val = echoM[1].trim();
+        // handle concatenation with . and APP_NAME etc
+        const parts = val.split(/\s*\.\s*/);
+        const resolved = parts.map(p => {
+          const pv = resolveVal(p.trim());
+          return pv === null ? '' : String(pv);
+        }).join('');
+        out.push(resolved.replace(/\\n/g, '\n'));
+        return;
+      }
+
+      // printf
+      const printfM = t.match(/^printf\s*\(\s*(.+)\s*\);?$/i);
+      if (printfM) {
+        try {
+          const args = printfM[1].split(',').map(a => resolveVal(a.trim()));
+          let fmt = String(args[0]);
+          let ai = 1;
+          const result = fmt.replace(/%(-?\d*\.?\d*)?([sdfu])/g, (_, pad, spec) => {
+            const v = args[ai++] ?? '';
+            const n = Number(v);
+            let s = spec === 'f' ? (isNaN(n) ? String(v) : n.toFixed(Number((pad||'').split('.')[1]) || 0))
+                    : spec === 'd' ? String(Math.floor(n))
+                    : String(v);
+            if (pad) {
+              const width = Math.abs(Number(pad.split('.')[0]));
+              const leftAlign = pad.startsWith('-');
+              if (width > s.length) s = leftAlign ? s.padEnd(width) : s.padStart(width);
+            }
+            return s;
+          });
+          out.push(result.replace(/\\n/g, '\n'));
+        } catch { /* skip */ }
+        return;
+      }
+
+      // print_r($var)
+      const printRM = t.match(/^print_r\s*\(\s*(\$\w+)\s*\);?$/i);
+      if (printRM) {
+        const v = vars[printRM[1]];
+        if (Array.isArray(v)) {
+          out.push('Array\n(\n');
+          v.forEach((item, i) => out.push(`    [${i}] => ${item}\n`));
+          out.push(')\n');
+        } else { out.push(String(v ?? '') + '\n'); }
+        return;
+      }
+
+      // $var = value
+      const assignM = t.match(/^(\$\w+)\s*=\s*(.+?);?$/);
+      if (assignM) { vars[assignM[1]] = resolveVal(assignM[2]); return; }
+
+      // foreach ($arr as $v) or foreach ($arr as $k => $v)
+      const foreachM = t.match(/^foreach\s*\(\s*(\$\w+)\s+as\s+(?:(\$\w+)\s*=>\s*)?(\$\w+)\s*\)/i);
+      if (foreachM) return; // handled in block parsing
+
+      // if statement
+      const ifM = t.match(/^if\s*\(/i);
+      if (ifM) return;
+    };
+
+    // Block-level parser
+    let i = 0;
+    const skipBlock = () => {
+      let depth = 0;
+      while (i < lines.length) {
+        const l = lines[i]; i++;
+        depth += (l.match(/\{/g) || []).length - (l.match(/\}/g) || []).length;
+        if (depth <= 0) break;
+      }
+    };
+
+    const evalCondition = (cond: string): boolean => {
+      try {
+        const safe = cond
+          .replace(/\$(\w+)/g, (_, n) => { const v = vars['$' + n] ?? vars[n]; return JSON.stringify(v ?? null); })
+          .replace(/\bAND\b/gi, '&&').replace(/\bOR\b/gi, '||').replace(/\bnot\b/gi, '!')
+          .replace(/!empty\(([^)]+)\)/g, (_, v) => { const vv = resolveVal(v.trim()); return String(!!vv && vv !== '' && vv !== 0); })
+          .replace(/empty\(([^)]+)\)/g, (_, v) => { const vv = resolveVal(v.trim()); return String(!vv || vv === '' || vv === 0); })
+          .replace(/is_numeric\(([^)]+)\)/g, (_, v) => String(!isNaN(Number(resolveVal(v.trim())))));
+        // eslint-disable-next-line no-new-func
+        return !!Function('"use strict"; return (' + safe + ')')();
+      } catch { return false; }
+    };
+
+    // Collect function definitions first
+    const codeLines = lines.map(l => l.trim());
+    for (let fi = 0; fi < codeLines.length; fi++) {
+      const funcDefM = codeLines[fi].match(/^function\s+(\w+)\s*\(([^)]*)\)\s*\{?/i);
+      if (funcDefM) {
+        const fname = funcDefM[1].toLowerCase();
+        const params = funcDefM[2].split(',').map(p => p.trim()).filter(Boolean);
+        const body: string[] = [];
+        let depth = codeLines[fi].includes('{') ? 1 : 0;
+        fi++;
+        while (fi < codeLines.length) {
+          const bl = codeLines[fi];
+          depth += (bl.match(/\{/g) || []).length - (bl.match(/\}/g) || []).length;
+          if (depth <= 0) break;
+          body.push(bl);
+          fi++;
+        }
+        functions[fname] = { params, body };
+      }
+    }
+
+    // Main execution pass
+    while (i < lines.length) {
+      const raw = lines[i]; i++;
+      const t = raw.trim();
+      if (!t || t.startsWith('//') || t.startsWith('#') || t.startsWith('/*') || t.startsWith('*')) continue;
+      if (t.startsWith('function ')) { skipBlock(); continue; } // skip function bodies
+      if (t === '?>') continue;
+
+      // foreach
+      const foreachM = t.match(/^foreach\s*\(\s*(\$\w+)\s+as\s+(?:(\$\w+)\s*=>\s*)?(\$\w+)\s*\)\s*\{?/i);
+      if (foreachM) {
+        const arr = vars[foreachM[1]];
+        const keyVar = foreachM[2] || null;
+        const valVar = foreachM[3];
+        const bodyLines: string[] = [];
+        let depth = t.includes('{') ? 1 : 0;
+        if (depth === 0) { bodyLines.push(lines[i] || ''); i++; }
+        else {
+          while (i < lines.length) {
+            const bl = lines[i]; i++;
+            depth += (bl.match(/\{/g) || []).length - (bl.match(/\}/g) || []).length;
+            if (depth <= 0) break;
+            bodyLines.push(bl);
+          }
+        }
+        if (Array.isArray(arr)) {
+          arr.forEach((item, idx) => {
+            if (keyVar) vars[keyVar] = idx;
+            vars[valVar] = item;
+            for (const bl of bodyLines) processLine(bl, output);
+          });
+        } else if (arr && typeof arr === 'object') {
+          Object.entries(arr).forEach(([k, v]) => {
+            if (keyVar) vars[keyVar] = k;
+            vars[valVar] = v;
+            for (const bl of bodyLines) processLine(bl, output);
+          });
+        }
+        continue;
+      }
+
+      // if / else
+      const ifM = t.match(/^if\s*\((.+)\)\s*\{?/i);
+      if (ifM) {
+        const cond = ifM[1];
+        const truePart: string[] = [];
+        const falsePart: string[] = [];
+        let depth = t.includes('{') ? 1 : 0;
+        let inElse = false;
+        if (depth === 0) { if (evalCondition(cond)) processLine(lines[i] || '', output); i++; continue; }
+        while (i < lines.length) {
+          const bl = lines[i]; i++;
+          const blt = bl.trim();
+          depth += (bl.match(/\{/g) || []).length - (bl.match(/\}/g) || []).length;
+          if (depth <= 0) {
+            if (blt.match(/^}\s*else\s*\{?/i)) { inElse = true; depth = blt.includes('{') ? 1 : 0; continue; }
+            break;
+          }
+          if (inElse) falsePart.push(bl); else truePart.push(bl);
+        }
+        const execPart = evalCondition(cond) ? truePart : falsePart;
+        for (const bl of execPart) processLine(bl, output);
+        continue;
+      }
+
+      processLine(t, output);
+    }
+
+    return output.join('') || '(no output)';
+  } catch (e: any) {
+    return `Error: ${e.message}`;
+  }
+};
+
 // Skulpt-based SQL engine (simple in-browser)
 const runSqlInBrowser = (sql: string): string => {
   try {
@@ -855,6 +1207,7 @@ const Playground = () => {
   const [htmlPreview, setHtmlPreview] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [hasRun, setHasRun] = useState(false);
+  const [showRefs, setShowRefs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -872,7 +1225,7 @@ const Playground = () => {
   const meta = langMeta[lang];
   const hasHtmlFile = files.some(f => ['html','htm'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
   const isWebLang = lang === 'html' || lang === 'css' || (lang === 'javascript' && hasHtmlFile);
-  const runLabel = lang === 'sql' ? 'Run SQL' : isWebLang ? 'Preview' : 'Run';
+  const runLabel = lang === 'sql' ? 'Run SQL' : lang === 'php' ? 'Run PHP' : isWebLang ? 'Preview' : 'Run';
 
   useEffect(() => {
     // getSession() restores from storage first — sets auth as ready
@@ -1062,6 +1415,18 @@ const Playground = () => {
       finally { setOutput(col.join('') || '(no output)'); setRunning(false); }
       return;
     }
+    if (lang === 'php') {
+      setRunning(true);
+      try {
+        const result = runPhpInBrowser(code);
+        setOutput(result);
+      } catch (e: any) {
+        setOutput(`Error: ${e.message}`);
+      } finally {
+        setRunning(false);
+      }
+      return;
+    }
     setOutput(code);
   };
 
@@ -1205,12 +1570,12 @@ const Playground = () => {
 
           {/* Language tabs at bottom of explorer — HTML/CSS/JS shown separately */}
           <div className="border-t p-2 flex flex-wrap gap-1">
-            {(['python','html','css','javascript','sql'] as Language[]).map(l => {
+            {(['python','html','css','javascript','php','sql'] as Language[]).map(l => {
               const m = langMeta[l];
               const isActive = lang === l;
               const extMap: Record<string, string[]> = {
                 html: ['html','htm'], css: ['css'], javascript: ['js','ts','jsx','tsx'],
-                python: ['py'], sql: ['sql'],
+                python: ['py'], sql: ['sql'], php: ['php'],
               };
               const match = files.find(f => (extMap[l] ?? []).includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
               if (!match) return null;
@@ -1294,17 +1659,49 @@ const Playground = () => {
           </div>
         </div>
 
-        {/* ── Card 3: Output / Preview ── */}
+        {/* ── Card 3: Output / Preview / References ── */}
         <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
-          <div className="flex items-center gap-2 px-4 py-2.5 border-b bg-muted/30">
-            <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">
-              {isWebLang && showPreview ? '🌐 Web Preview' : lang === 'sql' ? 'SQL Output' : 'Output'}
-            </span>
-            {running && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto" />}
+          {/* Tab header */}
+          <div className="flex items-center border-b bg-muted/30">
+            <button
+              onClick={() => setShowRefs(false)}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2"
+              style={{
+                borderBottomColor: !showRefs ? meta.color : 'transparent',
+                color: !showRefs ? meta.color : 'var(--muted-foreground)',
+              }}>
+              <Terminal className="w-3.5 h-3.5" />
+              {isWebLang && showPreview ? '🌐 Web Preview' : lang === 'sql' ? 'SQL Output' : lang === 'php' ? 'PHP Output' : 'Output'}
+            </button>
+            <button
+              onClick={() => setShowRefs(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2"
+              style={{
+                borderBottomColor: showRefs ? meta.color : 'transparent',
+                color: showRefs ? meta.color : 'var(--muted-foreground)',
+              }}>
+              📚 References
+            </button>
+            {running && !showRefs && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto mr-4" />}
           </div>
 
-          {isWebLang && showPreview ? (
+          {showRefs ? (
+            /* ── References Panel ── */
+            <div className="flex-1 overflow-auto p-4 flex flex-col gap-2">
+              <p className="text-xs text-muted-foreground mb-1">
+                {meta.emoji} <span className="font-semibold text-foreground">{meta.label}</span> quick references
+              </p>
+              {(LANG_REFS[lang] ?? LANG_REFS.text).map((ref, i) => (
+                <a key={i} href={ref.url} target="_blank" rel="noopener noreferrer"
+                  className="group flex flex-col gap-0.5 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors">
+                  <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    {ref.title} ↗
+                  </span>
+                  <span className="text-xs text-muted-foreground">{ref.desc}</span>
+                </a>
+              ))}
+            </div>
+          ) : isWebLang && showPreview ? (
             <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
           ) : (
             <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#0d1117]" style={{ minHeight: 380 }}>
@@ -1313,8 +1710,9 @@ const Playground = () => {
                   <span className="text-4xl font-mono font-bold text-gray-500">&lt;/&gt;</span>
                   <p className="text-xs text-center text-gray-500">
                     {lang === 'html' ? 'Click Preview to render HTML'
-                      : lang === 'sql' ? 'Click Reference for SQL links'
-                      : lang === 'css' ? 'Click Run to view CSS'
+                      : lang === 'sql' ? 'Click Run SQL to execute'
+                      : lang === 'php' ? 'Click Run PHP to execute'
+                      : lang === 'css' ? 'Click Preview to view CSS'
                       : 'Click Run to execute code'}
                   </p>
                 </div>
