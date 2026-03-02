@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Play, RotateCcw, Copy, Check, Loader2, Terminal, FilePlus, Trash2,
-  Save, Cloud, CloudOff, AlertCircle, Code2
+  Save, Cloud, CloudOff, AlertCircle, Code2, Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -171,13 +171,142 @@ const fmtBytes = (b: number) =>
 const SESSION_KEY = 'ict_playground_files';
 const makeId = () => crypto.randomUUID();
 
+// Skulpt-based SQL engine (simple in-browser)
+const runSqlInBrowser = (sql: string): string => {
+  try {
+    // Very basic CREATE TABLE + INSERT + SELECT simulation
+    const tables: Record<string, { cols: string[]; rows: Record<string, any>[] }> = {};
+    const lines = sql.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('--'));
+    const fullSql = lines.join(' ');
+    const stmts = fullSql.split(';').map(s => s.trim()).filter(Boolean);
+    const output: string[] = [];
+
+    for (const stmt of stmts) {
+      const upper = stmt.toUpperCase();
+
+      // CREATE TABLE
+      if (upper.startsWith('CREATE TABLE')) {
+        const m = stmt.match(/CREATE\s+TABLE\s+(\w+)\s*\((.+)\)/is);
+        if (m) {
+          const tname = m[1].toLowerCase();
+          const colDefs = m[2].split(',').map(c => {
+            const parts = c.trim().split(/\s+/);
+            return parts[0].toLowerCase();
+          }).filter(c => !['primary','unique','key','index','constraint'].includes(c));
+          tables[tname] = { cols: colDefs, rows: [] };
+          output.push(`✓ Table '${m[1]}' created (${colDefs.join(', ')})`);
+        }
+        continue;
+      }
+
+      // INSERT INTO
+      if (upper.startsWith('INSERT INTO')) {
+        const m = stmt.match(/INSERT\s+INTO\s+(\w+)\s*(?:\(([^)]+)\))?\s*VALUES\s*(.+)/is);
+        if (m) {
+          const tname = m[1].toLowerCase();
+          if (!tables[tname]) { output.push(`✗ Table '${m[1]}' not found`); continue; }
+          const cols = m[2] ? m[2].split(',').map(c => c.trim().toLowerCase()) : tables[tname].cols;
+          const valBlock = m[3].trim();
+          const rowMatches = [...valBlock.matchAll(/\(([^)]+)\)/g)];
+          let count = 0;
+          for (const rm of rowMatches) {
+            const vals = rm[1].split(',').map(v => v.trim().replace(/^['"]|['"]$/g, ''));
+            const row: Record<string, any> = {};
+            cols.forEach((c, i) => { row[c] = vals[i] ?? null; });
+            tables[tname].rows.push(row);
+            count++;
+          }
+          output.push(`✓ ${count} row(s) inserted into '${m[1]}'`);
+        }
+        continue;
+      }
+
+      // SELECT
+      if (upper.startsWith('SELECT')) {
+        const fromMatch = stmt.match(/FROM\s+(\w+)/i);
+        if (!fromMatch) { output.push('✗ SELECT: missing FROM clause'); continue; }
+        const tname = fromMatch[1].toLowerCase();
+        if (!tables[tname]) { output.push(`✗ Table '${fromMatch[1]}' not found`); continue; }
+
+        let rows = [...tables[tname].rows];
+
+        // WHERE
+        const whereMatch = stmt.match(/WHERE\s+(.+?)(?:\s+ORDER\s+BY|\s+GROUP\s+BY|\s+LIMIT|$)/i);
+        if (whereMatch) {
+          const cond = whereMatch[1].trim();
+          const condM = cond.match(/(\w+)\s*(>|<|>=|<=|=|!=|<>)\s*(.+)/);
+          if (condM) {
+            const [, col, op, val] = condM;
+            const v = val.replace(/^['"]|['"]$/g, '');
+            rows = rows.filter(r => {
+              const rv = r[col.toLowerCase()];
+              const numRv = Number(rv), numV = Number(v);
+              const cmp = !isNaN(numRv) && !isNaN(numV) ? [numRv, numV] : [String(rv), String(v)];
+              if (op === '>') return cmp[0] > cmp[1];
+              if (op === '<') return cmp[0] < cmp[1];
+              if (op === '>=') return cmp[0] >= cmp[1];
+              if (op === '<=') return cmp[0] <= cmp[1];
+              if (op === '=' || op === '==') return cmp[0] == cmp[1];
+              if (op === '!=' || op === '<>') return cmp[0] != cmp[1];
+              return true;
+            });
+          }
+        }
+
+        // ORDER BY
+        const orderMatch = stmt.match(/ORDER\s+BY\s+(\w+)(?:\s+(ASC|DESC))?/i);
+        if (orderMatch) {
+          const col = orderMatch[1].toLowerCase();
+          const dir = (orderMatch[2] || 'ASC').toUpperCase();
+          rows.sort((a, b) => {
+            const av = a[col], bv = b[col];
+            const n = (Number(av) - Number(bv));
+            const r = isNaN(n) ? String(av).localeCompare(String(bv)) : n;
+            return dir === 'DESC' ? -r : r;
+          });
+        }
+
+        // SELECT columns
+        const selColsMatch = stmt.match(/SELECT\s+(.+?)\s+FROM/i);
+        const selCols = selColsMatch ? selColsMatch[1].trim() : '*';
+
+        if (rows.length === 0) { output.push(`(0 rows from '${fromMatch[1]}')`); continue; }
+
+        const displayCols = selCols === '*' ? Object.keys(rows[0]) :
+          selCols.split(',').map(c => c.trim().toLowerCase().replace(/.*\s+as\s+/i, '').split(/\s+/).pop() || c.trim().toLowerCase());
+
+        // Render table
+        const widths = displayCols.map(c => Math.max(c.length, ...rows.map(r => String(r[c] ?? '').length)));
+        const header = '| ' + displayCols.map((c, i) => c.padEnd(widths[i])).join(' | ') + ' |';
+        const divider = '+-' + widths.map(w => '-'.repeat(w)).join('-+-') + '-+';
+        output.push(divider, header, divider);
+        for (const r of rows) output.push('| ' + displayCols.map((c, i) => String(r[c] ?? '').padEnd(widths[i])).join(' | ') + ' |');
+        output.push(divider);
+        output.push(`(${rows.length} row${rows.length !== 1 ? 's' : ''})`);
+        continue;
+      }
+
+      output.push(`-- Statement skipped (not supported): ${stmt.substring(0, 60)}`);
+    }
+
+    return output.join('\n') || '(no output)';
+  } catch (e: any) {
+    return `Error: ${e.message}`;
+  }
+};
+
 const Playground = () => {
   const initFiles = (): PlayFile[] => {
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
-      if (raw) { const p: PlayFile[] = JSON.parse(raw); if (p.length > 0) return p; }
+      if (raw) {
+        const p: PlayFile[] = JSON.parse(raw);
+        // Validate all IDs are proper UUIDs
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (p.length > 0 && p.every(f => uuidRe.test(f.id))) return p;
+      }
     } catch { /* ignore */ }
-    return DEFAULT_FILES.map((f, i) => ({ ...f, id: makeId() + i }));
+    return DEFAULT_FILES.map(f => ({ ...f, id: makeId() }));
   };
 
   const [files, setFiles] = useState<PlayFile[]>(initFiles);
@@ -203,7 +332,7 @@ const Playground = () => {
   const usedPct = Math.min(100, (usedBytes / MAX_BYTES) * 100);
   const lang = activeFile ? extToLang(activeFile.name) : 'text';
   const meta = langMeta[lang];
-  const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Reference' : 'Run';
+  const runLabel = lang === 'html' ? 'Preview' : lang === 'sql' ? 'Run SQL' : 'Run';
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
@@ -291,7 +420,19 @@ const Playground = () => {
     const code = activeFile.code;
     if (lang === 'html') { setHtmlPreview(code); setShowPreview(true); setOutput(''); return; }
     if (lang === 'css') { setOutput(`/* CSS info - paste into HTML <style> tag */\n\n${code}`); return; }
-    if (lang === 'sql') { setOutput('-- SQL Reference Mode\n-- Run live at:\n--  https://www.db-fiddle.com/\n--  https://sqliteonline.com/\n--  https://onecompiler.com/mysql'); return; }
+    if (lang === 'sql') {
+      setRunning(true);
+      setOutput('');
+      try {
+        const result = runSqlInBrowser(code);
+        setOutput(result);
+      } catch (e: any) {
+        setOutput(`Error: ${e.message}`);
+      } finally {
+        setRunning(false);
+      }
+      return;
+    }
     if (lang === 'javascript') {
       setRunning(true);
       const lines: string[] = [];
@@ -432,10 +573,18 @@ const Playground = () => {
                     </button>
                   )}
                   {renamingId !== file.id && (
-                    <button onClick={() => deleteFile(file.id)}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10">
-                      <Trash2 className="w-3 h-3 text-destructive" />
-                    </button>
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {userId && (
+                        <button onClick={() => { setRenamingId(file.id); setRenameVal(file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name); }}
+                          className="p-1 rounded hover:bg-muted" title="Rename">
+                          <Pencil className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      )}
+                      <button onClick={() => deleteFile(file.id)}
+                        className="p-1 rounded hover:bg-destructive/10" title="Delete">
+                        <Trash2 className="w-3 h-3 text-destructive" />
+                      </button>
+                    </div>
                   )}
                 </div>
               );
@@ -547,7 +696,7 @@ const Playground = () => {
           <div className="flex items-center gap-2 px-4 py-2.5 border-b bg-muted/30">
             <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">
-              {lang === 'html' && showPreview ? 'Preview' : 'Output'}
+              {lang === 'html' && showPreview ? 'Preview' : lang === 'sql' ? 'SQL Output' : 'Output'}
             </span>
             {running && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto" />}
           </div>
