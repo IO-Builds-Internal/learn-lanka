@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,7 +25,14 @@ const contactSchema = z.object({
   message: z.string().trim().min(10, "Message must be at least 10 characters").max(2000),
 });
 
+// Simplified schema for logged-in users (name/phone taken from profile)
+const loggedInSchema = z.object({
+  subject: z.string().trim().min(3, "Subject must be at least 3 characters").max(200),
+  message: z.string().trim().min(10, "Message must be at least 10 characters").max(2000),
+});
+
 type ContactFormData = z.infer<typeof contactSchema>;
+type LoggedInFormData = z.infer<typeof loggedInSchema>;
 
 const statusColors: Record<string, string> = {
   open: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
@@ -47,18 +54,10 @@ const ConversationView = () => {
   const [replyText, setReplyText] = useState("");
   const [showNewForm, setShowNewForm] = useState(false);
 
-  const form = useForm<ContactFormData>({
-    resolver: zodResolver(contactSchema),
-    defaultValues: { name: "", phone: "", email: "", subject: "", message: "" },
+  const form = useForm<LoggedInFormData>({
+    resolver: zodResolver(loggedInSchema),
+    defaultValues: { subject: "", message: "" },
   });
-
-  useEffect(() => {
-    if (profile) {
-      const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-      form.setValue('name', fullName);
-      form.setValue('phone', getCleanPhone(profile.phone));
-    }
-  }, [profile, form]);
 
   // Fetch user's conversations
   const { data: conversations = [], refetch } = useQuery({
@@ -94,11 +93,11 @@ const ConversationView = () => {
 
   // Send new conversation
   const newConvoMutation = useMutation({
-    mutationFn: async (data: ContactFormData) => {
+    mutationFn: async (data: LoggedInFormData) => {
+      const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
       const { error } = await (supabase as any).from('contact_messages').insert({
-        name: data.name,
-        phone: data.phone,
-        email: data.email || null,
+        name: fullName || 'User',
+        phone: getCleanPhone(profile?.phone) || null,
         subject: data.subject,
         message: data.message,
         user_id: user!.id,
@@ -147,22 +146,11 @@ const ConversationView = () => {
           <CardContent className="pt-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(d => newConvoMutation.mutate(d))} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Name *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="phone" render={({ field }) => (
-                    <FormItem><FormLabel>Phone *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                </div>
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>Email (Optional)</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
                 <FormField control={form.control} name="subject" render={({ field }) => (
-                  <FormItem><FormLabel>Subject *</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Subject *</FormLabel><FormControl><Input placeholder="What is this about?" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="message" render={({ field }) => (
-                  <FormItem><FormLabel>Message *</FormLabel><FormControl><Textarea className="min-h-[120px] resize-none" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Message *</FormLabel><FormControl><Textarea className="min-h-[120px] resize-none" placeholder="Write your message here..." {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <Button type="submit" className="w-full" disabled={newConvoMutation.isPending}>
                   {newConvoMutation.isPending ? "Sending..." : <><Send className="w-4 h-4 mr-2" />Send Message</>}
