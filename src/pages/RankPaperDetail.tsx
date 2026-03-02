@@ -160,21 +160,39 @@ const RankPaperDetail = () => {
   });
 
   const openExamWindow = (url: string) => {
-    const width = window.screen.width;
-    const height = window.screen.height;
-    const examWindow = window.open(
-      url,
-      'exam_window',
-      `width=${width},height=${height},left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`
-    );
+    const screenWidth = window.screen.availWidth;
+    const screenHeight = window.screen.availHeight;
+    // Use slightly less than full screen to force browser to open as popup, not tab
+    const popupWidth = screenWidth - 2;
+    const popupHeight = screenHeight - 2;
+    
+    const features = [
+      `width=${popupWidth}`,
+      `height=${popupHeight}`,
+      `left=0`,
+      `top=0`,
+      `menubar=no`,
+      `toolbar=no`,
+      `location=no`,
+      `status=no`,
+      `resizable=yes`,
+      `scrollbars=yes`,
+      `noopener=no`,
+    ].join(',');
+
+    const examWindow = window.open(url, 'exam_window', features);
     
     if (examWindow) {
-      examWindow.moveTo(0, 0);
-      examWindow.resizeTo(width, height);
-      toast.success('Exam opened in a new window');
+      examWindow.focus();
+      try {
+        examWindow.moveTo(0, 0);
+        examWindow.resizeTo(popupWidth, popupHeight);
+      } catch (_) {
+        // ignore cross-origin resize errors
+      }
+      toast.success('Exam opened in a new popup window');
     } else {
-      toast.info('Please allow popups for the best exam experience');
-      navigate(url);
+      toast.warning('Popup was blocked! Please allow popups for this site and try again.');
     }
   };
 
@@ -387,7 +405,7 @@ const RankPaperDetail = () => {
               ) : hasOngoingAttempt ? (
                 <Button 
                   className="flex-1" 
-                  onClick={() => navigate(`/rank-papers/${paper.id}/attempt`)}
+                  onClick={() => openExamWindow(`/rank-papers/${paper.id}/attempt`)}
                 >
                   <ChevronRight className="w-4 h-4 mr-2" />
                   Continue Attempt
