@@ -163,33 +163,25 @@ const RankPaperDetail = () => {
     const sw = window.screen.availWidth;
     const sh = window.screen.availHeight;
 
-    // Chrome ONLY opens a real popup (no address bar) when explicit pixel
-    // dimensions are provided AND they are smaller than the full screen.
-    // Using percentage-based sizes that equal screen size opens a tab instead.
     const popupWidth = Math.min(1400, Math.floor(sw * 0.82));
     const popupHeight = Math.min(900, Math.floor(sh * 0.88));
     const left = Math.floor((sw - popupWidth) / 2);
     const top = Math.floor((sh - popupHeight) / 2);
 
+    // The 'popup' keyword is required by Chrome 87+ to open a real popup window
+    // (separate window, no address bar) instead of a new tab.
+    // width/height/left/top position it on screen.
     const features = [
+      'popup=yes',
       `width=${popupWidth}`,
       `height=${popupHeight}`,
       `left=${left}`,
       `top=${top}`,
-      'menubar=no',
-      'toolbar=no',
-      'location=no',
-      'status=no',
-      'titlebar=no',
-      'directories=no',
-      'resizable=yes',
-      'scrollbars=yes',
     ].join(',');
 
     const origin = window.location.origin;
     const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
 
-    // Try to open from the top-level window to escape any iframe restrictions
     let examWindow: Window | null = null;
     try {
       examWindow = (window.top ?? window).open(absoluteUrl, 'exam_window', features);
