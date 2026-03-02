@@ -12,7 +12,6 @@ import {
   X,
   LogOut,
   Shield,
-  MessageCircle,
   Code2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,8 @@ interface StudentLayoutProps {
 }
 
 const navItems = [
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/classes', label: 'Classes', icon: BookOpen },
   { path: '/rank-papers', label: 'Rank Papers', icon: FileText },
   { path: '/shop', label: 'Shop', icon: ShoppingBag },
   { path: '/playground', label: 'Playground', icon: Code2 },

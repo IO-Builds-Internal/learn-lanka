@@ -847,11 +847,11 @@ const Playground = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load files from DB only after auth is fully ready
+  // Load files from DB only after auth is fully ready; seed defaults if none exist
   useEffect(() => {
     if (!authReady || !userId) return;
     supabase.from('playground_files' as any).select('*').eq('user_id', userId).order('sort_order')
-      .then(({ data, error }: any) => {
+      .then(async ({ data, error }: any) => {
         if (!error && data && data.length > 0) {
           const mapped: PlayFile[] = data.map((r: any) => ({
             id: r.id,
@@ -864,8 +864,20 @@ const Playground = () => {
           setOutput('');
           setHasRun(false);
           setShowPreview(false);
+        } else if (!error && (!data || data.length === 0)) {
+          // No files in DB — seed defaults
+          const defaults = DEFAULT_FILES.map(f => ({ ...f, id: makeId() }));
+          const insertData = defaults.map(f => ({
+            id: f.id,
+            user_id: userId,
+            name: f.name,
+            code: f.code,
+            sort_order: f.sortOrder,
+          }));
+          await (supabase.from as any)('playground_files').insert(insertData);
+          setFiles(defaults);
+          setActiveId(defaults[0].id);
         }
-        // If no DB files found, keep default files in state
       });
   }, [authReady, userId]);
 
