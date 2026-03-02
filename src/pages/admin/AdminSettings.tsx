@@ -24,10 +24,12 @@ import DatabaseBackupRestore from '@/components/admin/DatabaseBackupRestore';
 import SmsTemplatesManager from '@/components/admin/SmsTemplatesManager';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 const BUCKET = 'site-assets';
 
 const AdminSettings = () => {
+  const queryClient = useQueryClient();
   const [siteName, setSiteName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -101,6 +103,7 @@ const AdminSettings = () => {
       toast.error(err.message || 'Failed to save settings');
     } finally {
       setIsSaving(false);
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
     }
   };
 
