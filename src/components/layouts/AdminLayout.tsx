@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -176,6 +177,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAdmin, isModerator, loading } = useAuth();
+  const { data: settings } = useSiteSettings();
+  const siteName = settings?.site_name || 'Admin';
 
   if (loading) {
     return (
@@ -200,10 +203,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border flex-shrink-0">
           {!collapsed && (
             <Link to="/admin" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sidebar-primary">
-                <GraduationCap className="w-5 h-5 text-sidebar-primary-foreground" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sidebar-primary overflow-hidden">
+                {settings?.logo_url ? (
+                  <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
+                ) : (
+                  <GraduationCap className="w-5 h-5 text-sidebar-primary-foreground" />
+                )}
               </div>
-              <span className="font-bold text-sidebar-foreground">Admin</span>
+              <span className="font-bold text-sidebar-foreground">{siteName}</span>
             </Link>
           )}
           <Button
@@ -251,10 +258,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden sticky top-0 z-40 h-14 border-b bg-card flex items-center justify-between px-4">
           <Link to="/admin" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
-              <GraduationCap className="w-5 h-5 text-primary-foreground" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary overflow-hidden">
+              {settings?.logo_url ? (
+                <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
+              ) : (
+                <GraduationCap className="w-5 h-5 text-primary-foreground" />
+              )}
             </div>
-            <span className="font-bold">Admin</span>
+            <span className="font-bold">{siteName}</span>
           </Link>
           <div className="flex items-center gap-1">
             <ThemeToggle />
@@ -269,10 +280,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <div className="fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border flex flex-col" onClick={e => e.stopPropagation()}>
               <div className="h-14 flex items-center px-4 border-b border-sidebar-border flex-shrink-0">
                 <Link to="/admin" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sidebar-primary">
-                    <GraduationCap className="w-5 h-5 text-sidebar-primary-foreground" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sidebar-primary overflow-hidden">
+                    {settings?.logo_url ? (
+                      <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
+                    ) : (
+                      <GraduationCap className="w-5 h-5 text-sidebar-primary-foreground" />
+                    )}
                   </div>
-                  <span className="font-bold text-sidebar-foreground">Admin Panel</span>
+                  <span className="font-bold text-sidebar-foreground">{siteName}</span>
                 </Link>
               </div>
               <nav className="flex-1 p-2 space-y-3 overflow-y-auto">

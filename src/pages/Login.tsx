@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Phone, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Phone, Lock, Eye, EyeOff, Loader2, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +13,11 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const { data: settings } = useSiteSettings();
+
+  useEffect(() => {
+    if (settings?.site_name) document.title = settings.site_name;
+  }, [settings?.site_name]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,15 +57,30 @@ const Login = () => {
     }
   };
 
+  const siteName = settings?.site_name || 'A/L ICT';
+  const bgStyle = settings?.login_bg_url
+    ? { backgroundImage: `url(${settings.login_bg_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center px-4 py-8 gap-12">
+    <div className="relative min-h-screen flex flex-col" style={settings?.login_bg_url ? { backgroundImage: `url(${settings.login_bg_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a)' }}>
+      {/* Overlay */}
+      {settings?.login_bg_url && <div className="absolute inset-0 bg-black/60 z-0" />}
+      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-center px-4 py-8 gap-12">
         {/* Left Side - Branding */}
         <div className="text-center lg:text-left lg:flex-1 lg:max-w-lg">
           <div className="mb-6">
+            {settings?.logo_url ? (
+              <img src={settings.logo_url} alt={siteName} className="w-20 h-20 object-contain mx-auto lg:mx-0 mb-4 rounded-xl" />
+            ) : (
+              <div className="flex items-center justify-center lg:justify-start mb-4">
+                <div className="w-16 h-16 rounded-xl bg-blue-600 flex items-center justify-center">
+                  <GraduationCap className="w-10 h-10 text-white" />
+                </div>
+              </div>
+            )}
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">
-              A/L ICT
+              {siteName}
             </h1>
             <p className="text-lg md:text-xl text-slate-300">
               Advanced Level ICT Education
@@ -187,9 +208,9 @@ const Login = () => {
       </div>
 
       {/* Footer */}
-      <footer className="py-6 px-4 text-center">
+      <footer className="relative z-10 py-6 px-4 text-center">
         <p className="text-slate-400 text-xs">
-          © {new Date().getFullYear()} All rights reserved. A project from IO Builds LLC
+          © {new Date().getFullYear()} All rights reserved.
         </p>
       </footer>
     </div>

@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 import * as React from 'react';
 
@@ -40,6 +41,8 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut, isAdmin, isModerator } = useAuth();
+  const { data: settings } = useSiteSettings();
+  const siteName = settings?.site_name || 'ICT Academy';
 
   // Fetch unread notification count
   const { data: notificationCount = 0 } = useQuery({
@@ -82,10 +85,14 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
           <div className="flex h-14 sm:h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary">
-                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary overflow-hidden">
+                {settings?.logo_url ? (
+                  <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
+                ) : (
+                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+                )}
               </div>
-              <span className="font-bold text-base sm:text-lg text-foreground hidden xs:block">ICT Academy</span>
+              <span className="font-bold text-base sm:text-lg text-foreground hidden xs:block">{siteName}</span>
             </Link>
 
             {/* Desktop Nav */}
