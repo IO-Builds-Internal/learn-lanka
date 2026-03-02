@@ -106,8 +106,8 @@ const AdminRankPapers = () => {
   const [reviewVideoUrl, setReviewVideoUrl] = useState('');
   const [editingPaper, setEditingPaper] = useState<RankPaper | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterGrade, setFilterGrade] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterGrade, setFilterGrade] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   // Form state
   const [title, setTitle] = useState('');
@@ -467,8 +467,8 @@ const AdminRankPapers = () => {
   // Filter papers
   const filteredPapers = papers.filter(paper => {
     if (searchQuery.trim() && !paper.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (filterGrade && paper.grade.toString() !== filterGrade) return false;
-    if (filterStatus && paper.publish_status !== filterStatus) return false;
+    if (filterGrade !== 'all' && paper.grade.toString() !== filterGrade) return false;
+    if (filterStatus !== 'all' && paper.publish_status !== filterStatus) return false;
     return true;
   });
 
@@ -506,7 +506,7 @@ const AdminRankPapers = () => {
                 <SelectValue placeholder="All Grades" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Grades</SelectItem>
+                <SelectItem value="all">All Grades</SelectItem>
                 {[6,7,8,9,10,11,12,13].map(g => (
                   <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
                 ))}
@@ -517,7 +517,7 @@ const AdminRankPapers = () => {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="DRAFT">Draft</SelectItem>
                 <SelectItem value="PUBLISHED">Published</SelectItem>
                 <SelectItem value="CLOSED">Closed</SelectItem>
