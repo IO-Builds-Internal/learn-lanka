@@ -61,6 +61,7 @@ const Notifications = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-reads', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notification-count', user?.id] });
       toast.success('All notifications marked as read');
     },
     onError: () => {
@@ -81,6 +82,7 @@ const Notifications = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-reads', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notification-count', user?.id] });
     },
   });
 
