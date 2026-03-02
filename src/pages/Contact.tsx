@@ -133,7 +133,6 @@ const ConversationView = () => {
   });
 
   const isResolved = selected?.status === 'RESOLVED' || selected?.status === 'CLOSED';
-  const hasActiveConvo = conversations.some(c => c.status !== 'RESOLVED' && c.status !== 'CLOSED');
 
   if (showNewForm) {
     return (
@@ -242,11 +241,9 @@ const ConversationView = () => {
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4" />
           </Button>
-          {!hasActiveConvo && (
-            <Button size="sm" onClick={() => setShowNewForm(true)}>
-              <PlusCircle className="w-4 h-4 mr-2" />New Message
-            </Button>
-          )}
+          <Button size="sm" onClick={() => setShowNewForm(true)}>
+            <PlusCircle className="w-4 h-4 mr-2" />New Message
+          </Button>
         </div>
       </div>
 
@@ -280,11 +277,6 @@ const ConversationView = () => {
               </CardContent>
             </Card>
           ))}
-          {!hasActiveConvo && (
-            <Button variant="outline" className="w-full" onClick={() => setShowNewForm(true)}>
-              <PlusCircle className="w-4 h-4 mr-2" />Start New Conversation
-            </Button>
-          )}
         </div>
       )}
     </div>
