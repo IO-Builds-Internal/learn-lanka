@@ -212,20 +212,33 @@ const RankPaperResults = () => {
             </div>
 
             {/* Violations Warning */}
+            {!hasViolations && (
+              <div className="p-3 rounded-lg border border-success/20 bg-success/5 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
+                <p className="text-sm text-success font-medium">No integrity violations recorded ✓</p>
+              </div>
+            )}
+
             {hasViolations && (
               <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-destructive">Integrity Violations Detected</p>
-                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-                      {tabSwitchCount > 0 && (
-                        <p>• Tab switches: {tabSwitchCount} times</p>
-                      )}
-                      {windowCloseCount > 0 && (
-                        <p>• Window closed/refreshed: {windowCloseCount} times</p>
-                      )}
+                  <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-medium text-destructive">Integrity Violations Recorded</p>
+                    <p className="text-xs text-muted-foreground mt-1 mb-3">These were recorded during your exam session</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 rounded-lg bg-background border text-center">
+                        <p className="text-2xl font-bold text-destructive">{tabSwitchCount}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Browser tab switches</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-background border text-center">
+                        <p className="text-2xl font-bold text-destructive">{windowCloseCount}</p>
+                        <p className="text-xs text-muted-foreground mt-1">App / window switches</p>
+                      </div>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Total: <strong>{tabSwitchCount + windowCloseCount}</strong> violations — This has been reported to the examiner.
+                    </p>
                   </div>
                 </div>
               </div>

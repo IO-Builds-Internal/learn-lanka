@@ -562,17 +562,24 @@ const AdminRankPaperAttempts = () => {
                       <TableCell>{getAttemptStatus(attempt)}</TableCell>
                       <TableCell>
                         {(attempt.tab_switch_count > 0 || attempt.window_close_count > 0) ? (
-                          <div className="flex items-center gap-1.5 text-destructive">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span className="text-sm font-medium">
-                              {attempt.tab_switch_count + attempt.window_close_count}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              ({attempt.tab_switch_count}T / {attempt.window_close_count}W)
-                            </span>
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1.5 text-destructive">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span className="text-sm font-medium">
+                                {attempt.tab_switch_count + attempt.window_close_count} violations
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-0.5 pl-5">
+                              {attempt.tab_switch_count > 0 && (
+                                <p>Tab: {attempt.tab_switch_count}×</p>
+                              )}
+                              {attempt.window_close_count > 0 && (
+                                <p>App switch: {attempt.window_close_count}×</p>
+                              )}
+                            </div>
                           </div>
                         ) : (
-                          <span className="text-success text-sm">Clean</span>
+                          <span className="text-success text-sm">✓ Clean</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -653,6 +660,43 @@ const AdminRankPaperAttempts = () => {
               Review student's submitted answers
             </DialogDescription>
           </DialogHeader>
+
+          {/* Integrity Summary */}
+          {selectedAttempt && (
+            <div className={`p-3 rounded-lg border text-sm flex flex-wrap gap-4 ${
+              (selectedAttempt.tab_switch_count > 0 || selectedAttempt.window_close_count > 0)
+                ? 'bg-destructive/5 border-destructive/30'
+                : 'bg-success/5 border-success/20'
+            }`}>
+              <div className="flex items-center gap-2">
+                <AlertTriangle className={`w-4 h-4 ${
+                  (selectedAttempt.tab_switch_count > 0 || selectedAttempt.window_close_count > 0)
+                    ? 'text-destructive' : 'text-success'
+                }`} />
+                <span className="font-medium">Integrity Report</span>
+              </div>
+              <div className="flex gap-4 text-muted-foreground">
+                <span>
+                  Tab switches:{' '}
+                  <strong className={selectedAttempt.tab_switch_count > 0 ? 'text-destructive' : 'text-success'}>
+                    {selectedAttempt.tab_switch_count}
+                  </strong>
+                </span>
+                <span>
+                  App/Browser switches:{' '}
+                  <strong className={selectedAttempt.window_close_count > 0 ? 'text-destructive' : 'text-success'}>
+                    {selectedAttempt.window_close_count}
+                  </strong>
+                </span>
+                <span>
+                  Total violations:{' '}
+                  <strong className={(selectedAttempt.tab_switch_count + selectedAttempt.window_close_count) > 0 ? 'text-destructive' : 'text-success'}>
+                    {selectedAttempt.tab_switch_count + selectedAttempt.window_close_count}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          )}
           
           <Tabs defaultValue={paper.has_mcq ? "mcq" : (paper.has_short_essay ? "short_essay" : "essay")}>
             <TabsList>
