@@ -300,13 +300,31 @@ const Playground = () => {
       setShowPreview(false); return;
     }
     setRunning(true); setOutput([]); setShowPreview(false);
-    const lines: string[] = [];
+    const collectedLines: string[] = [];
     try {
-      await runPython(currentCode, (t) => { lines.push(t); setOutput([...lines]); });
+      await loadSkulpt();
+      await new Promise<void>((resolve, reject) => {
+        window.Sk.configure({
+          output: (text: string) => {
+            collectedLines.push(text);
+          },
+          read: (x: string) => {
+            if (!window.Sk.builtinFiles?.files[x]) throw new Error(`File not found: '${x}'`);
+            return window.Sk.builtinFiles.files[x];
+          },
+          __future__: window.Sk.python3,
+        });
+        window.Sk.misceval.asyncToPromise(() =>
+          window.Sk.importMainWithBody('<stdin>', false, currentCode, true)
+        ).then(resolve).catch((e: any) => reject(new Error(e.toString())));
+      });
     } catch (err: any) {
-      lines.push(`\nTraceback (most recent call last):\n  ${err.message}`);
-      setOutput([...lines]);
-    } finally { setRunning(false); }
+      const errMsg = err.message || String(err);
+      collectedLines.push(`\nError: ${errMsg}`);
+    } finally {
+      setOutput([...collectedLines]);
+      setRunning(false);
+    }
   };
 
   const handleReset = () => {
