@@ -51,6 +51,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 
 import NotFound from "./pages/NotFound";
+import Playground from "./pages/Playground";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
 
               {/* Papers - accessible without login (for free papers only) */}
               <Route path="/papers" element={<Papers />} />
+              <Route path="/playground" element={<Playground />} />
 
               {/* Protected Student Routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

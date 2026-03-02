@@ -176,11 +176,18 @@ const Login = () => {
               </div>
             </form>
 
-            {/* Papers Button */}
-            <div className="mt-6 pt-6 border-t border-slate-200">
+            {/* Papers & Playground Buttons */}
+            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                className="w-full dark:border-slate-600 dark:text-slate-300 gap-2 text-sm"
+                onClick={() => window.open('/playground', '_blank', 'noopener,noreferrer')}
+              >
+                🖥️ Playground
+              </Button>
               <Link to="/papers" className="block">
-                <Button variant="outline" className="w-full dark:border-slate-600 dark:text-slate-300">
-                  Browse Past Papers
+                <Button variant="outline" className="w-full dark:border-slate-600 dark:text-slate-300 text-sm">
+                  📄 Past Papers
                 </Button>
               </Link>
             </div>
