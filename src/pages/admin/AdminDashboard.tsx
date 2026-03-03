@@ -48,14 +48,19 @@ const AdminDashboard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('payments')
-        .select(`
-          *,
-          profiles:user_id (first_name, last_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(5);
       if (error) throw error;
-      return data || [];
+      if (!data || data.length === 0) return [];
+      // Fetch profiles separately
+      const userIds = [...new Set(data.map(p => p.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', userIds);
+      const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      return data.map(p => ({ ...p, profiles: profileMap[p.user_id] || null }));
     },
   });
 
