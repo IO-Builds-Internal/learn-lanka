@@ -76,15 +76,6 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
     setMobileMenuOpen(false);
   };
 
-  // Bottom nav items for mobile (5 key items)
-  const bottomNavItems = [
-    { path: '/dashboard', label: 'Home', icon: LayoutDashboard },
-    { path: '/classes', label: 'Classes', icon: BookOpen },
-    { path: '/rank-papers', label: 'Exams', icon: FileText },
-    { path: '/shop', label: 'Shop', icon: ShoppingBag },
-    { path: '/profile', label: 'Profile', icon: User },
-  ];
-
   return (
     <div ref={ref} className="min-h-screen bg-background">
       {/* Header */}
@@ -128,6 +119,7 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
 
             {/* Right Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {/* Theme Toggle */}
               <ThemeToggle />
 
               {/* Notifications */}
@@ -142,7 +134,7 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
                 </Button>
               </Link>
 
-              {/* Admin Panel Link - desktop only */}
+              {/* Admin Panel Link */}
               {(isAdmin || isModerator) && (
                 <Link to="/admin" className="hidden sm:block">
                   <Button variant="outline" size="sm" className="gap-2 text-primary border-primary">
@@ -152,14 +144,14 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
                 </Link>
               )}
 
-              {/* Profile - desktop only */}
-              <Link to="/profile" className="hidden md:block">
+              {/* Profile */}
+              <Link to="/profile" className="hidden sm:block">
                 <Button variant="ghost" size="icon">
                   <User className="w-5 h-5" />
                 </Button>
               </Link>
 
-              {/* Mobile overflow menu (admin/logout) */}
+              {/* Mobile Menu Button */}
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -172,78 +164,66 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
           </div>
         </div>
 
-        {/* Mobile slide-down menu for extra items */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t bg-card animate-fade-in">
-            <nav className="page-container py-3 space-y-0.5">
-              {(isAdmin || isModerator) && (
+            <nav className="page-container py-4 space-y-1">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path || 
+                  (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                      isActive 
+                        ? "bg-primary text-primary-foreground" 
+                        : "text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <div className="border-t my-2 pt-2">
+                {(isAdmin || isModerator) && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    <Shield className="w-5 h-5" />
+                    Admin Panel
+                  </Link>
+                )}
                 <Link
-                  to="/admin"
+                  to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                 >
-                  <Shield className="w-5 h-5" />
-                  Admin Panel
+                  <User className="w-5 h-5" />
+                  Profile
                 </Link>
-              )}
-              <Link
-                to="/playground"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              >
-                <Code2 className="w-5 h-5" />
-                Playground
-              </Link>
-              <Link
-                to="/papers"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              >
-                <FileText className="w-5 h-5" />
-                Past Papers
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full text-left"
-              >
-                <LogOut className="w-5 h-5" />
-                Sign Out
-              </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              </div>
             </nav>
           </div>
         )}
       </header>
 
-      {/* Main Content - add bottom padding on mobile for bottom nav */}
-      <main className="page-container py-4 sm:py-6 pb-20 md:pb-6">
+      {/* Main Content */}
+      <main className="page-container py-4 sm:py-6">
         {children}
       </main>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur border-t border-border">
-        <div className="flex items-center justify-around px-1 py-1 safe-area-inset-bottom">
-          {bottomNavItems.map((item) => {
-            const isActive = location.pathname === item.path ||
-              (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl min-w-[56px] transition-colors",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <item.icon className={cn("w-5 h-5 transition-transform", isActive && "scale-110")} />
-                <span className="text-[10px] font-medium leading-tight">{item.label}</span>
-                {item.path === '/profile' && notificationCount > 0 && false /* notifications shown in header */}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
     </div>
   );
 });
