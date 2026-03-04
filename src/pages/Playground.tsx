@@ -958,14 +958,35 @@ const Playground = () => {
 
   const buildWebPreview = () => {
     const htmlFile = files.find(f => ['html','htm'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
+    let html = htmlFile?.code ?? '<html><body></body></html>';
+
+    // Resolve <link rel="stylesheet" href="filename.css"> from workspace files
+    html = html.replace(/<link\b[^>]*\bhref=["']([^"']+\.css)["'][^>]*>/gi, (match, href) => {
+      const fname = href.split('/').pop() ?? '';
+      const wsFile = files.find(f => f.name === fname);
+      if (wsFile) return `<style>\n/* linked from ${fname} */\n${wsFile.code}\n</style>`;
+      return match; // keep as-is if not found in workspace
+    });
+
+    // Resolve <script src="filename.js"> from workspace files
+    html = html.replace(/<script\b[^>]*\bsrc=["']([^"']+\.(?:js|ts))["'][^>]*><\/script>/gi, (match, src) => {
+      const fname = src.split('/').pop() ?? '';
+      const wsFile = files.find(f => f.name === fname);
+      if (wsFile) return `<script>\n/* linked from ${fname} */\n${wsFile.code}\n</script>`;
+      return match;
+    });
+
+    // Auto-inject style.css / script.js only if NOT already linked in the HTML
     const cssFile = files.find(f => f.name.split('.').pop()?.toLowerCase() === 'css');
     const jsFile = files.find(f => ['js','ts'].includes(f.name.split('.').pop()?.toLowerCase() ?? ''));
-    let html = htmlFile?.code ?? '<html><body></body></html>';
-    if (cssFile?.code) {
+    const cssAlreadyLinked = cssFile && html.includes(cssFile.name);
+    const jsAlreadyLinked = jsFile && html.includes(jsFile.name);
+
+    if (cssFile?.code && !cssAlreadyLinked) {
       html = html.replace('</head>', `<style>\n${cssFile.code}\n</style>\n</head>`);
       if (!html.includes('</head>')) html = `<style>\n${cssFile.code}\n</style>\n` + html;
     }
-    if (jsFile?.code) {
+    if (jsFile?.code && !jsAlreadyLinked) {
       html = html.replace('</body>', `<script>\n${jsFile.code}\n</script>\n</body>`);
       if (!html.includes('</body>')) html += `<script>\n${jsFile.code}\n</script>`;
     }
@@ -1002,10 +1023,9 @@ const Playground = () => {
       setRunning(true); setOutput('');
       const col: string[] = [];
       const unsupportedPatterns: { pattern: RegExp; hint: string }[] = [
-        { pattern: /open\s*\(.*encoding\s*=/, hint: '⚠ open() with encoding= is not supported in the browser Python engine (Skulpt). Remove the encoding keyword: open(filename, "w")' },
-        { pattern: /open\s*\(/, hint: '⚠ File I/O (open/read/write) is not supported in the browser Python engine (Skulpt).\nThis is a browser limitation — no real filesystem exists here.\n\nTip: Use print() to display output instead.' },
+        { pattern: /open\s*\(.*encoding\s*=/, hint: '⚠ open() with encoding= is not supported in Skulpt. Remove the encoding keyword: open(filename, "r")' },
         { pattern: /import\s+os\b/, hint: '⚠ The "os" module is not supported in Skulpt (browser Python). Use print() for output.' },
-        { pattern: /import\s+sys\b/, hint: '⚠ The "sys" module has limited support in Skulpt. sys.stdin and file I/O are not available.' },
+        { pattern: /import\s+sys\b/, hint: '⚠ The "sys" module has limited support in Skulpt. sys.stdin is not available.' },
         { pattern: /import\s+json\b/, hint: '⚠ The "json" module has limited support in Skulpt.' },
       ];
       for (const { pattern, hint } of unsupportedPatterns) {
@@ -1016,7 +1036,15 @@ const Playground = () => {
         await new Promise<void>((res, rej) => {
           window.Sk.configure({
             output: (t: string) => col.push(t),
-            read: (x: string) => { if (!window.Sk.builtinFiles?.files[x]) throw new Error(`File not found: '${x}'`); return window.Sk.builtinFiles.files[x]; },
+            read: (x: string) => {
+              // Check workspace files first (so Python can open() txt/csv/etc files in workspace)
+              const fname = x.split('/').pop() ?? x;
+              const wsFile = files.find(f => f.name === fname);
+              if (wsFile) return wsFile.code;
+              // Fall back to Skulpt built-in stdlib
+              if (window.Sk.builtinFiles?.files[x]) return window.Sk.builtinFiles.files[x];
+              throw new Error(`File not found: '${x}'\nTip: Make sure the file exists in your workspace.`);
+            },
             __future__: window.Sk.python3,
           });
           window.Sk.misceval.asyncToPromise(() => window.Sk.importMainWithBody('<stdin>', false, code, true)).then(res).catch((e: any) => rej(new Error(e.toString())));
