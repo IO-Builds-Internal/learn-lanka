@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import PaymentVerificationDialog from '@/components/admin/PaymentVerificationDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
