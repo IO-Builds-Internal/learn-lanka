@@ -298,13 +298,20 @@ const AdminQuestionBank = () => {
   const typeColor = (t: string) =>
     t === 'MCQ' ? 'bg-primary/10 text-primary' : t === 'ESSAY' ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground';
 
+  // Summary stats
+  const mcqCount = questions.filter(q => q.question_type === 'MCQ').length;
+  const essayCount = questions.filter(q => q.question_type === 'ESSAY').length;
+  const shortEssayCount = questions.filter(q => q.question_type === 'SHORT_ESSAY').length;
+  const withExplainCount = questions.filter(q => q.explain_video_url).length;
+
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Question Bank</h1>
-            <p className="text-muted-foreground text-sm mt-1">{questions.length} questions</p>
+            <p className="text-muted-foreground text-sm mt-1">{questions.length} total questions</p>
           </div>
           <Button onClick={openAdd}>
             <Plus className="w-4 h-4 mr-2" /> Add Question
