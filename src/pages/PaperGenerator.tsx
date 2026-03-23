@@ -764,10 +764,26 @@ const GeneratedPapersHistory = () => {
                 </div>
               </div>
 
-              {/* Expanded: answers + review videos */}
+              {/* Expanded: answers + review videos — gated behind access */}
               {isExpanded && (
                 <div className="pt-2 border-t space-y-4">
-                  {loadingQuestionsId === paper.id ? (
+                  {!hasAccess ? (
+                    /* ── Access gate ── */
+                    <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
+                      <p className="text-sm font-medium text-foreground">
+                        🔒 Answers & review videos are only available to enrolled students or users with lifetime access.
+                      </p>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" onClick={() => window.location.href = '/classes'}>
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          Enroll in a Class
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => window.location.href = '/paper-generator?tab=answers'}>
+                          Get Lifetime Access
+                        </Button>
+                      </div>
+                    </div>
+                  ) : loadingQuestionsId === paper.id ? (
                     <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : qs.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-3">No question data found</p>
