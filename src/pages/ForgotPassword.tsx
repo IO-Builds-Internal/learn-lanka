@@ -104,17 +104,17 @@ const ForgotPassword = () => {
     
     try {
       // Update user password (backend will resolve the user by phone)
-      const { data, error } = await supabase.functions.invoke('reset-password', {
+      const { data, error } = await invokeFunction('reset-password', {
         body: { phone, newPassword: password }
       });
 
       if (error) throw error;
 
-      if (data.success) {
+      if ((data as any)?.success) {
         toast.success('Password reset successfully! Please login with your new password.');
         navigate('/login');
       } else {
-        throw new Error(data.error || 'Failed to reset password');
+        throw new Error((data as any)?.error || 'Failed to reset password');
       }
     } catch (error: any) {
       console.error('Reset password error:', error);
