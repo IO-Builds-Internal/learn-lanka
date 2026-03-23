@@ -15,6 +15,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { invokeFunction } from '@/lib/functions';
 
 interface Payment {
   id: string;
@@ -142,7 +143,7 @@ const PaymentVerificationDialog = ({
 
       // Send SMS notification
       try {
-        await supabase.functions.invoke('send-sms-notification', {
+        await invokeFunction('send-sms-notification', {
           body: {
             type: 'payment_status',
             targetUsers: [payment.user_id],

@@ -35,6 +35,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { invokeFunction } from '@/lib/functions';
 
 interface SmsTemplate {
   id: string;
@@ -171,7 +172,7 @@ const SmsTemplatesManager = () => {
 
     setIsSendingTest(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-bulk-sms', {
+      const { data, error } = await invokeFunction('send-bulk-sms', {
         body: {
           recipients: [testPhone],
           message: getPreviewMessage(),

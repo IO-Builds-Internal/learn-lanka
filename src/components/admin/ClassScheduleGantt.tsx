@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { invokeFunction } from '@/lib/functions';
 
 interface ClassWithDays {
   id: string;
@@ -132,7 +133,7 @@ const ClassScheduleGantt = () => {
 
       const prevMonth = format(subMonths(currentDate, 1), 'yyyy-MM');
       
-      await supabase.functions.invoke('send-sms-notification', {
+      await invokeFunction('send-sms-notification', {
         body: {
           type: 'schedule_published',
           classId: classData.id,

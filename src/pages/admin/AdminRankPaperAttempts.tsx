@@ -44,6 +44,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { invokeFunction } from '@/lib/functions';
 
 interface RankPaper {
   id: string;
@@ -317,7 +318,7 @@ const AdminRankPaperAttempts = () => {
 
       // Send SMS notification to eligible students
       if (paper) {
-        await supabase.functions.invoke('send-sms-notification', {
+        await invokeFunction('send-sms-notification', {
           body: {
             type: 'rank_results_published',
             rankPaperId: paper.id,
