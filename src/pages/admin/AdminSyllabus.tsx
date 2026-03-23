@@ -229,7 +229,9 @@ const AdminSyllabus = () => {
                         <span className="font-medium truncate">{lesson.title}</span>
                         <div className="flex items-center gap-1 flex-wrap">
                           {lesson.grade && (
-                            <Badge variant="secondary" className="text-xs">Grade {lesson.grade}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {lesson.grade >= 12 ? 'G.C.E A/L' : `Grade ${lesson.grade}`}
+                            </Badge>
                           )}
                           {lesson.medium && (
                             <Badge variant="outline" className="text-xs capitalize">{lesson.medium}</Badge>
