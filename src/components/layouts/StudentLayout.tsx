@@ -32,14 +32,16 @@ interface StudentLayoutProps {
   children: React.ReactNode;
 }
 
+const DEFAULT_ORDER = ['classes', 'rank-papers', 'papers', 'paper-generator', 'shop', 'playground'];
+
 const ALL_NAV_ITEMS = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, flag: null },
-  { path: '/classes', label: 'Classes', icon: BookOpen, flag: 'section_classes' },
-  { path: '/rank-papers', label: 'Rank Papers', icon: FileText, flag: 'section_rank_papers' },
-  { path: '/papers', label: 'Past Papers', icon: FileText, flag: 'section_papers' },
-  { path: '/paper-generator', label: 'Paper Generator', icon: Wand2, flag: 'section_paper_generator' },
-  { path: '/shop', label: 'Shop', icon: ShoppingBag, flag: 'section_shop' },
-  { path: '/playground', label: 'Playground', icon: Code2, flag: 'section_playground' },
+  { path: '/dashboard',       label: 'Dashboard',        icon: LayoutDashboard, key: 'dashboard',        flag: null },
+  { path: '/classes',         label: 'Classes',          icon: BookOpen,        key: 'classes',          flag: 'section_classes' },
+  { path: '/rank-papers',     label: 'Rank Papers',      icon: FileText,        key: 'rank-papers',      flag: 'section_rank_papers' },
+  { path: '/papers',          label: 'Past Papers',      icon: FileText,        key: 'papers',           flag: 'section_papers' },
+  { path: '/paper-generator', label: 'Paper Generator',  icon: Wand2,           key: 'paper-generator',  flag: 'section_paper_generator' },
+  { path: '/shop',            label: 'Shop',             icon: ShoppingBag,     key: 'shop',             flag: 'section_shop' },
+  { path: '/playground',      label: 'Playground',       icon: Code2,           key: 'playground',       flag: 'section_playground' },
 ];
 
 const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ children }, ref) => {
@@ -49,10 +51,16 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
   const { data: settings } = useSiteSettings();
   const siteName = settings?.site_name || 'ICT Academy';
 
-  const navItems = ALL_NAV_ITEMS.filter(item => {
-    if (!item.flag) return true;
-    return (settings as any)?.[item.flag] !== false;
-  });
+  const navItems = (() => {
+    const dashboard = ALL_NAV_ITEMS.find(i => i.key === 'dashboard')!;
+    const savedOrder: string[] = settings?.nav_order || DEFAULT_ORDER;
+    // Build ordered list: dashboard always first, rest by saved order
+    const rest = savedOrder
+      .map(k => ALL_NAV_ITEMS.find(i => i.key === k))
+      .filter((i): i is typeof ALL_NAV_ITEMS[0] => !!i && i.flag !== null)
+      .filter(i => (settings as any)?.[i.flag!] !== false);
+    return [dashboard, ...rest];
+  })();
 
   // Fetch unread notification count
   const { data: notificationCount = 0 } = useQuery({

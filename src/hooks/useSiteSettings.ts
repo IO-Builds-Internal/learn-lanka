@@ -16,6 +16,8 @@ export interface SiteSettings {
   section_playground: boolean;
   section_notifications: boolean;
   section_paper_generator: boolean;
+  // Nav order: array of item keys
+  nav_order: string[] | null;
 }
 
 export const useSiteSettings = () => {
@@ -46,6 +48,7 @@ export const useSiteSettings = () => {
         section_playground: flag('section_playground'),
         section_notifications: flag('section_notifications'),
         section_paper_generator: flag('section_paper_generator'),
+        nav_order: map['nav_order'] ? (() => { try { return JSON.parse(map['nav_order']); } catch(_) { return null; } })() : null,
       };
     },
     staleTime: 0,
