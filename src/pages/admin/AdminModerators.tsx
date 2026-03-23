@@ -253,13 +253,14 @@ const AdminModerators = () => {
             </div>
           }
         />
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Add Moderator</DialogTitle>
-                  <DialogDescription>
-                    Search for a user to make them a moderator
-                  </DialogDescription>
-                </DialogHeader>
+        <Dialog open={addModeratorOpen} onOpenChange={setAddModeratorOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add Moderator</DialogTitle>
+              <DialogDescription>
+                Search for a user to make them a moderator
+              </DialogDescription>
+            </DialogHeader>
                 <div className="space-y-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
