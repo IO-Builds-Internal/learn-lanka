@@ -315,7 +315,7 @@ const Papers = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="PAST_PAPER">Past Papers</TabsTrigger>
             <TabsTrigger value="SCHOOL_EXAM">School Exams</TabsTrigger>
             <TabsTrigger value="MODEL_PAPER">Model Papers</TabsTrigger>
@@ -326,9 +326,9 @@ const Papers = () => {
             {sortedYears.length === 0 ? (
               <EmptyState message={isGuest ? "No free past papers available. Log in for more!" : "No past papers available yet"} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {sortedYears.map((year) => (
-                  <YearCard 
+                  <YearCard
                     key={year} 
                     year={year} 
                     papers={papersByYear[year]} 
@@ -349,9 +349,9 @@ const Papers = () => {
             {sortedGrades.length === 0 ? (
               <EmptyState message={isGuest ? "No free school exams available. Log in for more!" : "No school exams available yet"} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {sortedGrades.map((grade) => (
-                  <GradeCard 
+                  <GradeCard
                     key={grade} 
                     grade={grade} 
                     papers={schoolExamsByGrade[grade]} 
