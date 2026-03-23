@@ -927,6 +927,103 @@ export type Database = {
         }
         Relationships: []
       }
+      question_bank: {
+        Row: {
+          category: string
+          correct_option_no: number | null
+          created_at: string
+          created_by: string | null
+          explain_video_url: string | null
+          grade: number | null
+          id: string
+          lesson_id: string | null
+          medium: string | null
+          past_paper_ref: string | null
+          question_image_url: string | null
+          question_text: string | null
+          question_type: string
+          subject: string
+        }
+        Insert: {
+          category?: string
+          correct_option_no?: number | null
+          created_at?: string
+          created_by?: string | null
+          explain_video_url?: string | null
+          grade?: number | null
+          id?: string
+          lesson_id?: string | null
+          medium?: string | null
+          past_paper_ref?: string | null
+          question_image_url?: string | null
+          question_text?: string | null
+          question_type?: string
+          subject?: string
+        }
+        Update: {
+          category?: string
+          correct_option_no?: number | null
+          created_at?: string
+          created_by?: string | null
+          explain_video_url?: string | null
+          grade?: number | null
+          id?: string
+          lesson_id?: string | null
+          medium?: string | null
+          past_paper_ref?: string | null
+          question_image_url?: string | null
+          question_text?: string | null
+          question_type?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_bank_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_bank_options: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean
+          option_image_url: string | null
+          option_no: number
+          option_text: string | null
+          question_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          option_image_url?: string | null
+          option_no: number
+          option_text?: string | null
+          question_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          option_image_url?: string | null
+          option_no?: number
+          option_text?: string | null
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_bank_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "question_bank"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rank_answers_mcq: {
         Row: {
           attempt_id: string
@@ -1476,6 +1573,50 @@ export type Database = {
           variables?: string[]
         }
         Relationships: []
+      }
+      syllabus_lessons: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          grade: number | null
+          id: string
+          medium: string | null
+          parent_id: string | null
+          sort_order: number
+          subject: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          grade?: number | null
+          id?: string
+          medium?: string | null
+          parent_id?: string | null
+          sort_order?: number
+          subject?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          grade?: number | null
+          id?: string
+          medium?: string | null
+          parent_id?: string | null
+          sort_order?: number
+          subject?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllabus_lessons_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_notification_reads: {
         Row: {
