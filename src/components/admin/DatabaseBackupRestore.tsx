@@ -110,7 +110,7 @@ const DatabaseBackupRestore = () => {
       }
 
       // Check results
-      const results = response.data.results;
+      const results = (response.data as any)?.results;
       const failed = Object.entries(results).filter(([_, r]: [string, any]) => !r.success);
 
       if (failed.length > 0) {
@@ -148,7 +148,7 @@ const DatabaseBackupRestore = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success(response.data.message || 'Database seeded successfully!');
+      toast.success((response.data as any)?.message || 'Database seeded successfully!');
     } catch (error: any) {
       console.error('Seed error:', error);
       toast.error(error.message || 'Failed to seed database');
@@ -175,7 +175,7 @@ const DatabaseBackupRestore = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success(response.data.message || 'Database cleared successfully!');
+      toast.success((response.data as any)?.message || 'Database cleared successfully!');
     } catch (error: any) {
       console.error('Clear error:', error);
       toast.error(error.message || 'Failed to clear database');

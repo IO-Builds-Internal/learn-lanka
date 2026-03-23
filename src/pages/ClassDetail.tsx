@@ -542,10 +542,10 @@ const ClassDetail = () => {
                                   }
                                   throw error;
                                 }
-                                if (data?.error) throw new Error(data.error);
+                                if ((data as any)?.error) throw new Error((data as any).error);
                                 
                                 // Open the unique join link
-                                window.open(data.joinUrl, '_blank');
+                                window.open((data as any).joinUrl, '_blank');
                               } catch (err: any) {
                                 console.error('Join meeting error:', err);
                                 toast.error(err.message || 'Failed to join meeting');
