@@ -8,6 +8,9 @@ interface ProtectedRouteProps {
   requireModerator?: boolean;
 }
 
+// Student-only routes — admin/mod should not land here
+const STUDENT_ONLY_PATHS = ['/dashboard', '/classes', '/rank-papers', '/shop', '/checkout', '/notifications', '/papers', '/playground', '/profile'];
+
 const ProtectedRoute = ({ children, requireAdmin, requireModerator }: ProtectedRouteProps) => {
   const { user, loading, rolesLoading, isAdmin, isModerator } = useAuth();
   const location = useLocation();
@@ -21,16 +24,23 @@ const ProtectedRoute = ({ children, requireAdmin, requireModerator }: ProtectedR
   }
 
   if (!user) {
-    // Redirect to login, but save the intended destination
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Admins/mods visiting student-only routes → send to admin panel
+  if ((isAdmin || isModerator) && !requireAdmin && !requireModerator) {
+    const isStudentOnly = STUDENT_ONLY_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
+    if (isStudentOnly) {
+      return <Navigate to="/admin" replace />;
+    }
+  }
+
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   if (requireModerator && !isModerator) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   return <>{children}</>;
