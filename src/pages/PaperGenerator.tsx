@@ -109,15 +109,16 @@ const PaperGenerator = () => {
   const [generatedPaper, setGeneratedPaper] = useState<{ id: string; questions: GeneratedQuestion[] } | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
-  // Fetch lessons for grade
+  // Fetch lessons for grade + medium
   const gradeParam = selectedGrade === '12' ? [12, 13] : [parseInt(selectedGrade)];
   const { data: allLessons = [] } = useQuery({
-    queryKey: ['syllabus-lessons-for-gen', selectedGrade],
+    queryKey: ['syllabus-lessons-for-gen', selectedGrade, selectedMedium],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('syllabus_lessons')
         .select('id, title, parent_id')
         .in('grade', gradeParam)
+        .or(`medium.eq.${selectedMedium},medium.is.null`)
         .order('sort_order');
       if (error) throw error;
       return data as LessonItem[];
