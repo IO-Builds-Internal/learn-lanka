@@ -409,21 +409,36 @@ const PaperGenerator = () => {
                 {/* Step 1: Grade & Type */}
                 <Card className="card-elevated">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Step 1 — Grade & Paper Type</CardTitle>
+                    <CardTitle className="text-base">Step 1 — Grade, Medium & Paper Type</CardTitle>
                   </CardHeader>
-                  <CardContent className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Grade</Label>
-                      <Select value={selectedGrade} onValueChange={v => { setSelectedGrade(v); setSelectedLessons([]); }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {GRADES.map(g => (
-                            <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  <CardContent className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Grade</Label>
+                        <Select value={selectedGrade} onValueChange={v => { setSelectedGrade(v); setSelectedLessons([]); }}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADES.map(g => (
+                              <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Medium</Label>
+                        <Select value={selectedMedium} onValueChange={v => { setSelectedMedium(v); setSelectedLessons([]); }}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MEDIUMS.map(m => (
+                              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label>Paper Type</Label>
