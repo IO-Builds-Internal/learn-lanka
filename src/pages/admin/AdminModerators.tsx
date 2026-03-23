@@ -306,8 +306,6 @@ const AdminModerators = () => {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
-        </div>
 
         {/* Search */}
         <Card className="card-elevated">
