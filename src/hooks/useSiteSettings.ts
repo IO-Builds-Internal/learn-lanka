@@ -8,7 +8,7 @@ export interface SiteSettings {
   login_bg_url: string | null;
   contact_phone: string;
   contact_email: string;
-  // Section feature flags (default true = enabled)
+  // Section feature flags — false = totally disabled (FeatureGate blocks access)
   section_classes: boolean;
   section_rank_papers: boolean;
   section_papers: boolean;
@@ -16,6 +16,13 @@ export interface SiteSettings {
   section_playground: boolean;
   section_notifications: boolean;
   section_paper_generator: boolean;
+  // Nav hidden flags — true = hidden from nav bar (but page still accessible)
+  nav_hidden_classes: boolean;
+  nav_hidden_rank_papers: boolean;
+  nav_hidden_papers: boolean;
+  nav_hidden_shop: boolean;
+  nav_hidden_playground: boolean;
+  nav_hidden_paper_generator: boolean;
   // Nav order: array of item keys
   nav_order: string[] | null;
 }
@@ -34,6 +41,7 @@ export const useSiteSettings = () => {
       data?.forEach((s: any) => { map[s.key] = s.value; });
 
       const flag = (key: string) => map[key] !== 'false'; // default true unless explicitly 'false'
+      const hidden = (key: string) => map[key] === 'true'; // default false unless explicitly 'true'
       return {
         site_name: map['site_name'] || 'A/L ICT',
         logo_url: map['logo_url'] || null,
@@ -48,6 +56,12 @@ export const useSiteSettings = () => {
         section_playground: flag('section_playground'),
         section_notifications: flag('section_notifications'),
         section_paper_generator: flag('section_paper_generator'),
+        nav_hidden_classes: hidden('nav_hidden_classes'),
+        nav_hidden_rank_papers: hidden('nav_hidden_rank_papers'),
+        nav_hidden_papers: hidden('nav_hidden_papers'),
+        nav_hidden_shop: hidden('nav_hidden_shop'),
+        nav_hidden_playground: hidden('nav_hidden_playground'),
+        nav_hidden_paper_generator: hidden('nav_hidden_paper_generator'),
         nav_order: map['nav_order'] ? (() => { try { return JSON.parse(map['nav_order']); } catch(_) { return null; } })() : null,
       };
     },
