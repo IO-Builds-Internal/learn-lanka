@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import StudentPreviewBanner from '@/components/admin/StudentPreviewBanner';
 import { 
   GraduationCap, 
   LayoutDashboard, 
@@ -82,8 +83,11 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
     setMobileMenuOpen(false);
   };
 
+  const isStudentPreview = sessionStorage.getItem('admin_student_preview') === 'true';
+
   return (
-    <div ref={ref} className="min-h-screen bg-background">
+    <div ref={ref} className={`min-h-screen bg-background ${isStudentPreview ? 'pt-10' : ''}`}>
+      {isStudentPreview && <StudentPreviewBanner />}
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="page-container py-0">
