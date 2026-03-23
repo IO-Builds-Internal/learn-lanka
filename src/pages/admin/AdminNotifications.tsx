@@ -274,7 +274,6 @@ const AdminNotifications = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Notifications Table */}
         <Card className="card-elevated">
