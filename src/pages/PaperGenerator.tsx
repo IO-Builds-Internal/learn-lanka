@@ -659,7 +659,7 @@ const AccessGateHistory = ({ onRefresh, userId }: { onRefresh: () => void; userI
     enabled: !!userId,
     staleTime: 0,
     refetchOnWindowFocus: true,
-    refetchInterval: 3000,
+    // No polling — realtime subscription in GeneratedPapersHistory handles instant unlock
   });
 
   const isPending = accessPayment?.status === 'PENDING';
