@@ -68,16 +68,16 @@ const ForgotPassword = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
+      const { data, error } = await invokeFunction('verify-otp', {
         body: { phone, otp, purpose: 'RESET_PASSWORD' }
       });
 
       if (error) throw error;
 
-      if (data.success && data.verified) {
+      if ((data as any)?.success && (data as any)?.verified) {
         setStep('password');
       } else {
-        throw new Error(data.error || 'Invalid OTP');
+        throw new Error((data as any)?.error || 'Invalid OTP');
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
