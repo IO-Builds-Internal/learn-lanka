@@ -30,6 +30,7 @@ export const useSiteSettings = () => {
       const map: Record<string, string> = {};
       data?.forEach((s: any) => { map[s.key] = s.value; });
 
+      const flag = (key: string) => map[key] !== 'false'; // default true unless explicitly 'false'
       return {
         site_name: map['site_name'] || 'A/L ICT',
         logo_url: map['logo_url'] || null,
@@ -37,6 +38,12 @@ export const useSiteSettings = () => {
         login_bg_url: map['login_bg_url'] || null,
         contact_phone: map['contact_phone'] || '',
         contact_email: map['contact_email'] || '',
+        section_classes: flag('section_classes'),
+        section_rank_papers: flag('section_rank_papers'),
+        section_papers: flag('section_papers'),
+        section_shop: flag('section_shop'),
+        section_playground: flag('section_playground'),
+        section_notifications: flag('section_notifications'),
       };
     },
     staleTime: 1000 * 60 * 5,
