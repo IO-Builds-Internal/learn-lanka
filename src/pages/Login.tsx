@@ -39,7 +39,6 @@ const Login = () => {
       const formattedPhone = phone.replace(/\D/g, '');
       const phoneEmail = `${formattedPhone}@phone.alict.lk`;
 
-
       const { error } = await supabase.auth.signInWithPassword({
         email: phoneEmail,
         password,
