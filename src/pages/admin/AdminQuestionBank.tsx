@@ -518,7 +518,7 @@ const AdminQuestionBank = () => {
                   <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Any</SelectItem>
-                    {GRADES.map(g => <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>)}
+                    {GRADES.map(g => <SelectItem key={g.value} value={g.value.toString()}>{g.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
