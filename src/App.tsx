@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import FeatureGate from "@/components/auth/FeatureGate";
 import PublicOnlyRoute from "@/components/auth/PublicOnlyRoute";
 // Auth Pages
 import Login from "./pages/Login";
