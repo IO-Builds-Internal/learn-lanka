@@ -137,9 +137,10 @@ const AdminSettingsFeatures = () => {
                     {sectionClasses && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Classes</span></div>}
                     {sectionRankPapers && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><Award className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Rank Papers</span></div>}
                     {sectionPapers && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><FileText className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Past Papers</span></div>}
+                    {sectionPaperGenerator && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><Wand2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Paper Gen</span></div>}
                     {sectionShop && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><ShoppingBag className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Shop</span></div>}
                     {sectionPlayground && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><Code2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Playground</span></div>}
-                    {!sectionClasses && !sectionRankPapers && !sectionPapers && !sectionShop && !sectionPlayground && (
+                    {!sectionClasses && !sectionRankPapers && !sectionPapers && !sectionPaperGenerator && !sectionShop && !sectionPlayground && (
                       <div className="col-span-3 text-center py-2 text-[10px] text-muted-foreground">All sections hidden</div>
                     )}
                   </div>
