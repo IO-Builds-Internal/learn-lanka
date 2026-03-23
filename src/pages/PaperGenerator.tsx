@@ -60,6 +60,12 @@ const GRADES = [
   { value: '12', label: 'G.C.E A/L (Grade 12 & 13)' },
 ];
 
+const MEDIUMS = [
+  { value: 'English', label: 'English' },
+  { value: 'Sinhala', label: 'Sinhala (සිංහල)' },
+  { value: 'Tamil', label: 'Tamil (தமிழ்)' },
+];
+
 // Daily: 10 MCQ + 1 essay
 // Full: 50 MCQ + 4 short essay + 6 essay
 const PAPER_CONFIGS = {
@@ -93,6 +99,7 @@ const PaperGenerator = () => {
 
   // Config state
   const [selectedGrade, setSelectedGrade] = useState<string>('12');
+  const [selectedMedium, setSelectedMedium] = useState<string>('English');
   const [paperType, setPaperType] = useState<'DAILY' | 'FULL'>('DAILY');
   const [selectedLessons, setSelectedLessons] = useState<WeightedLesson[]>([]);
   const [pickerLessonId, setPickerLessonId] = useState<string>('');
@@ -102,15 +109,16 @@ const PaperGenerator = () => {
   const [generatedPaper, setGeneratedPaper] = useState<{ id: string; questions: GeneratedQuestion[] } | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
-  // Fetch lessons for grade
+  // Fetch lessons for grade + medium
   const gradeParam = selectedGrade === '12' ? [12, 13] : [parseInt(selectedGrade)];
   const { data: allLessons = [] } = useQuery({
-    queryKey: ['syllabus-lessons-for-gen', selectedGrade],
+    queryKey: ['syllabus-lessons-for-gen', selectedGrade, selectedMedium],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('syllabus_lessons')
         .select('id, title, parent_id')
         .in('grade', gradeParam)
+        .or(`medium.eq.${selectedMedium},medium.is.null`)
         .order('sort_order');
       if (error) throw error;
       return data as LessonItem[];
@@ -160,7 +168,8 @@ const PaperGenerator = () => {
           correct_option_no, options_image_url, lesson_id, explain_video_url,
           question_bank_options(option_no, option_text, option_image_url, is_correct)
         `)
-        .in('lesson_id', lessonIds);
+        .in('lesson_id', lessonIds)
+        .or(`medium.eq.${selectedMedium},medium.is.null`);
 
       if (error) throw error;
       if (!allQs || allQs.length === 0) {
@@ -400,21 +409,36 @@ const PaperGenerator = () => {
                 {/* Step 1: Grade & Type */}
                 <Card className="card-elevated">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Step 1 — Grade & Paper Type</CardTitle>
+                    <CardTitle className="text-base">Step 1 — Grade, Medium & Paper Type</CardTitle>
                   </CardHeader>
-                  <CardContent className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Grade</Label>
-                      <Select value={selectedGrade} onValueChange={v => { setSelectedGrade(v); setSelectedLessons([]); }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {GRADES.map(g => (
-                            <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  <CardContent className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Grade</Label>
+                        <Select value={selectedGrade} onValueChange={v => { setSelectedGrade(v); setSelectedLessons([]); }}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GRADES.map(g => (
+                              <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Medium</Label>
+                        <Select value={selectedMedium} onValueChange={v => { setSelectedMedium(v); setSelectedLessons([]); }}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MEDIUMS.map(m => (
+                              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label>Paper Type</Label>
