@@ -46,6 +46,7 @@ export const useSiteSettings = () => {
         section_notifications: flag('section_notifications'),
       };
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 };
