@@ -139,6 +139,7 @@ const App = () => (
               <Route path="/admin/settings/backup" element={<ProtectedRoute requireAdmin><AdminSettingsBackup /></ProtectedRoute>} />
               <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
               <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
+              <Route path="/admin/prices" element={<ProtectedRoute requireModerator><AdminPrices /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
