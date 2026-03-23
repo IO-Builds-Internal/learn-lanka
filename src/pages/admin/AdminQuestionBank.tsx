@@ -239,13 +239,14 @@ const AdminQuestionBank = () => {
     setDialogOpen(true);
   };
 
-  const openEdit = (q: QuestionBankRow) => {
+  const openEdit = (q: QuestionBankRow & { options_image_url?: string | null }) => {
     setEditing(q);
     const opts = emptyOptions();
     (q.question_bank_options || []).forEach(o => {
       const idx = opts.findIndex(x => x.option_no === o.option_no);
       if (idx !== -1) opts[idx] = { ...o, option_text: o.option_text || '' };
     });
+    const optImgUrl = (q as any).options_image_url || null;
     setForm({
       question_type: q.question_type,
       question_text: q.question_text || '',
@@ -259,6 +260,8 @@ const AdminQuestionBank = () => {
       options: opts,
       correct_option_no: q.correct_option_no,
       questionInputMode: q.question_image_url ? 'image' : 'text',
+      optionsMode: optImgUrl ? 'single_image' : 'individual',
+      options_image_url: optImgUrl,
     });
     setDialogOpen(true);
   };
