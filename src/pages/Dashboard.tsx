@@ -383,6 +383,19 @@ const Dashboard = () => {
             </Link>
           )}
 
+          {settings?.section_paper_generator !== false && (
+            <Link to="/paper-generator" className="block">
+              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
+                  <div className="p-2 sm:p-3 rounded-full bg-accent/10 mb-1 sm:mb-3">
+                    <Wand2 className="w-4 h-4 sm:w-6 sm:h-6 text-accent" />
+                  </div>
+                  <h3 className="font-medium text-xs sm:text-sm">Paper Gen</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+
           <Link to="/contact" className="block">
             <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
               <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">

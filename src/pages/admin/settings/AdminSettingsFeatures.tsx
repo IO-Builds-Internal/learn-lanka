@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  Monitor, Eye, BookOpen, Award, FileText, ShoppingBag, Code2, Bell,
+  Monitor, Eye, BookOpen, Award, FileText, ShoppingBag, Code2, Bell, Wand2,
   GraduationCap, LayoutDashboard, Package, MessageCircle, User,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ const AdminSettingsFeatures = () => {
   const [sectionShop, setSectionShop] = useState(true);
   const [sectionPlayground, setSectionPlayground] = useState(true);
   const [sectionNotifications, setSectionNotifications] = useState(true);
+  const [sectionPaperGenerator, setSectionPaperGenerator] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -33,6 +34,7 @@ const AdminSettingsFeatures = () => {
       setSectionShop(flag('section_shop'));
       setSectionPlayground(flag('section_playground'));
       setSectionNotifications(flag('section_notifications'));
+      setSectionPaperGenerator(flag('section_paper_generator'));
     })();
   }, []);
 
@@ -48,6 +50,7 @@ const AdminSettingsFeatures = () => {
     { label: 'Classes', desc: 'Class listings and enrollments', state: sectionClasses, set: setSectionClasses, key: 'section_classes', icon: BookOpen },
     { label: 'Rank Papers', desc: 'Quizzes and rank paper attempts', state: sectionRankPapers, set: setSectionRankPapers, key: 'section_rank_papers', icon: Award },
     { label: 'Past Papers', desc: 'Past paper downloads library', state: sectionPapers, set: setSectionPapers, key: 'section_papers', icon: FileText },
+    { label: 'Paper Generator', desc: 'Custom paper generation tool', state: sectionPaperGenerator, set: setSectionPaperGenerator, key: 'section_paper_generator', icon: Wand2 },
     { label: 'Shop', desc: 'Materials shop for students', state: sectionShop, set: setSectionShop, key: 'section_shop', icon: ShoppingBag },
     { label: 'Playground', desc: 'ICT code playground', state: sectionPlayground, set: setSectionPlayground, key: 'section_playground', icon: Code2 },
     { label: 'Notifications', desc: 'In-app notification bell', state: sectionNotifications, set: setSectionNotifications, key: 'section_notifications', icon: Bell },
@@ -111,6 +114,8 @@ const AdminSettingsFeatures = () => {
                     </div>
                     {sectionClasses && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><BookOpen className="w-2.5 h-2.5" /> Classes</div>}
                     {sectionRankPapers && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><Award className="w-2.5 h-2.5" /> Rank Papers</div>}
+                    {sectionPapers && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><FileText className="w-2.5 h-2.5" /> Past Papers</div>}
+                    {sectionPaperGenerator && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><Wand2 className="w-2.5 h-2.5" /> Paper Gen</div>}
                     {sectionShop && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><ShoppingBag className="w-2.5 h-2.5" /> Shop</div>}
                     {sectionPlayground && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><Code2 className="w-2.5 h-2.5" /> Playground</div>}
                   </div>
@@ -134,16 +139,17 @@ const AdminSettingsFeatures = () => {
                     {sectionClasses && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Classes</span></div>}
                     {sectionRankPapers && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><Award className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Rank Papers</span></div>}
                     {sectionPapers && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><FileText className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Past Papers</span></div>}
+                    {sectionPaperGenerator && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><Wand2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Paper Gen</span></div>}
                     {sectionShop && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><ShoppingBag className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Shop</span></div>}
                     {sectionPlayground && <div className="rounded-lg bg-card border px-2 py-1.5 flex items-center gap-1.5"><Code2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-medium">Playground</span></div>}
-                    {!sectionClasses && !sectionRankPapers && !sectionPapers && !sectionShop && !sectionPlayground && (
+                    {!sectionClasses && !sectionRankPapers && !sectionPapers && !sectionPaperGenerator && !sectionShop && !sectionPlayground && (
                       <div className="col-span-3 text-center py-2 text-[10px] text-muted-foreground">All sections hidden</div>
                     )}
                   </div>
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <Eye className="w-3 h-3" /> Past Papers &amp; Paper Generator appear only on the dashboard, not in the top nav.
+                <Eye className="w-3 h-3" /> Past Papers appear on the dashboard only; Paper Generator appears in both nav and dashboard.
               </p>
             </CardContent>
           </Card>

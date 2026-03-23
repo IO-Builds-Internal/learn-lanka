@@ -15,6 +15,7 @@ export interface SiteSettings {
   section_shop: boolean;
   section_playground: boolean;
   section_notifications: boolean;
+  section_paper_generator: boolean;
 }
 
 export const useSiteSettings = () => {
@@ -44,9 +45,11 @@ export const useSiteSettings = () => {
         section_shop: flag('section_shop'),
         section_playground: flag('section_playground'),
         section_notifications: flag('section_notifications'),
+        section_paper_generator: flag('section_paper_generator'),
       };
     },
     staleTime: 0,
     refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
   });
 };
