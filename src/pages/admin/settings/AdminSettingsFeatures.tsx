@@ -255,7 +255,7 @@ const AdminSettingsFeatures = () => {
 
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><EyeOff className="w-3.5 h-3.5 text-amber-500" /> <strong>Hide from Nav</strong> — removes from nav bar, but users can still visit the page directly</span>
+          <span className="flex items-center gap-1.5"><EyeOff className="w-3.5 h-3.5 text-warning" /> <strong>Hide from Nav</strong> — removes from nav bar, but users can still visit the page directly</span>
           <span className="flex items-center gap-1.5"><Ban className="w-3.5 h-3.5 text-destructive" /> <strong>Totally Disable</strong> — blocks page access entirely, redirects to dashboard</span>
         </div>
 
