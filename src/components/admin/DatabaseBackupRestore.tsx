@@ -148,7 +148,7 @@ const DatabaseBackupRestore = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success(response.data.message || 'Database seeded successfully!');
+      toast.success((response.data as any)?.message || 'Database seeded successfully!');
     } catch (error: any) {
       console.error('Seed error:', error);
       toast.error(error.message || 'Failed to seed database');
