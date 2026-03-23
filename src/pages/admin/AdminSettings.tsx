@@ -40,6 +40,13 @@ const AdminSettings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Paper template state
+  const [paperSchoolName, setPaperSchoolName] = useState('');
+  const [paperInstructionsDaily, setPaperInstructionsDaily] = useState('');
+  const [paperInstructionsFull, setPaperInstructionsFull] = useState('');
+  const [paperFooter, setPaperFooter] = useState('');
+  const [answerAccessFee, setAnswerAccessFee] = useState('2000');
+
   // Section feature toggles
   const [sectionClasses, setSectionClasses] = useState(true);
   const [sectionRankPapers, setSectionRankPapers] = useState(true);
