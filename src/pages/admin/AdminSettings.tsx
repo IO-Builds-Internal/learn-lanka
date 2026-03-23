@@ -192,9 +192,10 @@ const AdminSettings = () => {
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="paper-template">Paper Template</TabsTrigger>
             <TabsTrigger value="bank">Bank Accounts</TabsTrigger>
             <TabsTrigger value="sms">SMS Templates</TabsTrigger>
-            <TabsTrigger value="backup">Backup & Restore</TabsTrigger>
+            <TabsTrigger value="backup">Backup &amp; Restore</TabsTrigger>
           </TabsList>
 
           {/* Branding Tab */}
