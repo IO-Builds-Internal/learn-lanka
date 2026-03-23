@@ -886,7 +886,7 @@ const GeneratedPapersHistory = () => {
                 <div className="pt-2 border-t space-y-4">
                   {!hasAccess ? (
                     /* ── Access gate ── */
-                    <AccessGateHistory onRefresh={refetchAccess} userId={user?.id} />
+                    <AccessGateHistory onRefresh={() => { queryClient.invalidateQueries({ queryKey: ['history-answer-access', user?.id] }); queryClient.invalidateQueries({ queryKey: ['access-gate-status', user?.id] }); }} userId={user?.id} />
                   ) : loadingQuestionsId === paper.id ? (
                     <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : qs.length === 0 ? (
