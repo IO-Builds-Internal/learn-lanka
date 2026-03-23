@@ -76,16 +76,16 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // For REGISTER purpose, check if user already exists in auth
+    // For REGISTER purpose, check if user already exists in profiles
     if (purpose === 'REGISTER') {
       const localPhone = formattedPhone.replace(/^94/, '0');
       const phoneEmail = `${localPhone}@phone.alict.lk`;
-      
-      // Check auth.users via admin API to see if user actually exists and can sign in
-      const { data: authUser } = await supabase.auth.admin.getUserByEmail(phoneEmail);
 
-      if (authUser?.user) {
-        // User exists in auth - they should sign in instead
+      // Check via admin API using listUsers filtered by email
+      const { data: usersData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const existingAuthUser = usersData?.users?.find(u => u.email === phoneEmail);
+
+      if (existingAuthUser) {
         return new Response(
           JSON.stringify({ 
             error: 'Phone number already registered',
@@ -104,7 +104,6 @@ Deno.serve(async (req) => {
         .maybeSingle();
       
       if (orphanedProfile) {
-        // Delete orphaned profile and role entries so trigger can recreate them
         await supabase.from('user_roles').delete().eq('user_id', orphanedProfile.id);
         await supabase.from('profiles').delete().eq('id', orphanedProfile.id);
       }
