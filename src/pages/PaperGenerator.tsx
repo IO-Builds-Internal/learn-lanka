@@ -1172,6 +1172,16 @@ const AnswerLookup = () => {
               </div>
             )}
 
+            {accessStatus === 'pending' && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-amber-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Payment pending verification</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Your slip was submitted. Access unlocks once admin approves — this page will update automatically.</p>
+                </div>
+              </div>
+            )}
+
             {accessStatus === 'none' && (
               <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
                 <p className="text-sm font-medium text-foreground">
@@ -1184,26 +1194,11 @@ const AnswerLookup = () => {
                     Enroll in a Class
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setShowPaymentForm(!showPaymentForm)}>
+                    <CreditCard className="w-4 h-4 mr-1" />
                     Pay Rs. {fee.toLocaleString()} for Lifetime Access
                   </Button>
                 </div>
-
-                {showPaymentForm && (
-                  <div className="mt-3 space-y-3 pt-3 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      Upload your bank transfer slip. Access will be granted after admin verification.
-                    </p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={e => setSlipFile(e.target.files?.[0] || null)}
-                    />
-                    <Button size="sm" onClick={submitPayment} disabled={paying || !slipFile}>
-                      {paying ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
-                      Submit Payment Slip
-                    </Button>
-                  </div>
-                )}
+                {showPaymentForm && <PaymentFormCard inline />}
               </div>
             )}
 
