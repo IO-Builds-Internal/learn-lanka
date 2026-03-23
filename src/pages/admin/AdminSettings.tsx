@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   GraduationCap, 
   Palette, 
@@ -30,6 +31,8 @@ const BUCKET = 'site-assets';
 
 const AdminSettings = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'branding';
   const [siteName, setSiteName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -170,7 +173,7 @@ const AdminSettings = () => {
           <p className="text-muted-foreground">Manage your platform settings</p>
         </div>
 
-        <Tabs defaultValue="branding" className="space-y-6">
+        <Tabs value={defaultTab} className="space-y-6">
           <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
