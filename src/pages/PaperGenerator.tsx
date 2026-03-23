@@ -617,6 +617,29 @@ const GeneratedPapersHistory = () => {
   const [questionsMap, setQuestionsMap] = useState<Record<string, any[]>>({});
   const [loadingQuestionsId, setLoadingQuestionsId] = useState<string | null>(null);
 
+  // Check access: enrolled in any active class OR approved lifetime payment
+  const { data: hasAccess = false } = useQuery({
+    queryKey: ['history-answer-access', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const [{ data: enrollments }, { data: accessPayment }] = await Promise.all([
+        supabase
+          .from('class_enrollments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'ACTIVE')
+          .limit(1),
+        (supabase as any)
+          .from('answer_access_payments')
+          .select('status')
+          .eq('user_id', user.id)
+          .single(),
+      ]);
+      return (enrollments && enrollments.length > 0) || accessPayment?.status === 'APPROVED';
+    },
+    enabled: !!user,
+  });
+
   const { data: papers = [], isLoading } = useQuery({
     queryKey: ['generated-papers-history', user?.id],
     queryFn: async () => {
