@@ -149,7 +149,7 @@ const AdminSettingsFeatures = () => {
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <Eye className="w-3 h-3" /> Past Papers &amp; Paper Generator appear only on the dashboard, not in the top nav.
+                <Eye className="w-3 h-3" /> Past Papers appear on the dashboard only; Paper Generator appears in both nav and dashboard.
               </p>
             </CardContent>
           </Card>
