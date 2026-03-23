@@ -1,0 +1,1 @@
+ALTER TABLE public.question_bank ADD COLUMN IF NOT EXISTS options_image_url text DEFAULT NULL;

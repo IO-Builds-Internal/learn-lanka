@@ -938,6 +938,7 @@ export type Database = {
           id: string
           lesson_id: string | null
           medium: string | null
+          options_image_url: string | null
           past_paper_ref: string | null
           question_image_url: string | null
           question_text: string | null
@@ -954,6 +955,7 @@ export type Database = {
           id?: string
           lesson_id?: string | null
           medium?: string | null
+          options_image_url?: string | null
           past_paper_ref?: string | null
           question_image_url?: string | null
           question_text?: string | null
@@ -970,6 +972,7 @@ export type Database = {
           id?: string
           lesson_id?: string | null
           medium?: string | null
+          options_image_url?: string | null
           past_paper_ref?: string | null
           question_image_url?: string | null
           question_text?: string | null
