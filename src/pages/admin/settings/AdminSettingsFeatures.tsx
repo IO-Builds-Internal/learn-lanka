@@ -50,6 +50,7 @@ const AdminSettingsFeatures = () => {
     { label: 'Classes', desc: 'Class listings and enrollments', state: sectionClasses, set: setSectionClasses, key: 'section_classes', icon: BookOpen },
     { label: 'Rank Papers', desc: 'Quizzes and rank paper attempts', state: sectionRankPapers, set: setSectionRankPapers, key: 'section_rank_papers', icon: Award },
     { label: 'Past Papers', desc: 'Past paper downloads library', state: sectionPapers, set: setSectionPapers, key: 'section_papers', icon: FileText },
+    { label: 'Paper Generator', desc: 'Custom paper generation tool', state: sectionPaperGenerator, set: setSectionPaperGenerator, key: 'section_paper_generator', icon: Wand2 },
     { label: 'Shop', desc: 'Materials shop for students', state: sectionShop, set: setSectionShop, key: 'section_shop', icon: ShoppingBag },
     { label: 'Playground', desc: 'ICT code playground', state: sectionPlayground, set: setSectionPlayground, key: 'section_playground', icon: Code2 },
     { label: 'Notifications', desc: 'In-app notification bell', state: sectionNotifications, set: setSectionNotifications, key: 'section_notifications', icon: Bell },
