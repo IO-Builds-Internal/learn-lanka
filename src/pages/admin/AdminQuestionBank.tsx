@@ -103,6 +103,8 @@ const defaultForm = () => ({
   options: emptyOptions(),
   correct_option_no: null as number | null,
   questionInputMode: 'text' as 'text' | 'image',
+  optionsMode: 'individual' as 'individual' | 'single_image',
+  options_image_url: null as string | null,
 });
 
 // ──────────────── Component ────────────────
