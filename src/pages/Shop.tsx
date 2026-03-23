@@ -83,8 +83,8 @@ const Shop = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Shop</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Shop</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Learning materials and study guides
             </p>
           </div>
@@ -214,7 +214,7 @@ const Shop = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => (
               <Card key={product.id} className="card-elevated hover:shadow-lg transition-shadow flex flex-col">
                 <CardHeader className="pb-2">
