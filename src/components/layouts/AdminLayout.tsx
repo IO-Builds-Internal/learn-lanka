@@ -428,6 +428,20 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             {!collapsed && <span className="text-sm text-sidebar-foreground">Theme</span>}
           </div>
           <button
+            onClick={() => {
+              sessionStorage.setItem('admin_student_preview', 'true');
+              window.location.href = '/dashboard';
+            }}
+            title="View as Student"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-sidebar-accent w-full',
+              collapsed && 'justify-center',
+            )}
+          >
+            <Eye className="w-5 h-5" />
+            {!collapsed && <span>View as Student</span>}
+          </button>
+          <button
             onClick={async () => { await signOut(); }}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive w-full',
