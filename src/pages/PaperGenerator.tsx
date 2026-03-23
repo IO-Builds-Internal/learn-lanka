@@ -643,6 +643,67 @@ const BankAccountsInline = () => {
   );
 };
 
+// ── Access Gate for History (checks pending state too) ───────────────────────
+const AccessGateHistory = ({ onRefresh, userId }: { onRefresh: () => void; userId?: string }) => {
+  const { data: accessPayment } = useQuery({
+    queryKey: ['access-gate-status', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data } = await (supabase as any)
+        .from('answer_access_payments')
+        .select('status')
+        .eq('user_id', userId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 8000,
+  });
+
+  const isPending = accessPayment?.status === 'PENDING';
+
+  if (isPending) {
+    return (
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Clock className="w-5 h-5 text-amber-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-foreground">Payment under review</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Your slip was submitted. This page will auto-unlock once admin approves.</p>
+          </div>
+        </div>
+        <Button size="sm" variant="outline" onClick={onRefresh} className="shrink-0 text-xs">
+          <Loader2 className="w-3 h-3 mr-1" />
+          Check now
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
+      <p className="text-sm font-medium text-foreground">
+        🔒 Answers & review videos are only available to enrolled students or users with lifetime access.
+      </p>
+      <div className="flex gap-2 flex-wrap">
+        <Button size="sm" onClick={() => window.location.href = '/classes'}>
+          <BookOpen className="w-4 h-4 mr-1" />
+          Enroll in a Class
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => window.location.href = '/paper-generator?tab=answers&pay=1'}>
+          <CreditCard className="w-4 h-4 mr-1" />
+          Get Lifetime Access
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onRefresh} className="text-xs text-muted-foreground">
+          Refresh status
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 // ── Generated Papers History Sub-component ───────────────────────────────────
 const GeneratedPapersHistory = () => {
   const { user } = useAuth();
