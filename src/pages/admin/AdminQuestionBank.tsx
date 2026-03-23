@@ -633,26 +633,19 @@ const AdminQuestionBank = () => {
                       </Button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                      {uploadingField === 'question' ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 text-muted-foreground mb-1" />
-                          <span className="text-xs text-muted-foreground">Upload question image</span>
-                        </>
-                      )}
-                      <input ref={qImageRef} type="file" accept="image/*" className="hidden" onChange={async e => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
+                    <ImageDropZone
+                      uploading={uploadingField === 'question'}
+                      label="Question image"
+                      listenPaste={form.questionInputMode === 'image'}
+                      onFile={async file => {
                         try {
                           const url = await uploadImage(file, 'question');
                           setForm(f => ({ ...f, question_image_url: url }));
                         } catch (err: unknown) {
                           toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
                         }
-                      }} />
-                    </label>
+                      }}
+                    />
                   )}
                 </TabsContent>
               </Tabs>
