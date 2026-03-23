@@ -28,12 +28,12 @@ interface StudentLayoutProps {
   children: React.ReactNode;
 }
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/classes', label: 'Classes', icon: BookOpen },
-  { path: '/rank-papers', label: 'Rank Papers', icon: FileText },
-  { path: '/shop', label: 'Shop', icon: ShoppingBag },
-  { path: '/playground', label: 'Playground', icon: Code2 },
+const ALL_NAV_ITEMS = [
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, flag: null },
+  { path: '/classes', label: 'Classes', icon: BookOpen, flag: 'section_classes' },
+  { path: '/rank-papers', label: 'Rank Papers', icon: FileText, flag: 'section_rank_papers' },
+  { path: '/shop', label: 'Shop', icon: ShoppingBag, flag: 'section_shop' },
+  { path: '/playground', label: 'Playground', icon: Code2, flag: 'section_playground' },
 ];
 
 const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ children }, ref) => {
