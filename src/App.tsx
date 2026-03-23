@@ -29,6 +29,8 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import PaperGenerator from "./pages/PaperGenerator";
 import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
+import AdminOrders from "./pages/admin/AdminOrders";
+import MyOrders from "./pages/MyOrders";
 import { CartProvider } from "@/hooks/useCart";
 
 // Admin Pages
