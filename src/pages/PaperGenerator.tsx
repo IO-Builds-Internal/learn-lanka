@@ -653,7 +653,7 @@ const GeneratedPapersHistory = () => {
   const [loadingQuestionsId, setLoadingQuestionsId] = useState<string | null>(null);
 
   // Check access: enrolled in any active class OR approved lifetime payment
-  const { data: hasAccess = false } = useQuery({
+  const { data: hasAccess = false, refetch: refetchAccess } = useQuery({
     queryKey: ['history-answer-access', user?.id],
     queryFn: async () => {
       if (!user) return false;
@@ -675,6 +675,8 @@ const GeneratedPapersHistory = () => {
     enabled: !!user,
     staleTime: 0,
     refetchOnWindowFocus: true,
+    // Poll every 8s while access not yet granted so page updates without manual refresh
+    refetchInterval: (data) => (data ? false : 8000),
   });
 
   // Realtime: when admin approves, re-check access immediately
@@ -689,10 +691,11 @@ const GeneratedPapersHistory = () => {
         filter: `user_id=eq.${user.id}`,
       }, () => {
         queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
+        refetchAccess();
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, queryClient]);
+  }, [user, queryClient, refetchAccess]);
 
   const { data: papers = [], isLoading } = useQuery({
     queryKey: ['generated-papers-history', user?.id],
