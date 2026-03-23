@@ -110,7 +110,7 @@ const DatabaseBackupRestore = () => {
       }
 
       // Check results
-      const results = response.data.results;
+      const results = (response.data as any)?.results;
       const failed = Object.entries(results).filter(([_, r]: [string, any]) => !r.success);
 
       if (failed.length > 0) {
