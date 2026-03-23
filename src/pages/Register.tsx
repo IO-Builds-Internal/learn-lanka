@@ -190,7 +190,7 @@ const Register = () => {
   const handleResendOtp = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
+      const { data, error } = await invokeFunction('send-otp', {
         body: { phone, purpose: 'REGISTER' }
       });
 
