@@ -36,10 +36,13 @@ const AdminSettings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Feature toggles
-  const [rankPapersEnabled, setRankPapersEnabled] = useState(true);
-  const [shopEnabled, setShopEnabled] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  // Section feature toggles
+  const [sectionClasses, setSectionClasses] = useState(true);
+  const [sectionRankPapers, setSectionRankPapers] = useState(true);
+  const [sectionPapers, setSectionPapers] = useState(true);
+  const [sectionShop, setSectionShop] = useState(true);
+  const [sectionPlayground, setSectionPlayground] = useState(true);
+  const [sectionNotifications, setSectionNotifications] = useState(true);
 
   // Asset URLs
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -80,6 +83,13 @@ const AdminSettings = () => {
         if (settings['logo_url']) setLogoUrl(settings['logo_url']);
         if (settings['favicon_url']) setFaviconUrl(settings['favicon_url']);
         if (settings['login_bg_url']) setLoginBgUrl(settings['login_bg_url']);
+        const flag = (key: string) => settings[key] !== 'false';
+        setSectionClasses(flag('section_classes'));
+        setSectionRankPapers(flag('section_rank_papers'));
+        setSectionPapers(flag('section_papers'));
+        setSectionShop(flag('section_shop'));
+        setSectionPlayground(flag('section_playground'));
+        setSectionNotifications(flag('section_notifications'));
       } catch (err) {
         console.error('Failed to load settings:', err);
       } finally {
@@ -306,33 +316,35 @@ const AdminSettings = () => {
           <TabsContent value="features" className="space-y-6">
             <Card className="card-elevated">
               <CardHeader>
-                <CardTitle className="text-lg">Feature Toggles</CardTitle>
-                <CardDescription>Enable or disable platform features</CardDescription>
+                <CardTitle className="text-lg">Section Visibility</CardTitle>
+                <CardDescription>Show or hide sections for students. Changes take effect immediately.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between py-3">
-                  <div className="space-y-0.5">
-                    <Label>Rank Papers</Label>
-                    <p className="text-sm text-muted-foreground">Allow students to attempt quizzes and rank papers</p>
+              <CardContent className="space-y-1">
+                {[
+                  { label: 'Classes', desc: 'Class listings and enrollments', state: sectionClasses, set: setSectionClasses, key: 'section_classes' },
+                  { label: 'Rank Papers', desc: 'Quizzes and rank paper attempts', state: sectionRankPapers, set: setSectionRankPapers, key: 'section_rank_papers' },
+                  { label: 'Papers', desc: 'Past paper downloads library', state: sectionPapers, set: setSectionPapers, key: 'section_papers' },
+                  { label: 'Shop', desc: 'Materials shop for students', state: sectionShop, set: setSectionShop, key: 'section_shop' },
+                  { label: 'Playground', desc: 'ICT code playground', state: sectionPlayground, set: setSectionPlayground, key: 'section_playground' },
+                  { label: 'Notifications', desc: 'In-app notification bell', state: sectionNotifications, set: setSectionNotifications, key: 'section_notifications' },
+                ].map(({ label, desc, state, set, key }, i, arr) => (
+                  <div key={key}>
+                    <div className="flex items-center justify-between py-3">
+                      <div className="space-y-0.5">
+                        <Label>{label}</Label>
+                        <p className="text-sm text-muted-foreground">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={state}
+                        onCheckedChange={(val) => {
+                          set(val);
+                          saveSettings([{ key, value: String(val) }]);
+                        }}
+                      />
+                    </div>
+                    {i < arr.length - 1 && <Separator />}
                   </div>
-                  <Switch checked={rankPapersEnabled} onCheckedChange={setRankPapersEnabled} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between py-3">
-                  <div className="space-y-0.5">
-                    <Label>Shop</Label>
-                    <p className="text-sm text-muted-foreground">Enable the materials shop for students</p>
-                  </div>
-                  <Switch checked={shopEnabled} onCheckedChange={setShopEnabled} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between py-3">
-                  <div className="space-y-0.5">
-                    <Label>SMS Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Send SMS notifications to students</p>
-                  </div>
-                  <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
-                </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>

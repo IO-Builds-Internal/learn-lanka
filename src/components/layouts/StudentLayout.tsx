@@ -28,12 +28,12 @@ interface StudentLayoutProps {
   children: React.ReactNode;
 }
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/classes', label: 'Classes', icon: BookOpen },
-  { path: '/rank-papers', label: 'Rank Papers', icon: FileText },
-  { path: '/shop', label: 'Shop', icon: ShoppingBag },
-  { path: '/playground', label: 'Playground', icon: Code2 },
+const ALL_NAV_ITEMS = [
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, flag: null },
+  { path: '/classes', label: 'Classes', icon: BookOpen, flag: 'section_classes' },
+  { path: '/rank-papers', label: 'Rank Papers', icon: FileText, flag: 'section_rank_papers' },
+  { path: '/shop', label: 'Shop', icon: ShoppingBag, flag: 'section_shop' },
+  { path: '/playground', label: 'Playground', icon: Code2, flag: 'section_playground' },
 ];
 
 const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ children }, ref) => {
@@ -42,6 +42,11 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
   const { user, signOut, isAdmin, isModerator } = useAuth();
   const { data: settings } = useSiteSettings();
   const siteName = settings?.site_name || 'ICT Academy';
+
+  const navItems = ALL_NAV_ITEMS.filter(item => {
+    if (!item.flag) return true;
+    return (settings as any)?.[item.flag] !== false;
+  });
 
   // Fetch unread notification count
   const { data: notificationCount = 0 } = useQuery({
@@ -123,16 +128,18 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
               <ThemeToggle />
 
               {/* Notifications */}
-              <Link to="/notifications">
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="w-5 h-5" />
-                  {notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                      {notificationCount > 9 ? '9+' : notificationCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
+              {settings?.section_notifications !== false && (
+                <Link to="/notifications">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="w-5 h-5" />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                        {notificationCount > 9 ? '9+' : notificationCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )}
 
               {/* Admin Panel Link */}
               {(isAdmin || isModerator) && (

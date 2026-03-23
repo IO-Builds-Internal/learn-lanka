@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import FeatureGate from "@/components/auth/FeatureGate";
 import PublicOnlyRoute from "@/components/auth/PublicOnlyRoute";
 // Auth Pages
 import Login from "./pages/Login";
@@ -76,21 +77,21 @@ const App = () => (
               <Route path="/refund-policy" element={<RefundPolicy />} />
 
               {/* Papers - accessible without login (for free papers only) */}
-              <Route path="/papers" element={<Papers />} />
-              <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
+              <Route path="/papers" element={<FeatureGate flag="section_papers"><Papers /></FeatureGate>} />
+              <Route path="/playground" element={<ProtectedRoute><FeatureGate flag="section_playground"><Playground /></FeatureGate></ProtectedRoute>} />
 
               {/* Protected Student Routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/classes" element={<ProtectedRoute><Classes /></ProtectedRoute>} />
-              <Route path="/classes/:id" element={<ProtectedRoute><ClassDetail /></ProtectedRoute>} />
-              <Route path="/rank-papers" element={<ProtectedRoute><RankPapers /></ProtectedRoute>} />
-              <Route path="/rank-papers/:id" element={<ProtectedRoute><RankPaperDetail /></ProtectedRoute>} />
-              <Route path="/rank-papers/:id/attempt" element={<ProtectedRoute><RankPaperAttempt /></ProtectedRoute>} />
-              <Route path="/rank-papers/:id/results" element={<ProtectedRoute><RankPaperResults /></ProtectedRoute>} />
-              <Route path="/rank-papers/:id/leaderboard" element={<ProtectedRoute><RankPaperLeaderboard /></ProtectedRoute>} />
-              <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
-              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-              <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+              <Route path="/classes" element={<ProtectedRoute><FeatureGate flag="section_classes"><Classes /></FeatureGate></ProtectedRoute>} />
+              <Route path="/classes/:id" element={<ProtectedRoute><FeatureGate flag="section_classes"><ClassDetail /></FeatureGate></ProtectedRoute>} />
+              <Route path="/rank-papers" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPapers /></FeatureGate></ProtectedRoute>} />
+              <Route path="/rank-papers/:id" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperDetail /></FeatureGate></ProtectedRoute>} />
+              <Route path="/rank-papers/:id/attempt" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperAttempt /></FeatureGate></ProtectedRoute>} />
+              <Route path="/rank-papers/:id/results" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperResults /></FeatureGate></ProtectedRoute>} />
+              <Route path="/rank-papers/:id/leaderboard" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperLeaderboard /></FeatureGate></ProtectedRoute>} />
+              <Route path="/shop" element={<ProtectedRoute><FeatureGate flag="section_shop"><Shop /></FeatureGate></ProtectedRoute>} />
+              <Route path="/checkout" element={<ProtectedRoute><FeatureGate flag="section_shop"><Checkout /></FeatureGate></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><FeatureGate flag="section_notifications"><Notifications /></FeatureGate></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
               {/* Protected Admin Routes */}
