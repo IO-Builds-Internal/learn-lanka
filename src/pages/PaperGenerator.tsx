@@ -778,7 +778,7 @@ const GeneratedPapersHistory = () => {
                           <BookOpen className="w-4 h-4 mr-1" />
                           Enroll in a Class
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => window.location.href = '/paper-generator?tab=answers'}>
+                        <Button size="sm" variant="outline" onClick={() => window.location.href = '/paper-generator?tab=answers&pay=1'}>
                           Get Lifetime Access
                         </Button>
                       </div>
