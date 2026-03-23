@@ -262,6 +262,7 @@ const AdminClasses = () => {
 
   return (
     <AdminLayout>
+      <div className="space-y-6">
       <AdminPageHeader
         title="Classes"
         description="Manage your ICT classes"

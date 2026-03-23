@@ -484,6 +484,7 @@ const AdminRankPapers = () => {
 
   return (
     <AdminLayout>
+      <div className="space-y-6">
       <AdminPageHeader
         title="Rank Papers"
         description="Manage timed exams and quizzes"

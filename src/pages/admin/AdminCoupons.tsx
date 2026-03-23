@@ -186,6 +186,7 @@ const AdminCoupons = () => {
 
   return (
     <AdminLayout>
+      <div className="space-y-6">
       <AdminPageHeader
         title="Coupons"
         description="Manage discount coupons and promotions"
