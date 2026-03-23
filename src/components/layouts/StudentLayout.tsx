@@ -51,10 +51,16 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
   const { data: settings } = useSiteSettings();
   const siteName = settings?.site_name || 'ICT Academy';
 
-  const navItems = ALL_NAV_ITEMS.filter(item => {
-    if (!item.flag) return true;
-    return (settings as any)?.[item.flag] !== false;
-  });
+  const navItems = (() => {
+    const dashboard = ALL_NAV_ITEMS.find(i => i.key === 'dashboard')!;
+    const savedOrder: string[] = settings?.nav_order || DEFAULT_ORDER;
+    // Build ordered list: dashboard always first, rest by saved order
+    const rest = savedOrder
+      .map(k => ALL_NAV_ITEMS.find(i => i.key === k))
+      .filter((i): i is typeof ALL_NAV_ITEMS[0] => !!i && i.flag !== null)
+      .filter(i => (settings as any)?.[i.flag!] !== false);
+    return [dashboard, ...rest];
+  })();
 
   // Fetch unread notification count
   const { data: notificationCount = 0 } = useQuery({
