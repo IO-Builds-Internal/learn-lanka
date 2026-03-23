@@ -335,12 +335,12 @@ const AdminSyllabus = () => {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Grade</Label>
-                <Select value={form.grade} onValueChange={v => setForm(f => ({ ...f, grade: v }))}>
+                <Select value={form.grade || '__none__'} onValueChange={v => setForm(f => ({ ...f, grade: v === '__none__' ? '' : v }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any grade" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any grade</SelectItem>
+                    <SelectItem value="__none__">Any grade</SelectItem>
                     {GRADES.map(g => (
                       <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
                     ))}
@@ -349,12 +349,12 @@ const AdminSyllabus = () => {
               </div>
               <div className="space-y-1.5">
                 <Label>Medium</Label>
-                <Select value={form.medium} onValueChange={v => setForm(f => ({ ...f, medium: v }))}>
+                <Select value={form.medium || '__none__'} onValueChange={v => setForm(f => ({ ...f, medium: v === '__none__' ? '' : v }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any medium" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any medium</SelectItem>
+                    <SelectItem value="__none__">Any medium</SelectItem>
                     {MEDIUMS.map(m => (
                       <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>
                     ))}
@@ -364,12 +364,12 @@ const AdminSyllabus = () => {
             </div>
             <div className="space-y-1.5">
               <Label>Parent Lesson (optional — makes this a subtopic)</Label>
-              <Select value={form.parent_id} onValueChange={v => setForm(f => ({ ...f, parent_id: v }))}>
+              <Select value={form.parent_id || '__none__'} onValueChange={v => setForm(f => ({ ...f, parent_id: v === '__none__' ? '' : v }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="None (top-level lesson)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (top-level)</SelectItem>
+                  <SelectItem value="__none__">None (top-level)</SelectItem>
                   {parentOptions
                     .filter(l => l.id !== editing?.id)
                     .map(l => (
