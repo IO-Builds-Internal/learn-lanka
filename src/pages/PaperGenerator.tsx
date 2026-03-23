@@ -826,20 +826,7 @@ const GeneratedPapersHistory = () => {
                 <div className="pt-2 border-t space-y-4">
                   {!hasAccess ? (
                     /* ── Access gate ── */
-                    <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
-                      <p className="text-sm font-medium text-foreground">
-                        🔒 Answers & review videos are only available to enrolled students or users with lifetime access.
-                      </p>
-                      <div className="flex gap-2 flex-wrap">
-                        <Button size="sm" onClick={() => window.location.href = '/classes'}>
-                          <BookOpen className="w-4 h-4 mr-1" />
-                          Enroll in a Class
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => window.location.href = '/paper-generator?tab=answers&pay=1'}>
-                          Get Lifetime Access
-                        </Button>
-                      </div>
-                    </div>
+                    <AccessGate fee={0} onRefresh={refetchAccess} userId={user?.id} />
                   ) : loadingQuestionsId === paper.id ? (
                     <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : qs.length === 0 ? (
