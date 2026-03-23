@@ -454,10 +454,10 @@ const AdminQuestionBank = () => {
                           {q.question_bank_options.map(o => (
                             <div
                               key={o.option_no}
-                              className={`p-2 rounded-lg border text-sm flex items-center gap-2 ${o.is_correct ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-border'}`}
-                            >
-                              {o.is_correct ? (
-                                <Check className="w-4 h-4 text-green-500 shrink-0" />
+                              className={`p-2 rounded-lg border text-sm flex items-center gap-2 ${o.is_correct ? 'border-primary/50 bg-primary/5' : 'border-border'}`}
+                             >
+                               {o.is_correct ? (
+                                 <Check className="w-4 h-4 text-primary shrink-0" />
                               ) : (
                                 <span className="w-4 h-4 rounded-full border-2 border-muted-foreground shrink-0" />
                               )}
