@@ -737,33 +737,12 @@ const AdminQuestionBank = () => {
                           </span>
                           {opt.is_correct && <span className="text-xs font-medium text-primary ml-1">✓ Correct Answer</span>}
                         </div>
-                        <div className="px-3 pb-2 flex gap-2 items-center">
-                          <Input className="flex-1 h-8 text-sm"
+                        <div className="px-3 pb-2 space-y-2">
+                          <Input className="h-8 text-sm"
                             placeholder={`Option ${String.fromCharCode(64 + opt.option_no)} text (optional if image added)`}
                             value={opt.option_text}
                             onChange={e => setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_text: e.target.value } : o) }))} />
-                          <label className="cursor-pointer shrink-0">
-                            {uploadingField === `opt_${opt.option_no}` ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                            ) : (
-                              <Button type="button" variant={opt.option_image_url ? 'default' : 'outline'} size="icon" className="h-8 w-8" asChild>
-                                <span title="Add image for this option"><ImageIcon className="w-4 h-4" /></span>
-                              </Button>
-                            )}
-                            <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-                              try {
-                                const url = await uploadImage(file, `opt_${opt.option_no}`);
-                                setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: url } : o) }));
-                              } catch (err: unknown) {
-                                toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
-                              }
-                            }} />
-                          </label>
-                        </div>
-                        {opt.option_image_url && (
-                          <div className="px-3 pb-2">
+                          {opt.option_image_url ? (
                             <div className="relative inline-block">
                               <img src={opt.option_image_url} alt={`Option ${String.fromCharCode(64 + opt.option_no)}`} className="max-h-24 rounded border" />
                               <Button variant="destructive" size="icon" className="absolute -top-1.5 -right-1.5 h-5 w-5"
@@ -771,8 +750,22 @@ const AdminQuestionBank = () => {
                                 <X className="w-3 h-3" />
                               </Button>
                             </div>
-                          </div>
-                        )}
+                          ) : (
+                            <ImageDropZone
+                              uploading={uploadingField === `opt_${opt.option_no}`}
+                              label={`Image for option ${String.fromCharCode(64 + opt.option_no)} (optional)`}
+                              className="h-20"
+                              onFile={async file => {
+                                try {
+                                  const url = await uploadImage(file, `opt_${opt.option_no}`);
+                                  setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: url } : o) }));
+                                } catch (err: unknown) {
+                                  toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
+                                }
+                              }}
+                            />
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
