@@ -100,12 +100,24 @@ const AdminOrders = () => {
         .from('shop_orders')
         .select(`
           *,
-          items:shop_order_items(*, shop_products(title, type)),
-          profiles(first_name, last_name, phone)
+          items:shop_order_items(*, shop_products(title, type))
         `)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as Order[];
+
+      // Enrich with profiles
+      const orders = data || [];
+      const userIds = [...new Set(orders.map(o => o.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, phone')
+        .in('id', userIds);
+      const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+
+      return orders.map(o => ({
+        ...o,
+        profiles: profileMap[o.user_id] || null,
+      })) as Order[];
     },
   });
 
