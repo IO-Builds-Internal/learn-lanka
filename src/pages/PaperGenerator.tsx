@@ -99,6 +99,7 @@ const PaperGenerator = () => {
 
   // Config state
   const [selectedGrade, setSelectedGrade] = useState<string>('12');
+  const [selectedMedium, setSelectedMedium] = useState<string>('English');
   const [paperType, setPaperType] = useState<'DAILY' | 'FULL'>('DAILY');
   const [selectedLessons, setSelectedLessons] = useState<WeightedLesson[]>([]);
   const [pickerLessonId, setPickerLessonId] = useState<string>('');
