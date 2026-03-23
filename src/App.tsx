@@ -27,6 +27,8 @@ import Shop from "./pages/Shop";
 import Checkout from "./pages/Checkout";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import PaperGenerator from "./pages/PaperGenerator";
+import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
 import { CartProvider } from "@/hooks/useCart";
 
 // Admin Pages
@@ -95,6 +97,7 @@ const App = () => (
               <Route path="/checkout" element={<ProtectedRoute><FeatureGate flag="section_shop"><Checkout /></FeatureGate></ProtectedRoute>} />
               <Route path="/notifications" element={<ProtectedRoute><FeatureGate flag="section_notifications"><Notifications /></FeatureGate></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/paper-generator" element={<ProtectedRoute><PaperGenerator /></ProtectedRoute>} />
 
               {/* Protected Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
@@ -115,6 +118,7 @@ const App = () => (
               <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
               <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
               <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
+              <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />

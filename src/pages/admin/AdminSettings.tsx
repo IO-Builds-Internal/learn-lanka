@@ -10,7 +10,8 @@ import {
   Image as ImageIcon,
   Database,
   Loader2,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,13 @@ const AdminSettings = () => {
   const [contactEmail, setContactEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Paper template state
+  const [paperSchoolName, setPaperSchoolName] = useState('');
+  const [paperInstructionsDaily, setPaperInstructionsDaily] = useState('');
+  const [paperInstructionsFull, setPaperInstructionsFull] = useState('');
+  const [paperFooter, setPaperFooter] = useState('');
+  const [answerAccessFee, setAnswerAccessFee] = useState('2000');
 
   // Section feature toggles
   const [sectionClasses, setSectionClasses] = useState(true);
@@ -93,6 +101,12 @@ const AdminSettings = () => {
         setSectionShop(flag('section_shop'));
         setSectionPlayground(flag('section_playground'));
         setSectionNotifications(flag('section_notifications'));
+        // Paper template settings
+        setPaperSchoolName(settings['paper_template_school_name'] || 'ICT Academy');
+        setPaperInstructionsDaily(settings['paper_template_instructions_daily'] || '');
+        setPaperInstructionsFull(settings['paper_template_instructions_full'] || '');
+        setPaperFooter(settings['paper_template_footer'] || '');
+        setAnswerAccessFee(settings['answer_access_fee'] || '2000');
       } catch (err) {
         console.error('Failed to load settings:', err);
       } finally {
@@ -178,9 +192,10 @@ const AdminSettings = () => {
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="paper-template">Paper Template</TabsTrigger>
             <TabsTrigger value="bank">Bank Accounts</TabsTrigger>
             <TabsTrigger value="sms">SMS Templates</TabsTrigger>
-            <TabsTrigger value="backup">Backup & Restore</TabsTrigger>
+            <TabsTrigger value="backup">Backup &amp; Restore</TabsTrigger>
           </TabsList>
 
           {/* Branding Tab */}
@@ -401,6 +416,87 @@ const AdminSettings = () => {
           {/* SMS Templates Tab */}
           <TabsContent value="sms" className="space-y-6">
             <SmsTemplatesManager />
+          </TabsContent>
+
+          {/* Paper Template Tab */}
+          <TabsContent value="paper-template" className="space-y-6">
+            <Card className="card-elevated">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Paper PDF Template
+                </CardTitle>
+                <CardDescription>Customize the header, instructions, and footer printed on generated papers</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="paperSchoolName">School / Institute Name (Header)</Label>
+                  <Input
+                    id="paperSchoolName"
+                    value={paperSchoolName}
+                    onChange={e => setPaperSchoolName(e.target.value)}
+                    placeholder="e.g. ICT Academy"
+                  />
+                  <p className="text-xs text-muted-foreground">Shown as the main title in the paper header</p>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="instrDaily">Instructions — Daily Paper</Label>
+                  <textarea
+                    id="instrDaily"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                    rows={3}
+                    value={paperInstructionsDaily}
+                    onChange={e => setPaperInstructionsDaily(e.target.value)}
+                    placeholder="Instructions printed on daily papers..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instrFull">Instructions — Full Paper (50 MCQ + essays)</Label>
+                  <textarea
+                    id="instrFull"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                    rows={3}
+                    value={paperInstructionsFull}
+                    onChange={e => setPaperInstructionsFull(e.target.value)}
+                    placeholder="Instructions printed on full papers..."
+                  />
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="paperFooter">Footer Text</Label>
+                  <Input
+                    id="paperFooter"
+                    value={paperFooter}
+                    onChange={e => setPaperFooter(e.target.value)}
+                    placeholder="e.g. Generated by ICT Academy | www.ictacademy.lk"
+                  />
+                  <p className="text-xs text-muted-foreground">Shown at the bottom of every generated paper</p>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="answerFee">Answer Access Fee (LKR) — One-time lifetime</Label>
+                  <Input
+                    id="answerFee"
+                    type="number"
+                    value={answerAccessFee}
+                    onChange={e => setAnswerAccessFee(e.target.value)}
+                    placeholder="2000"
+                  />
+                  <p className="text-xs text-muted-foreground">Students without class enrollment pay this once for lifetime answer access</p>
+                </div>
+                <Button onClick={() => saveSettings([
+                  { key: 'paper_template_school_name', value: paperSchoolName },
+                  { key: 'paper_template_instructions_daily', value: paperInstructionsDaily },
+                  { key: 'paper_template_instructions_full', value: paperInstructionsFull },
+                  { key: 'paper_template_footer', value: paperFooter },
+                  { key: 'answer_access_fee', value: answerAccessFee },
+                ])} disabled={isSaving}>
+                  {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  Save Template Settings
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Backup & Restore Tab */}
