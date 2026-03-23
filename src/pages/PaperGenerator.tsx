@@ -928,20 +928,17 @@ const AnswerLookup = () => {
   };
 
   const submitPayment = async () => {
-    if (!user || !slipFile) return;
+    if (!user || !slipFile) { toast.error('Please select a payment slip image'); return; }
     setPaying(true);
     try {
-      const fileName = `${user.id}/answer-access/${Date.now()}-slip.jpg`;
+      const ext = slipFile.name.split('.').pop() || 'jpg';
+      const fileName = `${user.id}/answer-access/${Date.now()}-slip.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('payment-slips')
-        .upload(fileName, slipFile);
+        .upload(fileName, slipFile, { upsert: true });
       if (uploadErr) throw uploadErr;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('payment-slips')
-        .getPublicUrl(fileName);
-
-      // Create payment record
+      // Create payment record (store path, not publicUrl — bucket is private)
       const { data: payment, error: payErr } = await supabase
         .from('payments')
         .insert({
@@ -956,13 +953,15 @@ const AnswerLookup = () => {
         .single();
       if (payErr) throw payErr;
 
-      // Create answer_access_payments record (upsert)
-      await (supabase as any)
+      // Upsert answer_access_payments record
+      const { error: aapErr } = await (supabase as any)
         .from('answer_access_payments')
         .upsert({ user_id: user.id, payment_id: payment.id, status: 'PENDING' }, { onConflict: 'user_id' });
+      if (aapErr) throw aapErr;
 
-      toast.success('Payment submitted! Awaiting admin verification. You\'ll get access once approved.');
+      toast.success('Payment slip submitted! You\'ll get access once the admin verifies it.');
       setShowPaymentForm(false);
+      setSlipFile(null);
     } catch (err: any) {
       toast.error(err.message || 'Payment submission failed');
     } finally {
