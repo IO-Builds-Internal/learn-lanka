@@ -78,7 +78,7 @@ const SortableRow = ({ id, label, Icon, hidden, disabled, onToggleHidden, onTogg
       {/* Icon */}
       <div className={cn(
         'w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-        disabled ? 'bg-destructive/10 text-destructive' : hidden ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'
+        disabled ? 'bg-destructive/10 text-destructive' : hidden ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary'
       )}>
         <Icon className="w-3.5 h-3.5" />
       </div>
