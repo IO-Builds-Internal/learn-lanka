@@ -168,7 +168,8 @@ const PaperGenerator = () => {
           correct_option_no, options_image_url, lesson_id, explain_video_url,
           question_bank_options(option_no, option_text, option_image_url, is_correct)
         `)
-        .in('lesson_id', lessonIds);
+        .in('lesson_id', lessonIds)
+        .or(`medium.eq.${selectedMedium},medium.is.null`);
 
       if (error) throw error;
       if (!allQs || allQs.length === 0) {
