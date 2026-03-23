@@ -52,6 +52,7 @@ import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminRankPapers from "./pages/admin/AdminRankPapers";
 import AdminRankPaperQuestions from "./pages/admin/AdminRankPaperQuestions";
 import AdminRankPaperAttempts from "./pages/admin/AdminRankPaperAttempts";
+import AdminRankPaperAttemptsIndex from "./pages/admin/AdminRankPaperAttemptsIndex";
 import AdminShop from "./pages/admin/AdminShop";
 import AdminPapers from "./pages/admin/AdminPapers";
 import AdminBulkSms from "./pages/admin/AdminBulkSms";
