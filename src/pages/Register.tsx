@@ -53,17 +53,27 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      // Step 1: Check if phone already exists in profiles before sending OTP
+      const formattedPhone = phone.replace(/\D/g, '');
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', formattedPhone)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingProfile) {
+        setAlreadyRegisteredError(true);
+        return;
+      }
+
+      // Step 2: Phone is new — send OTP
       const { data, error } = await invokeFunction('send-otp', {
         body: { phone, purpose: 'register' }
       });
 
       if (error) throw error;
-
-      if ((data as any)?.alreadyRegistered) {
-        setAlreadyRegisteredError(true);
-        toast.error('This phone number is already registered');
-        return;
-      }
 
       if ((data as any)?.success) {
         toast.success('OTP sent successfully!');
@@ -73,10 +83,6 @@ const Register = () => {
       }
     } catch (error: any) {
       console.error('Send OTP error:', error);
-      // Check if error response contains alreadyRegistered
-      if (error?.message?.includes('already registered')) {
-        setAlreadyRegisteredError(true);
-      }
       toast.error(error.message || 'Failed to send OTP. Please try again.');
     } finally {
       setIsLoading(false);
