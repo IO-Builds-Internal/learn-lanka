@@ -35,7 +35,7 @@ const ALL_NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, flag: null },
   { path: '/classes', label: 'Classes', icon: BookOpen, flag: 'section_classes' },
   { path: '/rank-papers', label: 'Rank Papers', icon: FileText, flag: 'section_rank_papers' },
-  { path: '/paper-generator', label: 'Paper Generator', icon: FileText, flag: null },
+  { path: '/papers', label: 'Past Papers', icon: FileText, flag: 'section_papers' },
   { path: '/shop', label: 'Shop', icon: ShoppingBag, flag: 'section_shop' },
   { path: '/playground', label: 'Playground', icon: Code2, flag: 'section_playground' },
 ];
