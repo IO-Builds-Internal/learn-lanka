@@ -342,39 +342,161 @@ const AdminSettings = () => {
 
           {/* Features Tab */}
           <TabsContent value="features" className="space-y-6">
-            <Card className="card-elevated">
-              <CardHeader>
-                <CardTitle className="text-lg">Section Visibility</CardTitle>
-                <CardDescription>Show or hide sections for students. Changes take effect immediately.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {[
-                  { label: 'Classes', desc: 'Class listings and enrollments', state: sectionClasses, set: setSectionClasses, key: 'section_classes' },
-                  { label: 'Rank Papers', desc: 'Quizzes and rank paper attempts', state: sectionRankPapers, set: setSectionRankPapers, key: 'section_rank_papers' },
-                  { label: 'Papers', desc: 'Past paper downloads library', state: sectionPapers, set: setSectionPapers, key: 'section_papers' },
-                  { label: 'Shop', desc: 'Materials shop for students', state: sectionShop, set: setSectionShop, key: 'section_shop' },
-                  { label: 'Playground', desc: 'ICT code playground', state: sectionPlayground, set: setSectionPlayground, key: 'section_playground' },
-                  { label: 'Notifications', desc: 'In-app notification bell', state: sectionNotifications, set: setSectionNotifications, key: 'section_notifications' },
-                ].map(({ label, desc, state, set, key }, i, arr) => (
-                  <div key={key}>
-                    <div className="flex items-center justify-between py-3">
-                      <div className="space-y-0.5">
-                        <Label>{label}</Label>
-                        <p className="text-sm text-muted-foreground">{desc}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* Toggles */}
+              <Card className="card-elevated">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Monitor className="w-5 h-5" />
+                    Navigation Visibility
+                  </CardTitle>
+                  <CardDescription>Toggle which sections students see in their nav bar. Changes apply instantly.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  {[
+                    { label: 'Classes', desc: 'Class listings and enrollments', state: sectionClasses, set: setSectionClasses, key: 'section_classes', icon: BookOpen },
+                    { label: 'Rank Papers', desc: 'Quizzes and rank paper attempts', state: sectionRankPapers, set: setSectionRankPapers, key: 'section_rank_papers', icon: Award },
+                    { label: 'Past Papers', desc: 'Past paper downloads library', state: sectionPapers, set: setSectionPapers, key: 'section_papers', icon: FileText },
+                    { label: 'Shop', desc: 'Materials shop for students', state: sectionShop, set: setSectionShop, key: 'section_shop', icon: ShoppingBag },
+                    { label: 'Playground', desc: 'ICT code playground', state: sectionPlayground, set: setSectionPlayground, key: 'section_playground', icon: Code2 },
+                    { label: 'Notifications', desc: 'In-app notification bell', state: sectionNotifications, set: setSectionNotifications, key: 'section_notifications', icon: Bell },
+                  ].map(({ label, desc, state, set, key, icon: Icon }, i, arr) => (
+                    <div key={key}>
+                      <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${state ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <Label className={state ? '' : 'text-muted-foreground line-through'}>{label}</Label>
+                            <p className="text-xs text-muted-foreground">{desc}</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={state}
+                          onCheckedChange={(val) => {
+                            set(val);
+                            saveSettings([{ key, value: String(val) }]);
+                          }}
+                        />
                       </div>
-                      <Switch
-                        checked={state}
-                        onCheckedChange={(val) => {
-                          set(val);
-                          saveSettings([{ key, value: String(val) }]);
-                        }}
-                      />
+                      {i < arr.length - 1 && <Separator />}
                     </div>
-                    {i < arr.length - 1 && <Separator />}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Live Nav Preview */}
+              <div className="space-y-4">
+                <Card className="card-elevated">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                      Live Preview — Student Nav Bar
+                    </CardTitle>
+                    <CardDescription>This is how the student navigation will look.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Mock Nav Bar */}
+                    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                      {/* Header strip */}
+                      <div className="flex items-center justify-between px-4 h-12 border-b bg-card/80 gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+                            <GraduationCap className="w-4 h-4 text-primary-foreground" />
+                          </div>
+                          <span className="font-bold text-sm text-foreground">Site</span>
+                        </div>
+                        {/* Nav items preview */}
+                        <div className="flex items-center gap-1 overflow-x-auto">
+                          {/* Dashboard always shown */}
+                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium whitespace-nowrap">
+                            <LayoutDashboard className="w-3 h-3" />
+                            Dashboard
+                          </div>
+                          {sectionClasses && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-muted">
+                              <BookOpen className="w-3 h-3" />
+                              Classes
+                            </div>
+                          )}
+                          {sectionRankPapers && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-muted">
+                              <Award className="w-3 h-3" />
+                              Rank Papers
+                            </div>
+                          )}
+                          {sectionShop && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-muted">
+                              <ShoppingBag className="w-3 h-3" />
+                              Shop
+                            </div>
+                          )}
+                          {sectionPlayground && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-muted">
+                              <Code2 className="w-3 h-3" />
+                              Playground
+                            </div>
+                          )}
+                        </div>
+                        {/* Right icons */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {sectionShop && <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-muted"><Package className="w-3.5 h-3.5 text-muted-foreground" /></div>}
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-muted"><MessageCircle className="w-3.5 h-3.5 text-muted-foreground" /></div>
+                          {sectionNotifications && <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-muted relative"><Bell className="w-3.5 h-3.5 text-muted-foreground" /><span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-destructive text-[8px] text-destructive-foreground flex items-center justify-center">2</span></div>}
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-muted"><User className="w-3.5 h-3.5 text-muted-foreground" /></div>
+                        </div>
+                      </div>
+
+                      {/* Dashboard quick-access grid (always shown) */}
+                      <div className="p-3 bg-muted/30">
+                        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">Dashboard Quick Access Cards</p>
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {sectionClasses && (
+                            <div className="rounded-lg bg-card border border-border px-2 py-2 flex items-center gap-1.5">
+                              <BookOpen className="w-3 h-3 text-primary" />
+                              <span className="text-[10px] font-medium">Classes</span>
+                            </div>
+                          )}
+                          {sectionRankPapers && (
+                            <div className="rounded-lg bg-card border border-border px-2 py-2 flex items-center gap-1.5">
+                              <Award className="w-3 h-3 text-primary" />
+                              <span className="text-[10px] font-medium">Rank Papers</span>
+                            </div>
+                          )}
+                          {sectionPapers && (
+                            <div className="rounded-lg bg-card border border-border px-2 py-2 flex items-center gap-1.5">
+                              <FileText className="w-3 h-3 text-primary" />
+                              <span className="text-[10px] font-medium">Past Papers</span>
+                            </div>
+                          )}
+                          {sectionShop && (
+                            <div className="rounded-lg bg-card border border-border px-2 py-2 flex items-center gap-1.5">
+                              <ShoppingBag className="w-3 h-3 text-primary" />
+                              <span className="text-[10px] font-medium">Shop</span>
+                            </div>
+                          )}
+                          {sectionPlayground && (
+                            <div className="rounded-lg bg-card border border-border px-2 py-2 flex items-center gap-1.5">
+                              <Code2 className="w-3 h-3 text-primary" />
+                              <span className="text-[10px] font-medium">Playground</span>
+                            </div>
+                          )}
+                          {!sectionClasses && !sectionRankPapers && !sectionPapers && !sectionShop && !sectionPlayground && (
+                            <div className="col-span-3 text-center py-3 text-xs text-muted-foreground">All sections hidden — enable some above</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      Note: Past Papers & Paper Generator appear as dashboard cards, not in the main nav bar.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Contact Tab */}
