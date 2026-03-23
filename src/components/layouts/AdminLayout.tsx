@@ -505,7 +505,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <nav className="flex-1 p-2 space-y-4 overflow-y-auto">
                 {mobileSidebarNav}
               </nav>
-              <div className="p-2 border-t border-sidebar-border flex-shrink-0">
+              <div className="p-2 border-t border-sidebar-border flex-shrink-0 space-y-1">
+                <button
+                  onClick={() => { setMobileMenuOpen(false); sessionStorage.setItem('admin_student_preview', 'true'); window.location.href = '/dashboard'; }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent w-full"
+                >
+                  <Eye className="w-5 h-5" />
+                  <span>View as Student</span>
+                </button>
                 <button
                   onClick={async () => { setMobileMenuOpen(false); await signOut(); }}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive w-full"
