@@ -100,6 +100,7 @@ const App = () => (
               <Route path="/notifications" element={<ProtectedRoute><FeatureGate flag="section_notifications"><Notifications /></FeatureGate></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/paper-generator" element={<ProtectedRoute><PaperGenerator /></ProtectedRoute>} />
+              <Route path="/my-orders" element={<ProtectedRoute><FeatureGate flag="section_shop"><MyOrders /></FeatureGate></ProtectedRoute>} />
 
               {/* Protected Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
