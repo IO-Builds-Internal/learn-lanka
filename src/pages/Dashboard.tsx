@@ -88,6 +88,39 @@ const Dashboard = () => {
   // Fetch rank paper attempt statuses
   const { data: paperStatuses = [] } = useRankPaperStatus();
 
+  // Fetch previously generated papers
+  const { data: generatedPapers = [] } = useQuery({
+    queryKey: ['generated-papers-dashboard', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await (supabase as any)
+        .from('generated_papers')
+        .select('id, grade, paper_type, mcq_count, short_essay_count, essay_count, created_at, question_ids')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const handleDownloadPaper = async (paper: any) => {
+    setDownloadingId(paper.id);
+    try {
+      await downloadGeneratedPaperPdf({
+        paperId: paper.id,
+        grade: paper.grade,
+        paperType: paper.paper_type,
+        questionIds: paper.question_ids || [],
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate PDF');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   // Get payment status for a class (considers private vs public classes)
   const getPaymentStatus = (classId: string, isPrivate: boolean, paymentReceivedAt: string | null): 'PAID' | 'PENDING' | 'UNPAID' | 'ENROLLED' => {
     // For private classes, show "Enrolled" status (no monthly payment tracking)
