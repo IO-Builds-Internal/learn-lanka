@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Plus, Trash2, Wand2, Download, Search,
-  BookOpen, Loader2, ChevronDown, ChevronUp, Info
+  Plus, Trash2, Wand2, Download,
+  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
