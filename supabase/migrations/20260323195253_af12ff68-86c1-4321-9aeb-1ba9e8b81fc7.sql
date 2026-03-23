@@ -1,0 +1,1 @@
+ALTER TABLE public.answer_access_payments REPLICA IDENTITY FULL;
