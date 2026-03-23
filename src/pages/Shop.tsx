@@ -83,8 +83,8 @@ const Shop = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Shop</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Shop</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Learning materials and study guides
             </p>
           </div>
