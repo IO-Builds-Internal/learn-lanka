@@ -125,6 +125,7 @@ const navGroups: NavGroup[] = [
           { type: 'leaf', path: '/admin/settings?tab=branding', label: 'Branding', icon: Palette },
           { type: 'leaf', path: '/admin/settings?tab=features', label: 'Features & Sections', icon: ToggleLeft },
           { type: 'leaf', path: '/admin/settings?tab=contact', label: 'Contact Info', icon: Phone },
+          { type: 'leaf', path: '/admin/settings?tab=paper-template', label: 'Paper Template', icon: FileText },
           { type: 'leaf', path: '/admin/settings?tab=bank', label: 'Bank Accounts', icon: Landmark },
           { type: 'leaf', path: '/admin/settings?tab=sms', label: 'SMS Templates', icon: FileCode },
           { type: 'leaf', path: '/admin/settings?tab=backup', label: 'Backup & Restore', icon: HardDriveDownload },
