@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -12,7 +13,9 @@ import {
   CheckCircle,
   AlertCircle,
   MessageCircle,
-  Code2
+  Code2,
+  Wand2,
+  Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +26,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { useRankPaperStatus } from '@/hooks/useRankPaperStatus';
+import { downloadGeneratedPaperPdf } from '@/lib/generatePaperPdf';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
