@@ -122,6 +122,7 @@ const App = () => (
               <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
               <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
               <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
+              <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
