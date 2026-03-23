@@ -659,7 +659,7 @@ const AccessGateHistory = ({ onRefresh, userId }: { onRefresh: () => void; userI
     enabled: !!userId,
     staleTime: 0,
     refetchOnWindowFocus: true,
-    refetchInterval: 8000,
+    refetchInterval: 3000,
   });
 
   const isPending = accessPayment?.status === 'PENDING';
