@@ -43,6 +43,11 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
   const { data: settings } = useSiteSettings();
   const siteName = settings?.site_name || 'ICT Academy';
 
+  const navItems = ALL_NAV_ITEMS.filter(item => {
+    if (!item.flag) return true;
+    return (settings as any)?.[item.flag] !== false;
+  });
+
   // Fetch unread notification count
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ['unread-notification-count', user?.id],
