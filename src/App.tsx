@@ -27,6 +27,8 @@ import Shop from "./pages/Shop";
 import Checkout from "./pages/Checkout";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import PaperGenerator from "./pages/PaperGenerator";
+import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
 import { CartProvider } from "@/hooks/useCart";
 
 // Admin Pages
