@@ -63,6 +63,8 @@ const navGroups: NavGroup[] = [
       { path: '/admin/classes', label: 'Classes', icon: BookOpen },
       { path: '/admin/rank-papers', label: 'Rank Papers', icon: Award },
       { path: '/admin/papers', label: 'Papers', icon: FileText },
+      { path: '/admin/syllabus', label: 'Syllabus', icon: GraduationCap },
+      { path: '/admin/question-bank', label: 'Question Bank', icon: FileText },
     ],
   },
   {

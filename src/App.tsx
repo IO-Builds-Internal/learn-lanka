@@ -46,6 +46,8 @@ import AdminShop from "./pages/admin/AdminShop";
 import AdminPapers from "./pages/admin/AdminPapers";
 import AdminBulkSms from "./pages/admin/AdminBulkSms";
 import AdminContactMessages from "./pages/admin/AdminContactMessages";
+import AdminSyllabus from "./pages/admin/AdminSyllabus";
+import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
