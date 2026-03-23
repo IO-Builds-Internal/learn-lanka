@@ -10,7 +10,8 @@ import {
   Image as ImageIcon,
   Database,
   Loader2,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
