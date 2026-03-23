@@ -229,6 +229,24 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
                     Admin Panel
                   </Link>
                 )}
+                {settings?.section_shop !== false && (
+                  <Link
+                    to="/my-orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Package className="w-5 h-5" />
+                    My Orders
+                  </Link>
+                )}
+                <Link
+                  to="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Contact
+                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
