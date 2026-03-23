@@ -328,7 +328,7 @@ const AdminQuestionBank = () => {
             <SelectTrigger className="w-32"><SelectValue placeholder="Grade" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Grades</SelectItem>
-              {GRADES.map(g => <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>)}
+              {GRADES.map(g => <SelectItem key={g.value} value={g.value.toString()}>{g.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterMedium} onValueChange={setFilterMedium}>
