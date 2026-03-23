@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { cn } from '@/lib/utils';
 import { 
   useAdminUsers, 

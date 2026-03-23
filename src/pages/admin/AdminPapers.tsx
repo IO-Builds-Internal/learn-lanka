@@ -55,6 +55,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import PaperAttachmentsManager from '@/components/admin/PaperAttachmentsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
