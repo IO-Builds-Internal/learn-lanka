@@ -516,7 +516,11 @@ const Dashboard = () => {
                   paper.essay_count > 0 && `${paper.essay_count} Essay`,
                 ].filter(Boolean).join(' · ');
                 return (
-                  <Card key={paper.id} className="card-elevated">
+                  <Card
+                    key={paper.id}
+                    className="card-elevated cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                    onClick={() => downloadingId === null && handleDownloadPaper(paper)}
+                  >
                     <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -530,18 +534,14 @@ const Dashboard = () => {
                           {parts} &nbsp;·&nbsp; {createdAt.toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDownloadPaper(paper)}
-                        disabled={downloadingId === paper.id}
-                        className="shrink-0"
-                      >
+                      <div className="shrink-0 flex items-center gap-1 text-muted-foreground">
                         {downloadingId === paper.id
-                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          : <Download className="w-3.5 h-3.5" />}
-                        <span className="ml-1.5 hidden sm:inline">Download PDF</span>
-                      </Button>
+                          ? <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          : <Download className="w-4 h-4" />}
+                        <span className="text-xs hidden sm:inline">
+                          {downloadingId === paper.id ? 'Downloading...' : 'Download PDF'}
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
                 );
