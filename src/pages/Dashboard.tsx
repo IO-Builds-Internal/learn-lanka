@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { useRankPaperStatus } from '@/hooks/useRankPaperStatus';
 import { downloadGeneratedPaperPdf } from '@/lib/generatePaperPdf';
 import { toast } from 'sonner';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
