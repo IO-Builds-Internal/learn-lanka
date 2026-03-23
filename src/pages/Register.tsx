@@ -53,13 +53,13 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
+      const { data, error } = await invokeFunction('send-otp', {
         body: { phone, purpose: 'REGISTER' }
       });
 
       if (error) throw error;
 
-      if (data.alreadyRegistered) {
+      if ((data as any)?.alreadyRegistered) {
         setAlreadyRegisteredError(true);
         toast.error('This phone number is already registered');
         return;
