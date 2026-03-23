@@ -36,10 +36,13 @@ const AdminSettings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Feature toggles
-  const [rankPapersEnabled, setRankPapersEnabled] = useState(true);
-  const [shopEnabled, setShopEnabled] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  // Section feature toggles
+  const [sectionClasses, setSectionClasses] = useState(true);
+  const [sectionRankPapers, setSectionRankPapers] = useState(true);
+  const [sectionPapers, setSectionPapers] = useState(true);
+  const [sectionShop, setSectionShop] = useState(true);
+  const [sectionPlayground, setSectionPlayground] = useState(true);
+  const [sectionNotifications, setSectionNotifications] = useState(true);
 
   // Asset URLs
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
