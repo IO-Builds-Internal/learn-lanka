@@ -598,6 +598,11 @@ const PaperGenerator = () => {
           <TabsContent value="answers" className="pt-4">
             <AnswerLookup />
           </TabsContent>
+
+          {/* ── Generated Papers History Tab ── */}
+          <TabsContent value="history" className="pt-4">
+            <GeneratedPapersHistory />
+          </TabsContent>
         </Tabs>
       </div>
     </StudentLayout>
