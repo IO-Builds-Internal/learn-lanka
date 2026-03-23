@@ -357,7 +357,7 @@ const Checkout = () => {
                 <Button variant="outline" onClick={() => navigate('/shop')}>
                   Continue Shopping
                 </Button>
-                <Button onClick={() => navigate('/profile')}>
+                <Button onClick={() => navigate('/my-orders')}>
                   View Orders
                 </Button>
               </div>
