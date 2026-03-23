@@ -134,6 +134,22 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
               {/* Theme Toggle */}
               <ThemeToggle />
 
+              {/* My Orders */}
+              {settings?.section_shop !== false && (
+                <Link to="/my-orders">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Package className="w-5 h-5" />
+                  </Button>
+                </Link>
+              )}
+
+              {/* Contact / Messages */}
+              <Link to="/contact">
+                <Button variant="ghost" size="icon">
+                  <MessageCircle className="w-5 h-5" />
+                </Button>
+              </Link>
+
               {/* Notifications */}
               {settings?.section_notifications !== false && (
                 <Link to="/notifications">
