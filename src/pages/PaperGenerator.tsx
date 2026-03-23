@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plus, Trash2, Wand2, Download, History,
-  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp, Calendar
+  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp, Calendar,
+  Building2, CreditCard, CheckCircle2, Clock, XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,7 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import StudentLayout from '@/components/layouts/StudentLayout';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -609,9 +610,43 @@ const PaperGenerator = () => {
   );
 };
 
+// ── Bank Accounts Inline ───────────────────────────────────────────────────────
+const BankAccountsInline = () => {
+  const { data: accounts = [], isLoading } = useQuery({
+    queryKey: ['bank-accounts-inline'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('bank_accounts').select('*').eq('is_active', true);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) return <div className="animate-pulse h-16 bg-muted/50 rounded-lg" />;
+  if (accounts.length === 0) return null;
+
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <Building2 className="w-3.5 h-3.5" /> Bank Accounts — Transfer to any:
+      </p>
+      <div className="grid gap-2">
+        {accounts.map((acc: any) => (
+          <div key={acc.id} className="rounded-md bg-background border px-3 py-2 text-sm">
+            <p className="font-semibold text-foreground">{acc.bank_name} <span className="text-muted-foreground font-normal">· {acc.branch}</span></p>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              A/C: <span className="font-mono text-foreground">{acc.account_number}</span> · {acc.account_name}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ── Generated Papers History Sub-component ───────────────────────────────────
 const GeneratedPapersHistory = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [questionsMap, setQuestionsMap] = useState<Record<string, any[]>>({});
@@ -638,7 +673,26 @@ const GeneratedPapersHistory = () => {
       return (enrollments && enrollments.length > 0) || accessPayment?.status === 'APPROVED';
     },
     enabled: !!user,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
+
+  // Realtime: when admin approves, re-check access immediately
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('history-access-rt')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'answer_access_payments',
+        filter: `user_id=eq.${user.id}`,
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, queryClient]);
 
   const { data: papers = [], isLoading } = useQuery({
     queryKey: ['generated-papers-history', user?.id],
@@ -853,10 +907,11 @@ const GeneratedPapersHistory = () => {
 // ── Answer Lookup Sub-component ───────────────────────────────────────────────
 const AnswerLookup = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [paperId, setPaperId] = useState('');
   const [searching, setSearching] = useState(false);
   const [paper, setPaper] = useState<any>(null);
-  const [accessStatus, setAccessStatus] = useState<'loading' | 'enrolled' | 'paid' | 'none' | null>(null);
+  const [accessStatus, setAccessStatus] = useState<'loading' | 'enrolled' | 'paid' | 'pending' | 'none' | null>(null);
   const [paying, setPaying] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(() => {
     return new URLSearchParams(window.location.search).get('pay') === '1';
@@ -877,6 +932,44 @@ const AnswerLookup = () => {
   });
   const fee = parseInt(settings?.['answer_access_fee'] || '2000');
 
+  // Check existing access status on mount (for pay=1 redirect flow)
+  const { data: existingAccess } = useQuery({
+    queryKey: ['existing-answer-access', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await (supabase as any)
+        .from('answer_access_payments')
+        .select('status')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 0,
+  });
+
+  // Realtime: update access status when admin approves
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('answer-lookup-rt')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'answer_access_payments',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload: any) => {
+        if (payload.new?.status === 'APPROVED') {
+          setAccessStatus('paid');
+          setShowPaymentForm(false);
+          queryClient.invalidateQueries({ queryKey: ['existing-answer-access', user.id] });
+          toast.success('🎉 Your answer access has been approved!');
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, queryClient]);
+
   const searchPaper = async () => {
     if (!paperId.trim()) return;
     setSearching(true);
@@ -891,35 +984,18 @@ const AnswerLookup = () => {
       if (error || !data) { toast.error('Paper not found. Check the paper ID.'); return; }
       setPaper(data);
 
-      // Check access
       if (!user) { setAccessStatus('none'); return; }
       setAccessStatus('loading');
 
-      // Check class enrollment
-      const { data: enrollments } = await supabase
-        .from('class_enrollments')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'ACTIVE')
-        .limit(1);
+      const [{ data: enrollments }, { data: accessPayment }] = await Promise.all([
+        supabase.from('class_enrollments').select('id').eq('user_id', user.id).eq('status', 'ACTIVE').limit(1),
+        (supabase as any).from('answer_access_payments').select('status').eq('user_id', user.id).maybeSingle(),
+      ]);
 
-      if (enrollments && enrollments.length > 0) {
-        setAccessStatus('enrolled');
-        return;
-      }
-
-      // Check one-time payment
-      const { data: accessPayment } = await (supabase as any)
-        .from('answer_access_payments')
-        .select('status')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (accessPayment?.status === 'APPROVED') {
-        setAccessStatus('paid');
-      } else {
-        setAccessStatus('none');
-      }
+      if (enrollments && enrollments.length > 0) { setAccessStatus('enrolled'); return; }
+      if (accessPayment?.status === 'APPROVED') { setAccessStatus('paid'); return; }
+      if (accessPayment?.status === 'PENDING') { setAccessStatus('pending'); return; }
+      setAccessStatus('none');
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -938,22 +1014,13 @@ const AnswerLookup = () => {
         .upload(fileName, slipFile, { upsert: true });
       if (uploadErr) throw uploadErr;
 
-      // Create payment record (store path, not publicUrl — bucket is private)
       const { data: payment, error: payErr } = await supabase
         .from('payments')
-        .insert({
-          user_id: user.id,
-          amount: fee,
-          payment_type: 'ANSWER_ACCESS',
-          ref_id: 'ANSWER_ACCESS',
-          slip_url: fileName,
-          status: 'PENDING',
-        })
+        .insert({ user_id: user.id, amount: fee, payment_type: 'ANSWER_ACCESS', ref_id: 'ANSWER_ACCESS', slip_url: fileName, status: 'PENDING' })
         .select('id')
         .single();
       if (payErr) throw payErr;
 
-      // Upsert answer_access_payments record
       const { error: aapErr } = await (supabase as any)
         .from('answer_access_payments')
         .upsert({ user_id: user.id, payment_id: payment.id, status: 'PENDING' }, { onConflict: 'user_id' });
@@ -962,6 +1029,8 @@ const AnswerLookup = () => {
       toast.success('Payment slip submitted! You\'ll get access once the admin verifies it.');
       setShowPaymentForm(false);
       setSlipFile(null);
+      if (accessStatus === 'none') setAccessStatus('pending');
+      queryClient.invalidateQueries({ queryKey: ['existing-answer-access', user.id] });
     } catch (err: any) {
       toast.error(err.message || 'Payment submission failed');
     } finally {
@@ -970,43 +1039,79 @@ const AnswerLookup = () => {
   };
 
   const canSeeAnswers = accessStatus === 'enrolled' || accessStatus === 'paid';
+  // Hide payment form if already paid or pending
+  const alreadyPaidOrPending = existingAccess?.status === 'APPROVED' || existingAccess?.status === 'PENDING';
+
+  // Payment form card shared between standalone and inline modes
+  const PaymentFormCard = ({ inline = false }: { inline?: boolean }) => (
+    <div className={cn('space-y-4', inline && 'pt-3 border-t mt-3')}>
+      <BankAccountsInline />
+      <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground space-y-1">
+        <p>1. Transfer <strong className="text-foreground">Rs. {fee.toLocaleString()}</strong> to any account above.</p>
+        <p>2. Upload your transfer slip below.</p>
+        <p>3. Admin will verify and grant lifetime access.</p>
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Upload Payment Slip</label>
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={e => setSlipFile(e.target.files?.[0] || null)}
+          className="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer border rounded-md p-2"
+        />
+        {slipFile && <p className="text-xs text-muted-foreground">Selected: {slipFile.name} ({(slipFile.size / 1024).toFixed(1)} KB)</p>}
+      </div>
+      <div className="flex gap-2">
+        <Button onClick={submitPayment} disabled={paying || !slipFile} className="flex-1">
+          {paying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CreditCard className="w-4 h-4 mr-2" />}
+          {paying ? 'Submitting...' : 'Submit Payment Slip'}
+        </Button>
+        {!inline && <Button variant="outline" onClick={() => setShowPaymentForm(false)}>Cancel</Button>}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Standalone payment form when redirected via ?pay=1 */}
-      {showPaymentForm && !paper && user && (
+      {showPaymentForm && !paper && user && !alreadyPaidOrPending && (
         <Card className="card-elevated border-primary/30">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Get Lifetime Answer Access</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-primary" />
+              Get Lifetime Answer Access
+            </CardTitle>
             <CardDescription>
               Pay Rs. {fee.toLocaleString()} once to unlock answers & review videos for all your generated papers.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground space-y-1">
-              <p>1. Transfer Rs. {fee.toLocaleString()} to any of the bank accounts listed below.</p>
-              <p>2. Upload the transfer slip here.</p>
-              <p>3. Admin will verify and grant you lifetime access.</p>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Upload Payment Slip</label>
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={e => setSlipFile(e.target.files?.[0] || null)}
-                className="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer border rounded-md p-2"
-              />
-              {slipFile && (
-                <p className="text-xs text-muted-foreground">Selected: {slipFile.name} ({(slipFile.size / 1024).toFixed(1)} KB)</p>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={submitPayment} disabled={paying || !slipFile} className="flex-1">
-                {paying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {paying ? 'Submitting...' : 'Submit Payment Slip'}
-              </Button>
-              <Button variant="outline" onClick={() => setShowPaymentForm(false)}>Cancel</Button>
-            </div>
+          <CardContent>
+            <PaymentFormCard />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Already paid / pending status — show instead of form */}
+      {showPaymentForm && !paper && user && alreadyPaidOrPending && (
+        <Card className="card-elevated">
+          <CardContent className="p-5">
+            {existingAccess?.status === 'APPROVED' ? (
+              <div className="flex items-center gap-3 text-emerald-600">
+                <CheckCircle2 className="w-6 h-6 shrink-0" />
+                <div>
+                  <p className="font-semibold">Lifetime access already active!</p>
+                  <p className="text-sm text-muted-foreground">You already have full access to answers and review videos.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-amber-600">
+                <Clock className="w-6 h-6 shrink-0" />
+                <div>
+                  <p className="font-semibold">Payment submitted — pending verification</p>
+                  <p className="text-sm text-muted-foreground">Your slip is under review. You'll be notified once approved.</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -1067,6 +1172,16 @@ const AnswerLookup = () => {
               </div>
             )}
 
+            {accessStatus === 'pending' && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-amber-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Payment pending verification</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Your slip was submitted. Access unlocks once admin approves — this page will update automatically.</p>
+                </div>
+              </div>
+            )}
+
             {accessStatus === 'none' && (
               <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
                 <p className="text-sm font-medium text-foreground">
@@ -1079,26 +1194,11 @@ const AnswerLookup = () => {
                     Enroll in a Class
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setShowPaymentForm(!showPaymentForm)}>
+                    <CreditCard className="w-4 h-4 mr-1" />
                     Pay Rs. {fee.toLocaleString()} for Lifetime Access
                   </Button>
                 </div>
-
-                {showPaymentForm && (
-                  <div className="mt-3 space-y-3 pt-3 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      Upload your bank transfer slip. Access will be granted after admin verification.
-                    </p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={e => setSlipFile(e.target.files?.[0] || null)}
-                    />
-                    <Button size="sm" onClick={submitPayment} disabled={paying || !slipFile}>
-                      {paying ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
-                      Submit Payment Slip
-                    </Button>
-                  </div>
-                )}
+                {showPaymentForm && <PaymentFormCard inline />}
               </div>
             )}
 

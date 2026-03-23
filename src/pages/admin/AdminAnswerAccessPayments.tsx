@@ -60,8 +60,45 @@ const AdminAnswerAccessPayments = () => {
           .eq('id', item.payment_id);
         if (e2) throw e2;
       }
+
+      // Send in-app notification
+      await (supabase as any).from('notifications').insert({
+        title: '✅ Answer Access Approved',
+        message: 'Your payment has been verified. You now have lifetime access to answers and review videos for all your generated papers.',
+        target_type: 'USER',
+        target_ref: item.user_id,
+        created_by: user?.id,
+      });
+
+      // Send SMS notification via edge function
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone, first_name')
+          .eq('id', item.user_id)
+          .single();
+
+        if (profile?.phone) {
+          const { data: tmpl } = await (supabase as any)
+            .from('sms_templates')
+            .select('template_body')
+            .eq('template_key', 'answer_access_approved')
+            .eq('is_active', true)
+            .maybeSingle();
+
+          const message = tmpl?.template_body
+            ? tmpl.template_body.replace('{name}', profile.first_name || 'Student')
+            : `Hi ${profile.first_name || 'Student'}, your answer access payment has been approved! You can now view answers and review videos for all your generated papers at classmate.lk`;
+
+          await supabase.functions.invoke('send-sms-notification', {
+            body: { phone: profile.phone, message },
+          });
+        }
+      } catch (_) {
+        // SMS failure should not block approval
+      }
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['answer-access-payments'] }); toast.success('Access granted!'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['answer-access-payments'] }); toast.success('Access granted & student notified!'); },
     onError: (e: any) => toast.error(e.message),
   });
 
