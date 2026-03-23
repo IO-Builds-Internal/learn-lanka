@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  Monitor, Eye, BookOpen, Award, FileText, ShoppingBag, Code2, Bell,
+  Monitor, Eye, BookOpen, Award, FileText, ShoppingBag, Code2, Bell, Wand2,
   GraduationCap, LayoutDashboard, Package, MessageCircle, User,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
