@@ -177,31 +177,40 @@ export async function downloadGeneratedPaperPdf(params: {
 
   html += `</div></body></html>`;
 
-  // Open in new tab and auto-print (saves as PDF via browser print dialog)
-  const blob = new Blob([html], { type: 'text/html' });
+  // Add a print-trigger script and a visible "Save as PDF" button inside the page
+  const printScript = `
+    <div class="no-print" style="position:fixed;top:12px;right:16px;z-index:9999;display:flex;gap:8px;">
+      <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;cursor:pointer;font-family:sans-serif;">
+        ⬇ Save as PDF
+      </button>
+      <button onclick="window.close()" style="background:#6b7280;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-family:sans-serif;">
+        ✕ Close
+      </button>
+    </div>
+    <script>
+      window.addEventListener('load', function() {
+        setTimeout(function() { window.print(); }, 600);
+      });
+    <\/script>
+  `;
+
+  // Inject print script just before </body>
+  const finalHtml = html.replace('</body>', printScript + '</body>');
+
+  const blob = new Blob([finalHtml], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, '_blank');
-  if (win) {
-    win.focus();
-    win.onload = () => {
-      try {
-        win.print();
-      } catch (_) {}
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    };
-    // Fallback if onload doesn't fire
-    setTimeout(() => {
-      try { win.print(); } catch (_) {}
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    }, 1200);
-  } else {
-    // Popup blocked: direct HTML download as fallback
+
+  if (!win) {
+    // Popup blocked: open in same tab as fallback so user can still print
     const a = document.createElement('a');
     a.href = url;
-    a.download = `paper-${paperId}.html`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
   }
+
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
