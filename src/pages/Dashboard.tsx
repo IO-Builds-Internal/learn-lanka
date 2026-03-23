@@ -318,60 +318,70 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-4">
-          <Link to="/classes" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                <div className="p-2 sm:p-3 rounded-full bg-primary/10 mb-1 sm:mb-3">
-                  <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
-                </div>
-                <h3 className="font-medium text-xs sm:text-sm">Classes</h3>
-              </CardContent>
-            </Card>
-          </Link>
+          {settings?.section_classes !== false && (
+            <Link to="/classes" className="block">
+              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
+                  <div className="p-2 sm:p-3 rounded-full bg-primary/10 mb-1 sm:mb-3">
+                    <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xs sm:text-sm">Classes</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
-          <Link to="/rank-papers" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                <div className="p-2 sm:p-3 rounded-full bg-accent/10 mb-1 sm:mb-3">
-                  <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-accent" />
-                </div>
-                <h3 className="font-medium text-xs sm:text-sm">Rank Papers</h3>
-              </CardContent>
-            </Card>
-          </Link>
+          {settings?.section_rank_papers !== false && (
+            <Link to="/rank-papers" className="block">
+              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
+                  <div className="p-2 sm:p-3 rounded-full bg-accent/10 mb-1 sm:mb-3">
+                    <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-accent" />
+                  </div>
+                  <h3 className="font-medium text-xs sm:text-sm">Rank Papers</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
-          <Link to="/shop" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                <div className="p-2 sm:p-3 rounded-full bg-success/10 mb-1 sm:mb-3">
-                  <ShoppingBag className="w-4 h-4 sm:w-6 sm:h-6 text-success" />
-                </div>
-                <h3 className="font-medium text-xs sm:text-sm">Shop</h3>
-              </CardContent>
-            </Card>
-          </Link>
+          {settings?.section_shop !== false && (
+            <Link to="/shop" className="block">
+              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
+                  <div className="p-2 sm:p-3 rounded-full bg-success/10 mb-1 sm:mb-3">
+                    <ShoppingBag className="w-4 h-4 sm:w-6 sm:h-6 text-success" />
+                  </div>
+                  <h3 className="font-medium text-xs sm:text-sm">Shop</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
-          <Link to="/papers" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                <div className="p-2 sm:p-3 rounded-full bg-secondary mb-1 sm:mb-3">
-                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-secondary-foreground" />
-                </div>
-                <h3 className="font-medium text-xs sm:text-sm">Past Papers</h3>
-              </CardContent>
-            </Card>
-          </Link>
+          {settings?.section_papers !== false && (
+            <Link to="/papers" className="block">
+              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
+                  <div className="p-2 sm:p-3 rounded-full bg-secondary mb-1 sm:mb-3">
+                    <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-secondary-foreground" />
+                  </div>
+                  <h3 className="font-medium text-xs sm:text-sm">Past Papers</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
-          <Link to="/playground" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                <div className="p-2 sm:p-3 rounded-full bg-blue-500/10 mb-1 sm:mb-3">
-                  <Code2 className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
-                </div>
-                <h3 className="font-medium text-xs sm:text-sm">Playground</h3>
-              </CardContent>
-            </Card>
-          </Link>
+          {settings?.section_playground !== false && (
+            <Link to="/playground" className="block">
+              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
+                  <div className="p-2 sm:p-3 rounded-full bg-primary/10 mb-1 sm:mb-3">
+                    <Code2 className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xs sm:text-sm">Playground</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
           <Link to="/contact" className="block">
             <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
