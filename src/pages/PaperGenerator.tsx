@@ -846,7 +846,7 @@ const AnswerLookup = () => {
             )}
 
             {accessStatus === 'none' && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+              <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
                 <p className="text-sm font-medium text-foreground">
                   🔒 Answer access requires an active class enrollment or a one-time payment of{' '}
                   <strong>Rs. {fee.toLocaleString()}</strong>
