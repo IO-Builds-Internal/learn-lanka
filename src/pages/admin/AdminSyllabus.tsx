@@ -46,7 +46,10 @@ type SyllabusLesson = {
   created_at: string;
 };
 
-const GRADES = Array.from({ length: 13 }, (_, i) => i + 1);
+const GRADES: { value: number; label: string }[] = [
+  ...Array.from({ length: 6 }, (_, i) => ({ value: i + 6, label: `Grade ${i + 6}` })), // 6–11
+  { value: 12, label: 'G.C.E A/L' }, // 12 & 13 combined
+];
 const MEDIUMS = ['sinhala', 'english', 'tamil'];
 
 const defaultForm = {
