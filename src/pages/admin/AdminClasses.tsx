@@ -50,6 +50,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import ClassDetailDialog from '@/components/admin/ClassDetailDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -263,27 +264,21 @@ const AdminClasses = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Classes</h1>
-            <p className="text-muted-foreground">Manage your ICT classes</p>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            if (open) {
-              setEditingClass(null);
-              resetForm();
-            } else {
-              closeDialog();
-            }
-            setIsDialogOpen(open);
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Class
-              </Button>
-            </DialogTrigger>
+      <AdminPageHeader
+        title="Classes"
+        description="Manage your ICT classes"
+        breadcrumbs={[{ label: 'Academics' }, { label: 'Classes' }]}
+        actions={
+          <Button onClick={() => { setEditingClass(null); resetForm(); setIsDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Class
+          </Button>
+        }
+      />
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        if (open) { setEditingClass(null); resetForm(); } else { closeDialog(); }
+        setIsDialogOpen(open);
+      }}>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingClass ? 'Edit Class' : 'Create New Class'}</DialogTitle>
@@ -433,7 +428,6 @@ const AdminClasses = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Search */}
         <div className="relative max-w-md">

@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -187,19 +188,18 @@ const AdminCoupons = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Coupons</h1>
-            <p className="text-muted-foreground">Manage discount coupons</p>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Coupon
-              </Button>
-            </DialogTrigger>
+      <AdminPageHeader
+        title="Coupons"
+        description="Manage discount coupons and promotions"
+        breadcrumbs={[{ label: 'Finance' }, { label: 'Coupons' }]}
+        actions={
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Coupon
+          </Button>
+        }
+      />
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Create Coupon</DialogTitle>
@@ -289,7 +289,6 @@ const AdminCoupons = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Coupons Table */}
         <Card className="card-elevated">

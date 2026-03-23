@@ -35,6 +35,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -173,19 +174,18 @@ const AdminNotifications = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-            <p className="text-muted-foreground">Send notifications to users</p>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Send Notification
-              </Button>
-            </DialogTrigger>
+        <AdminPageHeader
+          title="Notifications"
+          description="Send notifications to users"
+          breadcrumbs={[{ label: 'Communication' }, { label: 'Notifications' }]}
+          actions={
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Send Notification
+            </Button>
+          }
+        />
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Send Notification</DialogTitle>
@@ -274,7 +274,6 @@ const AdminNotifications = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Notifications Table */}
         <Card className="card-elevated">

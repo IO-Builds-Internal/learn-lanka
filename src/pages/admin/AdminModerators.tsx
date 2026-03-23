@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { cn } from '@/lib/utils';
 import { 
   useAdminUsers, 
@@ -238,30 +239,28 @@ const AdminModerators = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Moderators</h1>
-            <p className="text-muted-foreground">Manage platform moderators</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="w-fit">
-              {moderators.length} moderators
-            </Badge>
-            <Dialog open={addModeratorOpen} onOpenChange={setAddModeratorOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add Moderator
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Add Moderator</DialogTitle>
-                  <DialogDescription>
-                    Search for a user to make them a moderator
-                  </DialogDescription>
-                </DialogHeader>
+        <AdminPageHeader
+          title="Moderators"
+          description="Manage platform moderators"
+          breadcrumbs={[{ label: 'People' }, { label: 'Moderators' }]}
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{moderators.length} moderators</Badge>
+              <Button onClick={() => setAddModeratorOpen(true)}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Moderator
+              </Button>
+            </div>
+          }
+        />
+        <Dialog open={addModeratorOpen} onOpenChange={setAddModeratorOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add Moderator</DialogTitle>
+              <DialogDescription>
+                Search for a user to make them a moderator
+              </DialogDescription>
+            </DialogHeader>
                 <div className="space-y-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -308,8 +307,6 @@ const AdminModerators = () => {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
-        </div>
 
         {/* Search */}
         <Card className="card-elevated">
