@@ -126,7 +126,14 @@ const App = () => (
               <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
               <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
               <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
+              <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
+              <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />
+              <Route path="/admin/settings/features" element={<ProtectedRoute requireAdmin><AdminSettingsFeatures /></ProtectedRoute>} />
+              <Route path="/admin/settings/contact" element={<ProtectedRoute requireAdmin><AdminSettingsContact /></ProtectedRoute>} />
+              <Route path="/admin/settings/paper-template" element={<ProtectedRoute requireAdmin><AdminSettingsPaperTemplate /></ProtectedRoute>} />
+              <Route path="/admin/settings/bank" element={<ProtectedRoute requireAdmin><AdminSettingsBank /></ProtectedRoute>} />
+              <Route path="/admin/settings/sms" element={<ProtectedRoute requireAdmin><AdminSettingsSms /></ProtectedRoute>} />
+              <Route path="/admin/settings/backup" element={<ProtectedRoute requireAdmin><AdminSettingsBackup /></ProtectedRoute>} />
               <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
               <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
 
