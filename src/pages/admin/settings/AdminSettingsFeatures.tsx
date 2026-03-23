@@ -20,6 +20,7 @@ const AdminSettingsFeatures = () => {
   const [sectionShop, setSectionShop] = useState(true);
   const [sectionPlayground, setSectionPlayground] = useState(true);
   const [sectionNotifications, setSectionNotifications] = useState(true);
+  const [sectionPaperGenerator, setSectionPaperGenerator] = useState(true);
 
   useEffect(() => {
     (async () => {
