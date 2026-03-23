@@ -175,7 +175,7 @@ const DatabaseBackupRestore = () => {
         throw new Error(response.error.message);
       }
 
-      toast.success(response.data.message || 'Database cleared successfully!');
+      toast.success((response.data as any)?.message || 'Database cleared successfully!');
     } catch (error: any) {
       console.error('Clear error:', error);
       toast.error(error.message || 'Failed to clear database');

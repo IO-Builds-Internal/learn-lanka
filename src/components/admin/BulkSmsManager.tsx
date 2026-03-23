@@ -254,7 +254,7 @@ const BulkSmsManager = () => {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      if (!(data as any)?.success) throw new Error((data as any)?.error);
 
       toast.success(
         isScheduled 

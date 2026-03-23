@@ -580,12 +580,12 @@ const AdminClassContent = () => {
       });
 
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if ((data as any)?.error) throw new Error((data as any).error);
 
-      setDayMeetingLink(data.joinUrl);
+      setDayMeetingLink((data as any).joinUrl);
       
       // Show different success message based on license status
-      if (data.isLicensed) {
+      if ((data as any)?.isLicensed) {
         toast.success('Zoom meeting created with unique student links!');
       } else {
         toast.success('Zoom meeting created (upgrade to Pro for unique links)');
