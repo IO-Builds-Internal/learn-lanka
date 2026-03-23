@@ -16,6 +16,8 @@ export interface SiteSettings {
   section_playground: boolean;
   section_notifications: boolean;
   section_paper_generator: boolean;
+  // Nav order: array of item keys
+  nav_order: string[] | null;
 }
 
 export const useSiteSettings = () => {
