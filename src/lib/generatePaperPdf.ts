@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import jsPDF from 'jspdf';
 
 const GRADES = [
   { value: '6', label: 'Grade 6' },
@@ -31,6 +32,11 @@ interface PaperQuestion {
   options_image_url: string | null;
   explain_video_url: string | null;
   options: QuestionOption[];
+}
+
+// Wrap text and return lines
+function wrapText(doc: jsPDF, text: string, maxWidth: number): string[] {
+  return doc.splitTextToSize(text, maxWidth);
 }
 
 export async function downloadGeneratedPaperPdf(params: {
@@ -91,126 +97,205 @@ export async function downloadGeneratedPaperPdf(params: {
   const timeLabel = PAPER_CONFIGS[paperType]?.time || '';
   const now = new Date().toLocaleDateString('en-LK');
 
+  // ── Build PDF with jsPDF ──────────────────────────────────────────────────
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const pageW = 210;
+  const pageH = 297;
+  const marginLeft = 20;
+  const marginRight = 20;
+  const marginTop = 20;
+  const marginBottom = 20;
+  const contentWidth = pageW - marginLeft - marginRight;
+  let y = marginTop;
+
+  const addPageIfNeeded = (neededHeight: number) => {
+    if (y + neededHeight > pageH - marginBottom - 10) {
+      doc.addPage();
+      y = marginTop;
+      // Draw footer on the new page before continuing
+      drawFooter();
+    }
+  };
+
+  const drawFooter = () => {
+    const footerY = pageH - 10;
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    const footerText = footer
+      ? `${footer} | Paper ID: ${paperId}`
+      : `Paper ID: ${paperId}`;
+    doc.text(footerText, pageW / 2, footerY, { align: 'center' });
+    doc.setDrawColor(180, 180, 180);
+    doc.line(marginLeft, footerY - 3, pageW - marginRight, footerY - 3);
+  };
+
+  // ── Header ────────────────────────────────────────────────────────────────
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text(schoolName, pageW / 2, y, { align: 'center' });
+  y += 7;
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${gradeLabel} — ${paperLabel}`, pageW / 2, y, { align: 'center' });
+  y += 6;
+
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Date: ${now}`, marginLeft, y);
+  doc.text(`Time: ${timeLabel}`, pageW / 2, y, { align: 'center' });
+  doc.text(`Paper ID: ${paperId}`, pageW - marginRight, y, { align: 'right' });
+  y += 5;
+
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, y, pageW - marginRight, y);
+  y += 5;
+
+  // ── Instructions ──────────────────────────────────────────────────────────
+  if (instructions) {
+    addPageIfNeeded(12);
+    doc.setFillColor(245, 245, 245);
+    doc.setDrawColor(200, 200, 200);
+    const instrLines = wrapText(doc, `Instructions: ${instructions}`, contentWidth - 8);
+    const instrH = instrLines.length * 4.5 + 6;
+    doc.roundedRect(marginLeft, y, contentWidth, instrH, 2, 2, 'FD');
+    doc.setFontSize(9);
+    doc.setTextColor(40, 40, 40);
+    instrLines.forEach((line, i) => {
+      doc.text(line, marginLeft + 4, y + 5 + i * 4.5);
+    });
+    y += instrH + 5;
+  }
+
   const mcqs = questions.filter(q => q.question_type === 'MCQ');
   const shortEssays = questions.filter(q => q.question_type === 'SHORT_ESSAY');
   const essays = questions.filter(q => q.question_type !== 'MCQ' && q.question_type !== 'SHORT_ESSAY');
 
-  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <style>
-    body { font-family: 'Times New Roman', serif; margin: 0; padding: 0; color: #000; font-size: 12pt; }
-    .page { width: 210mm; min-height: 297mm; padding: 20mm; box-sizing: border-box; }
-    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 16px; }
-    .header h1 { font-size: 18pt; margin: 0 0 4px; }
-    .header h2 { font-size: 13pt; margin: 0 0 4px; font-weight: normal; }
-    .meta { display: flex; justify-content: space-between; font-size: 10pt; color: #444; margin-top: 6px; }
-    .instructions { background: #f5f5f5; border: 1px solid #ccc; padding: 8px 12px; margin: 12px 0; font-size: 10pt; }
-    .section-title { font-size: 13pt; font-weight: bold; border-bottom: 1px solid #000; margin: 20px 0 12px; padding-bottom: 4px; }
-    .question { margin-bottom: 14px; page-break-inside: avoid; }
-    .question-no { font-weight: bold; }
-    .options { margin: 6px 0 6px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-    .option { display: flex; gap: 8px; }
-    .q-img { max-width: 100%; max-height: 120px; margin: 6px 0; }
-    .essay-lines { margin-top: 8px; }
-    .essay-line { border-bottom: 1px solid #ccc; height: 22px; margin-bottom: 2px; }
-    .footer { position: fixed; bottom: 10mm; left: 20mm; right: 20mm; text-align: center; font-size: 9pt; color: #666; border-top: 1px solid #ccc; padding-top: 6px; }
-    @media print { .no-print { display: none; } }
-  </style></head><body>
-  <div class="page">
-  <div class="header">
-    <h1>${schoolName}</h1>
-    <h2>${gradeLabel} — ${paperLabel}</h2>
-    <div class="meta">
-      <span>Date: ${now}</span>
-      <span>Time: ${timeLabel}</span>
-      <span>Paper ID: ${paperId}</span>
-    </div>
-  </div>`;
-
-  if (instructions) {
-    html += `<div class="instructions"><strong>Instructions:</strong> ${instructions}</div>`;
-  }
-
   let qNo = 1;
 
+  // ── Section A: MCQ ────────────────────────────────────────────────────────
   if (mcqs.length > 0) {
-    html += `<div class="section-title">Section A — Multiple Choice Questions (${mcqs.length} marks)</div>`;
-    mcqs.forEach(q => {
-      html += `<div class="question">
-        <span class="question-no">${qNo++}.</span> ${q.question_text || ''}
-        ${q.question_image_url ? `<br><img class="q-img" src="${q.question_image_url}" />` : ''}
-        <div class="options">
-          ${(q.options || []).map((o, i) => `
-            <div class="option">
-              <span>${String.fromCharCode(65 + i)}.</span>
-              <span>${o.option_text || ''}</span>
-            </div>`).join('')}
-        </div>
-      </div>`;
-    });
-  }
+    addPageIfNeeded(10);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Section A — Multiple Choice Questions (${mcqs.length} marks)`, marginLeft, y);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, y + 1.5, pageW - marginRight, y + 1.5);
+    y += 8;
 
-  if (shortEssays.length > 0) {
-    html += `<div class="section-title">Section B — Structured Essay Questions</div>`;
-    shortEssays.forEach(q => {
-      html += `<div class="question">
-        <span class="question-no">${qNo++}.</span> ${q.question_text || ''}
-        ${q.question_image_url ? `<br><img class="q-img" src="${q.question_image_url}" />` : ''}
-        <div class="essay-lines">${Array(8).fill('<div class="essay-line"></div>').join('')}</div>
-      </div>`;
-    });
-  }
+    for (const q of mcqs) {
+      const questionText = q.question_text || '';
+      const qLines = wrapText(doc, `${qNo}. ${questionText}`, contentWidth);
+      const optionLines = q.options.flatMap((o, i) =>
+        wrapText(doc, `   ${String.fromCharCode(65 + i)}. ${o.option_text || ''}`, contentWidth / 2 - 5)
+      );
+      const blockH = qLines.length * 4.5 + Math.ceil(q.options.length / 2) * 4.5 + 6;
 
-  if (essays.length > 0) {
-    html += `<div class="section-title">Section C — Essay Questions</div>`;
-    essays.forEach(q => {
-      html += `<div class="question">
-        <span class="question-no">${qNo++}.</span> ${q.question_text || ''}
-        ${q.question_image_url ? `<br><img class="q-img" src="${q.question_image_url}" />` : ''}
-        <div class="essay-lines">${Array(15).fill('<div class="essay-line"></div>').join('')}</div>
-      </div>`;
-    });
-  }
+      addPageIfNeeded(blockH);
 
-  if (footer) {
-    html += `<div class="footer">${footer} &nbsp;|&nbsp; Paper ID: ${paperId}</div>`;
-  }
-
-  html += `</div></body></html>`;
-
-  // Add a print-trigger script and a visible "Save as PDF" button inside the page
-  const printScript = `
-    <div class="no-print" style="position:fixed;top:12px;right:16px;z-index:9999;display:flex;gap:8px;">
-      <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;cursor:pointer;font-family:sans-serif;">
-        ⬇ Save as PDF
-      </button>
-      <button onclick="window.close()" style="background:#6b7280;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-family:sans-serif;">
-        ✕ Close
-      </button>
-    </div>
-    <script>
-      window.addEventListener('load', function() {
-        setTimeout(function() { window.print(); }, 600);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      qLines.forEach((line, i) => {
+        doc.text(line, marginLeft, y + i * 4.5);
       });
-    <\/script>
-  `;
+      y += qLines.length * 4.5 + 2;
 
-  // Inject print script just before </body>
-  const finalHtml = html.replace('</body>', printScript + '</body>');
-
-  const blob = new Blob([finalHtml], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank');
-
-  if (!win) {
-    // Popup blocked: open in same tab as fallback so user can still print
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+      // Options in 2 columns
+      const optPairs: QuestionOption[][] = [];
+      for (let i = 0; i < q.options.length; i += 2) {
+        optPairs.push(q.options.slice(i, i + 2));
+      }
+      doc.setFontSize(9.5);
+      doc.setTextColor(30, 30, 30);
+      for (const pair of optPairs) {
+        pair.forEach((o, col) => {
+          const optText = `${String.fromCharCode(65 + q.options.indexOf(o))}. ${o.option_text || ''}`;
+          const colX = marginLeft + 8 + col * (contentWidth / 2);
+          const optLines2 = wrapText(doc, optText, contentWidth / 2 - 8);
+          optLines2.forEach((line, li) => doc.text(line, colX, y + li * 4.2));
+        });
+        y += 4.5;
+      }
+      y += 4;
+      qNo++;
+    }
   }
 
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  // ── Section B: Short Essay ────────────────────────────────────────────────
+  if (shortEssays.length > 0) {
+    addPageIfNeeded(10);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Section B — Structured Essay Questions', marginLeft, y);
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, y + 1.5, pageW - marginRight, y + 1.5);
+    y += 8;
+
+    for (const q of shortEssays) {
+      const questionText = q.question_text || '';
+      const qLines = wrapText(doc, `${qNo}. ${questionText}`, contentWidth);
+      addPageIfNeeded(qLines.length * 4.5 + 8 * 6 + 8);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      qLines.forEach((line, i) => doc.text(line, marginLeft, y + i * 4.5));
+      y += qLines.length * 4.5 + 3;
+
+      // Answer lines
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
+      for (let i = 0; i < 8; i++) {
+        doc.line(marginLeft, y + i * 6, pageW - marginRight, y + i * 6);
+      }
+      y += 8 * 6 + 5;
+      qNo++;
+    }
+  }
+
+  // ── Section C: Essay ──────────────────────────────────────────────────────
+  if (essays.length > 0) {
+    addPageIfNeeded(10);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Section C — Essay Questions', marginLeft, y);
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, y + 1.5, pageW - marginRight, y + 1.5);
+    y += 8;
+
+    for (const q of essays) {
+      const questionText = q.question_text || '';
+      const qLines = wrapText(doc, `${qNo}. ${questionText}`, contentWidth);
+      addPageIfNeeded(qLines.length * 4.5 + 15 * 6 + 8);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      qLines.forEach((line, i) => doc.text(line, marginLeft, y + i * 4.5));
+      y += qLines.length * 4.5 + 3;
+
+      // Answer lines
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
+      for (let i = 0; i < 15; i++) {
+        doc.line(marginLeft, y + i * 6, pageW - marginRight, y + i * 6);
+      }
+      y += 15 * 6 + 5;
+      qNo++;
+    }
+  }
+
+  // Draw footer on last page
+  drawFooter();
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+  doc.save(`paper-${paperId}.pdf`);
 }

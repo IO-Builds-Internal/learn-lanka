@@ -633,7 +633,7 @@ const GeneratedPapersHistory = () => {
           .from('answer_access_payments')
           .select('status')
           .eq('user_id', user.id)
-          .single(),
+          .maybeSingle(),
       ]);
       return (enrollments && enrollments.length > 0) || accessPayment?.status === 'APPROVED';
     },
