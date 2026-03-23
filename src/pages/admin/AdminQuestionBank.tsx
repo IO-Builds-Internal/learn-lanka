@@ -511,20 +511,20 @@ const AdminQuestionBank = () => {
               </div>
               <div className="space-y-1.5">
                 <Label>Grade</Label>
-                <Select value={form.grade} onValueChange={v => setForm(f => ({ ...f, grade: v }))}>
+                <Select value={form.grade || '__none__'} onValueChange={v => setForm(f => ({ ...f, grade: v === '__none__' ? '' : v }))}>
                   <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="__none__">Any</SelectItem>
                     {GRADES.map(g => <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Medium</Label>
-                <Select value={form.medium} onValueChange={v => setForm(f => ({ ...f, medium: v }))}>
+                <Select value={form.medium || '__none__'} onValueChange={v => setForm(f => ({ ...f, medium: v === '__none__' ? '' : v }))}>
                   <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="__none__">Any</SelectItem>
                     {MEDIUMS.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -553,10 +553,10 @@ const AdminQuestionBank = () => {
             {/* Lesson */}
             <div className="space-y-1.5">
               <Label>Syllabus Lesson</Label>
-              <Select value={form.lesson_id} onValueChange={v => setForm(f => ({ ...f, lesson_id: v }))}>
+              <Select value={form.lesson_id || '__none__'} onValueChange={v => setForm(f => ({ ...f, lesson_id: v === '__none__' ? '' : v }))}>
                 <SelectTrigger><SelectValue placeholder="Select lesson (optional)" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No lesson</SelectItem>
+                  <SelectItem value="__none__">No lesson</SelectItem>
                   {lessons.filter(l => !l.parent_id).map(l => (
                     <>
                       <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
