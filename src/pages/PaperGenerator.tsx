@@ -911,7 +911,7 @@ const AnswerLookup = () => {
         .from('answer_access_payments')
         .select('status')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (accessPayment?.status === 'APPROVED') {
         setAccessStatus('paid');
