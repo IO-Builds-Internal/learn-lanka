@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Plus, Trash2, Wand2, Download,
-  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp
+  FileText, Plus, Trash2, Wand2, Download, History,
+  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -300,14 +300,18 @@ const PaperGenerator = () => {
         </div>
 
         <Tabs defaultValue="generate">
-          <TabsList>
-            <TabsTrigger value="generate">
-              <Wand2 className="w-4 h-4 mr-2" />
-              Generate Paper
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="generate" className="flex items-center justify-center gap-2">
+              <Wand2 className="w-4 h-4" />
+              <span>Generate Paper</span>
             </TabsTrigger>
-            <TabsTrigger value="answers">
-              <Search className="w-4 h-4 mr-2" />
-              Find Answers
+            <TabsTrigger value="answers" className="flex items-center justify-center gap-2">
+              <Search className="w-4 h-4" />
+              <span>Find Answers</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center justify-center gap-2">
+              <History className="w-4 h-4" />
+              <span>Generated Papers</span>
             </TabsTrigger>
           </TabsList>
 
@@ -594,9 +598,113 @@ const PaperGenerator = () => {
           <TabsContent value="answers" className="pt-4">
             <AnswerLookup />
           </TabsContent>
+
+          {/* ── Generated Papers History Tab ── */}
+          <TabsContent value="history" className="pt-4">
+            <GeneratedPapersHistory />
+          </TabsContent>
         </Tabs>
       </div>
     </StudentLayout>
+  );
+};
+
+// ── Generated Papers History Sub-component ───────────────────────────────────
+const GeneratedPapersHistory = () => {
+  const { user } = useAuth();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const { data: papers = [], isLoading } = useQuery({
+    queryKey: ['generated-papers-history', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await (supabase as any)
+        .from('generated_papers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user,
+  });
+
+  const handleDownload = async (paper: any) => {
+    setDownloadingId(paper.id);
+    try {
+      await downloadGeneratedPaperPdf({
+        paperId: paper.id,
+        grade: paper.grade,
+        paperType: paper.paper_type,
+        questionIds: paper.question_ids,
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate PDF');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (papers.length === 0) {
+    return (
+      <div className="text-center py-16 text-muted-foreground border border-dashed rounded-xl">
+        <History className="w-10 h-10 mx-auto mb-3 opacity-30" />
+        <p className="font-medium">No papers generated yet</p>
+        <p className="text-sm mt-1">Generate your first paper from the Generate Paper tab</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">{papers.length} paper{papers.length !== 1 ? 's' : ''} generated</p>
+      {papers.map((paper: any) => (
+        <Card key={paper.id} className="card-elevated">
+          <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono font-bold text-primary text-sm">{paper.id}</span>
+                <Badge variant={paper.paper_type === 'DAILY' ? 'secondary' : 'default'} className="text-xs">
+                  {PAPER_CONFIGS[paper.paper_type as 'DAILY' | 'FULL']?.label || paper.paper_type}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {GRADES.find(g => g.value === String(paper.grade))?.label || `Grade ${paper.grade}`}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {new Date(paper.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                &nbsp;·&nbsp;
+                {paper.mcq_count} MCQ
+                {paper.short_essay_count > 0 ? ` · ${paper.short_essay_count} S.Essay` : ''}
+                {paper.essay_count > 0 ? ` · ${paper.essay_count} Essay` : ''}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleDownload(paper)}
+              disabled={downloadingId === paper.id}
+              className="shrink-0"
+            >
+              {downloadingId === paper.id
+                ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                : <Download className="w-4 h-4 mr-1.5" />}
+              Download PDF
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 };
 
