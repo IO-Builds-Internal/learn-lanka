@@ -317,117 +317,27 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-3">
-          {settings?.section_classes !== false && (
-            <Link to="/classes" className="block">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
+          {[
+            { to: '/classes',        icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />,            bg: 'bg-primary/10',  label: 'Classes' },
+            { to: '/rank-papers',    icon: <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />,             bg: 'bg-accent/10',   label: 'Rank Papers' },
+            { to: '/shop',           icon: <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-success" />,         bg: 'bg-success/10',  label: 'Shop' },
+            { to: '/papers',         icon: <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-secondary-foreground" />,  bg: 'bg-secondary',   label: 'Past Papers' },
+            { to: '/playground',     icon: <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />,              bg: 'bg-primary/10',  label: 'Playground' },
+            { to: '/paper-generator',icon: <Wand2 className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />,               bg: 'bg-accent/10',   label: 'Paper Gen' },
+            { to: '/my-orders',      icon: <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-success" />,          bg: 'bg-success/10',  label: 'My Orders' },
+            { to: '/notifications',  icon: <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />,         bg: 'bg-warning/10',  label: 'Notifications' },
+            { to: '/contact',        icon: <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />,       bg: 'bg-warning/10',  label: 'Contact' },
+          ].map(item => (
+            <Link key={item.to} to={item.to} className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
                 <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xs leading-tight">Classes</h3>
+                  <div className={`p-2 rounded-full ${item.bg}`}>{item.icon}</div>
+                  <h3 className="font-medium text-xs leading-tight">{item.label}</h3>
                 </CardContent>
               </Card>
             </Link>
-          )}
-
-          {settings?.section_rank_papers !== false && (
-            <Link to="/rank-papers" className="block">
-              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                  <div className="p-2 rounded-full bg-accent/10">
-                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                  </div>
-                  <h3 className="font-medium text-xs leading-tight">Rank Papers</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          {settings?.section_shop !== false && (
-            <Link to="/shop" className="block">
-              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                  <div className="p-2 rounded-full bg-success/10">
-                    <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                  </div>
-                  <h3 className="font-medium text-xs leading-tight">Shop</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          {settings?.section_papers !== false && (
-            <Link to="/papers" className="block">
-              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                  <div className="p-2 rounded-full bg-secondary">
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-secondary-foreground" />
-                  </div>
-                  <h3 className="font-medium text-xs leading-tight">Past Papers</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          {settings?.section_playground !== false && (
-            <Link to="/playground" className="block">
-              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xs leading-tight">Playground</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          {settings?.section_paper_generator !== false && (
-            <Link to="/paper-generator" className="block">
-              <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                  <div className="p-2 rounded-full bg-accent/10">
-                    <Wand2 className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                  </div>
-                  <h3 className="font-medium text-xs leading-tight">Paper Gen</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          <Link to="/my-orders" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                <div className="p-2 rounded-full bg-success/10">
-                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                </div>
-                <h3 className="font-medium text-xs leading-tight">My Orders</h3>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/notifications" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                <div className="p-2 rounded-full bg-warning/10">
-                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
-                </div>
-                <h3 className="font-medium text-xs leading-tight">Notifications</h3>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/contact" className="block">
-            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
-                <div className="p-2 rounded-full bg-warning/10">
-                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
-                </div>
-                <h3 className="font-medium text-xs leading-tight">Contact</h3>
-              </CardContent>
-            </Card>
-          </Link>
+          ))}
         </div>
 
         {/* Upcoming Rank Papers */}
