@@ -298,18 +298,27 @@ const Register = () => {
                   {alreadyRegisteredError && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
                       <p className="text-amber-800 text-sm font-medium">
-                        This phone number is already registered
+                        📱 This phone number is already registered
                       </p>
                       <p className="text-amber-700 text-xs mt-1">
-                        Please sign in with your existing account instead.
+                        An account already exists for this number. You can sign in or reset your password.
                       </p>
-                      <Link 
-                        to="/login" 
-                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm mt-2"
-                      >
-                        Go to Sign In
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        <Link 
+                          to="/login" 
+                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm"
+                        >
+                          <ArrowRight className="w-3 h-3" />
+                          Sign in with password
+                        </Link>
+                        <Link 
+                          to="/forgot-password" 
+                          className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 font-medium text-sm"
+                        >
+                          <ArrowRight className="w-3 h-3" />
+                          Forgot password? Reset it
+                        </Link>
+                      </div>
                     </div>
                   )}
                 </div>
