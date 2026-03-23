@@ -262,20 +262,13 @@ const AdminClasses = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Classes</h1>
-            <p className="text-muted-foreground">Manage your ICT classes</p>
-          </div>
+      <AdminPageHeader
+        title="Classes"
+        description="Manage your ICT classes"
+        breadcrumbs={[{ label: 'Academics' }, { label: 'Classes' }]}
+        actions={
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            if (open) {
-              setEditingClass(null);
-              resetForm();
-            } else {
-              closeDialog();
-            }
+            if (open) { setEditingClass(null); resetForm(); } else { closeDialog(); }
             setIsDialogOpen(open);
           }}>
             <DialogTrigger asChild>

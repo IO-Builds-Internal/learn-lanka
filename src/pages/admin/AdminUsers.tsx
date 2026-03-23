@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { cn } from '@/lib/utils';
 import { 
   useAdminUsers, 

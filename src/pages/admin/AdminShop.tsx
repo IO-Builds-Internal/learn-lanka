@@ -247,18 +247,17 @@ const AdminShop = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Shop Products</h1>
-            <p className="text-muted-foreground">Manage books, notes, and materials</p>
-          </div>
+      <AdminPageHeader
+        title="Shop Products"
+        description="Manage books, notes, and materials"
+        breadcrumbs={[{ label: 'Finance' }, { label: 'Shop Products' }]}
+        actions={
           <Button onClick={openCreateDialog}>
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>
-        </div>
+        }
+      />
 
         {/* Products Table */}
         <Card className="card-elevated">

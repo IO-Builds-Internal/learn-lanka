@@ -484,14 +484,11 @@ const AdminRankPapers = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Rank Papers</h1>
-            <p className="text-muted-foreground">Manage timed exams and quizzes</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
+      <AdminPageHeader
+        title="Rank Papers"
+        description="Manage timed exams and quizzes"
+        breadcrumbs={[{ label: 'Academics' }, { label: 'Rank Papers' }]}
+        actions={<div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
