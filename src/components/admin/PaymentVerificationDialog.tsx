@@ -64,21 +64,26 @@ const PaymentVerificationDialog = ({
 
       setLoadingSlip(true);
       try {
-        // Extract path from the full URL
-        const url = new URL(payment.slip_url);
-        const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/payment-slips\/(.+)/);
-        
-        if (pathMatch) {
-          const filePath = decodeURIComponent(pathMatch[1]);
+        let filePath: string | null = null;
+
+        // Check if it's a full URL or a raw storage path
+        if (payment.slip_url.startsWith('http')) {
+          const url = new URL(payment.slip_url);
+          const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/payment-slips\/(.+)/);
+          if (pathMatch) filePath = decodeURIComponent(pathMatch[1]);
+        } else {
+          // Raw path stored directly (e.g. "userId/folder/filename.jpg")
+          filePath = payment.slip_url;
+        }
+
+        if (filePath) {
           const { data, error } = await supabase.storage
             .from('payment-slips')
-            .createSignedUrl(filePath, 3600); // 1 hour expiry
-
+            .createSignedUrl(filePath, 3600);
           if (error) throw error;
           setSignedSlipUrl(data.signedUrl);
         } else {
-          // Fallback: try using the URL directly
-          setSignedSlipUrl(payment.slip_url);
+          setSignedSlipUrl(null);
         }
       } catch (error) {
         console.error('Error generating signed URL:', error);
@@ -141,16 +146,16 @@ const PaymentVerificationDialog = ({
           created_by: user.id,
         });
 
-      // Send SMS notification
+      // Send SMS notification (fire-and-forget, non-critical)
       try {
+        const templateKey = approved ? 'payment_approved' : 'payment_rejected';
         await invokeFunction('send-sms-notification', {
           body: {
-            type: 'payment_status',
+            template_key: templateKey,
             targetUsers: [payment.user_id],
-            data: {
-              approved,
+            variables: {
               amount: payment.amount.toLocaleString(),
-              reason: !approved && note ? note : undefined,
+              reason: !approved && note ? note : 'Please contact support',
             },
           },
         });
@@ -229,7 +234,7 @@ const PaymentVerificationDialog = ({
                     <ImageOff className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-muted-foreground">Unable to load slip</p>
                   </div>
-                ) : payment.slip_url.toLowerCase().endsWith('.pdf') ? (
+                ) : (signedSlipUrl.toLowerCase().includes('.pdf') || payment.slip_url.toLowerCase().endsWith('.pdf')) ? (
                   <div className="p-8 text-center">
                     <p className="text-muted-foreground mb-4">PDF Document</p>
                     <div className="flex justify-center gap-2">

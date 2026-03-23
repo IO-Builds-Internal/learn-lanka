@@ -1,0 +1,1 @@
+UPDATE site_settings SET value = 'true' WHERE key = 'section_papers';
