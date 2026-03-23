@@ -48,5 +48,6 @@ export const useSiteSettings = () => {
     },
     staleTime: 0,
     refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
   });
 };
