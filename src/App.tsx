@@ -40,7 +40,13 @@ import AdminModerators from "./pages/admin/AdminModerators";
 import AdminClasses from "./pages/admin/AdminClasses";
 import AdminClassContent from "./pages/admin/AdminClassContent";
 import AdminPayments from "./pages/admin/AdminPayments";
-import AdminSettings from "./pages/admin/AdminSettings";
+import AdminSettingsBranding from "./pages/admin/settings/AdminSettingsBranding";
+import AdminSettingsFeatures from "./pages/admin/settings/AdminSettingsFeatures";
+import AdminSettingsContact from "./pages/admin/settings/AdminSettingsContact";
+import AdminSettingsPaperTemplate from "./pages/admin/settings/AdminSettingsPaperTemplate";
+import AdminSettingsBank from "./pages/admin/settings/AdminSettingsBank";
+import AdminSettingsSms from "./pages/admin/settings/AdminSettingsSms";
+import AdminSettingsBackup from "./pages/admin/settings/AdminSettingsBackup";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminRankPapers from "./pages/admin/AdminRankPapers";
@@ -120,7 +126,14 @@ const App = () => (
               <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
               <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
               <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
+              <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
+              <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />
+              <Route path="/admin/settings/features" element={<ProtectedRoute requireAdmin><AdminSettingsFeatures /></ProtectedRoute>} />
+              <Route path="/admin/settings/contact" element={<ProtectedRoute requireAdmin><AdminSettingsContact /></ProtectedRoute>} />
+              <Route path="/admin/settings/paper-template" element={<ProtectedRoute requireAdmin><AdminSettingsPaperTemplate /></ProtectedRoute>} />
+              <Route path="/admin/settings/bank" element={<ProtectedRoute requireAdmin><AdminSettingsBank /></ProtectedRoute>} />
+              <Route path="/admin/settings/sms" element={<ProtectedRoute requireAdmin><AdminSettingsSms /></ProtectedRoute>} />
+              <Route path="/admin/settings/backup" element={<ProtectedRoute requireAdmin><AdminSettingsBackup /></ProtectedRoute>} />
               <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
               <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
 
