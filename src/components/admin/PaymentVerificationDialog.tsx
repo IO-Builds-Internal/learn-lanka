@@ -64,21 +64,26 @@ const PaymentVerificationDialog = ({
 
       setLoadingSlip(true);
       try {
-        // Extract path from the full URL
-        const url = new URL(payment.slip_url);
-        const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/payment-slips\/(.+)/);
-        
-        if (pathMatch) {
-          const filePath = decodeURIComponent(pathMatch[1]);
+        let filePath: string | null = null;
+
+        // Check if it's a full URL or a raw storage path
+        if (payment.slip_url.startsWith('http')) {
+          const url = new URL(payment.slip_url);
+          const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/payment-slips\/(.+)/);
+          if (pathMatch) filePath = decodeURIComponent(pathMatch[1]);
+        } else {
+          // Raw path stored directly (e.g. "userId/folder/filename.jpg")
+          filePath = payment.slip_url;
+        }
+
+        if (filePath) {
           const { data, error } = await supabase.storage
             .from('payment-slips')
-            .createSignedUrl(filePath, 3600); // 1 hour expiry
-
+            .createSignedUrl(filePath, 3600);
           if (error) throw error;
           setSignedSlipUrl(data.signedUrl);
         } else {
-          // Fallback: try using the URL directly
-          setSignedSlipUrl(payment.slip_url);
+          setSignedSlipUrl(null);
         }
       } catch (error) {
         console.error('Error generating signed URL:', error);
