@@ -326,9 +326,9 @@ const Papers = () => {
             {sortedYears.length === 0 ? (
               <EmptyState message={isGuest ? "No free past papers available. Log in for more!" : "No past papers available yet"} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {sortedYears.map((year) => (
-                  <YearCard 
+                  <YearCard
                     key={year} 
                     year={year} 
                     papers={papersByYear[year]} 
