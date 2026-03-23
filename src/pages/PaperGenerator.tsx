@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Plus, Trash2, Wand2, Download,
-  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp
+  FileText, Plus, Trash2, Wand2, Download, History,
+  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
