@@ -257,8 +257,23 @@ const PaperGenerator = () => {
     if (!generatedPaper) return;
     setDownloadingPdf(true);
     try {
-      // Fetch template settings
-      const { data: settingsData } = await (supabase as any)
+      await downloadGeneratedPaperPdf({
+        paperId: generatedPaper.id,
+        grade: parseInt(selectedGrade),
+        paperType,
+        questionIds: generatedPaper.questions.map(q => ({ id: q.id, correct_option_no: q.correct_option_no })),
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate PDF');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  return (
+    <StudentLayout>
+      <div className="max-w-4xl mx-auto space-y-6">
+
         .from('site_settings')
         .select('key, value')
         .in('key', ['paper_template_school_name', `paper_template_instructions_${paperType.toLowerCase()}`, 'paper_template_footer', 'site_name']);
