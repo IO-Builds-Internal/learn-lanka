@@ -2,58 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ICT Online Class Platform - Minimal Educational Design System */
-/* Colors: Teal primary, Gold accent, Clean backgrounds */
+/* ICT Online Class Platform - Unified Blue Theme */
 
 @layer base {
   :root {
     /* Core backgrounds */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 220 20% 97%;
+    --foreground: 222 30% 12%;
 
-    /* Cards & surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 222 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 222 30% 12%;
 
-    /* Primary - Deep Teal (Educational, Trustworthy) */
-    --primary: 174 62% 32%;
+    /* Primary - Royal Blue (matches sidebar) */
+    --primary: 220 80% 46%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Light Teal */
-    --secondary: 174 40% 94%;
-    --secondary-foreground: 174 62% 25%;
+    /* Secondary - Light blue tint */
+    --secondary: 220 60% 94%;
+    --secondary-foreground: 220 80% 35%;
 
-    /* Muted - Soft Gray */
-    --muted: 210 15% 95%;
-    --muted-foreground: 215 15% 45%;
+    /* Muted */
+    --muted: 220 20% 93%;
+    --muted-foreground: 220 15% 45%;
 
-    /* Accent - Warm Gold (CTAs, Highlights) */
+    /* Accent - Amber for CTA contrast */
     --accent: 38 92% 50%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Green */
-    --success: 142 70% 40%;
+    /* Success */
+    --success: 142 70% 38%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning - Amber */
+    /* Warning */
     --warning: 45 93% 47%;
     --warning-foreground: 0 0% 10%;
 
-    /* Destructive - Red */
+    /* Destructive */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     /* Border & Input */
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 174 62% 32%;
+    --border: 220 20% 86%;
+    --input: 220 20% 86%;
+    --ring: 220 80% 46%;
 
     --radius: 0.75rem;
 
-    /* Sidebar - Blue Mix Theme */
+    /* Sidebar - Deep Navy Blue */
     --sidebar-background: 226 45% 14%;
     --sidebar-foreground: 220 20% 88%;
     --sidebar-primary: 217 91% 60%;
@@ -65,23 +63,23 @@
   }
 
   .dark {
-    --background: 215 25% 10%;
-    --foreground: 210 15% 95%;
+    --background: 222 35% 9%;
+    --foreground: 220 20% 94%;
 
-    --card: 215 25% 13%;
-    --card-foreground: 210 15% 95%;
+    --card: 222 30% 12%;
+    --card-foreground: 220 20% 94%;
 
-    --popover: 215 25% 13%;
-    --popover-foreground: 210 15% 95%;
+    --popover: 222 30% 12%;
+    --popover-foreground: 220 20% 94%;
 
-    --primary: 174 55% 45%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 18%;
-    --secondary-foreground: 174 55% 60%;
+    --secondary: 222 30% 18%;
+    --secondary-foreground: 217 91% 75%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 222 30% 18%;
+    --muted-foreground: 220 15% 55%;
 
     --accent: 38 85% 55%;
     --accent-foreground: 0 0% 10%;
@@ -95,9 +93,9 @@
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 20% 22%;
-    --input: 215 20% 22%;
-    --ring: 174 55% 45%;
+    --border: 222 25% 22%;
+    --input: 222 25% 22%;
+    --ring: 217 91% 60%;
 
     --sidebar-background: 226 50% 8%;
     --sidebar-foreground: 220 20% 88%;
