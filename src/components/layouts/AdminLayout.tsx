@@ -100,6 +100,7 @@ const navGroups: NavGroup[] = [
     label: 'Finance',
     entries: [
       { type: 'leaf', path: '/admin/payments', label: 'Payments', icon: CreditCard },
+      { type: 'leaf', path: '/admin/answer-access-payments', label: 'Answer Access Payments', icon: FileText },
       { type: 'leaf', path: '/admin/coupons', label: 'Coupons', icon: Tag },
       { type: 'leaf', path: '/admin/shop', label: 'Shop', icon: ShoppingBag },
     ],
