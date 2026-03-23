@@ -94,21 +94,21 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
+      const { data, error } = await invokeFunction('verify-otp', {
         body: { phone, otp, purpose: 'REGISTER' }
       });
 
       if (error) throw error;
 
-      if (data.success && data.verified) {
-        if (data.userExists) {
+      if ((data as any)?.success && (data as any)?.verified) {
+        if ((data as any)?.userExists) {
           toast.info('Account already exists. Please login.');
           navigate('/login');
         } else {
           setStep('details');
         }
       } else {
-        throw new Error(data.error || 'Invalid OTP');
+        throw new Error((data as any)?.error || 'Invalid OTP');
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
