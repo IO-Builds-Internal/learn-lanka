@@ -743,15 +743,18 @@ const GeneratedPapersHistory = () => {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel('history-access-rt')
+      .channel(`history-access-rt-${user.id}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'answer_access_payments',
-        filter: `user_id=eq.${user.id}`,
-      }, () => {
-        queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
-        refetchAccess();
+      }, (payload) => {
+        // Only react to changes for this user
+        if ((payload.new as any)?.user_id === user.id) {
+          queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['access-gate-status', user.id] });
+          refetchAccess();
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
