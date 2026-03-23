@@ -163,19 +163,20 @@ const AdminPayments = () => {
     if (!payment.slip_url) return;
     
     try {
-      // Extract path from the full URL
-      const url = new URL(payment.slip_url);
-      const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/payment-slips\/(.+)/);
-      
-      if (pathMatch) {
-        const filePath = decodeURIComponent(pathMatch[1]);
-        const { data, error } = await supabase.storage
-          .from('payment-slips')
-          .createSignedUrl(filePath, 300); // 5 min expiry
-
-        if (error) throw error;
-        window.open(data.signedUrl, '_blank');
+      let filePath: string;
+      if (payment.slip_url.startsWith('http')) {
+        const url = new URL(payment.slip_url);
+        const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/payment-slips\/(.+)/);
+        if (!pathMatch) return;
+        filePath = decodeURIComponent(pathMatch[1]);
+      } else {
+        filePath = payment.slip_url;
       }
+      const { data, error } = await supabase.storage
+        .from('payment-slips')
+        .createSignedUrl(filePath, 300);
+      if (error) throw error;
+      window.open(data.signedUrl, '_blank');
     } catch (error) {
       console.error('Error downloading slip:', error);
     }

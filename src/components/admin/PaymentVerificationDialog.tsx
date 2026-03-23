@@ -234,7 +234,7 @@ const PaymentVerificationDialog = ({
                     <ImageOff className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-muted-foreground">Unable to load slip</p>
                   </div>
-                ) : payment.slip_url.toLowerCase().endsWith('.pdf') ? (
+                ) : (signedSlipUrl.toLowerCase().includes('.pdf') || payment.slip_url.toLowerCase().endsWith('.pdf')) ? (
                   <div className="p-8 text-center">
                     <p className="text-muted-foreground mb-4">PDF Document</p>
                     <div className="flex justify-center gap-2">
