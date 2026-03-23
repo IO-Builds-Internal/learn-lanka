@@ -83,6 +83,13 @@ const AdminSettings = () => {
         if (settings['logo_url']) setLogoUrl(settings['logo_url']);
         if (settings['favicon_url']) setFaviconUrl(settings['favicon_url']);
         if (settings['login_bg_url']) setLoginBgUrl(settings['login_bg_url']);
+        const flag = (key: string) => settings[key] !== 'false';
+        setSectionClasses(flag('section_classes'));
+        setSectionRankPapers(flag('section_rank_papers'));
+        setSectionPapers(flag('section_papers'));
+        setSectionShop(flag('section_shop'));
+        setSectionPlayground(flag('section_playground'));
+        setSectionNotifications(flag('section_notifications'));
       } catch (err) {
         console.error('Failed to load settings:', err);
       } finally {
