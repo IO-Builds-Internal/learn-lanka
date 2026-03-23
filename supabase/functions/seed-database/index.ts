@@ -80,9 +80,11 @@ Deno.serve(async (req) => {
     // ─────────────────────────────────────────────────────────────────
     if (action === 'seed') {
       const { count: classCount } = await supabase.from('classes').select('*', { count: 'exact', head: true });
-      if (classCount && classCount > 0) {
+      const { count: paperCount } = await supabase.from('papers').select('*', { count: 'exact', head: true });
+      const { count: qbCount } = await supabase.from('question_bank').select('*', { count: 'exact', head: true });
+      if ((classCount ?? 0) > 0 || (paperCount ?? 0) > 0 || (qbCount ?? 0) > 0) {
         return new Response(
-          JSON.stringify({ success: false, message: 'Data already exists. Clear the database first.' }),
+          JSON.stringify({ success: false, message: 'Data already exists. Clear the database first before seeding.' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
