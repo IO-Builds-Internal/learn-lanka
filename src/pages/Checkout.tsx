@@ -306,7 +306,14 @@ const Checkout = () => {
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
+    // Update order status to PAYMENT_UPLOADED
+    if (orderId) {
+      await supabase
+        .from('shop_orders')
+        .update({ status: 'PAYMENT_UPLOADED' })
+        .eq('id', orderId);
+    }
     setStep('success');
   };
 
@@ -357,7 +364,7 @@ const Checkout = () => {
                 <Button variant="outline" onClick={() => navigate('/shop')}>
                   Continue Shopping
                 </Button>
-                <Button onClick={() => navigate('/profile')}>
+                <Button onClick={() => navigate('/my-orders')}>
                   View Orders
                 </Button>
               </div>

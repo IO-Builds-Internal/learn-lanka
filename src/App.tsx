@@ -29,6 +29,8 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import PaperGenerator from "./pages/PaperGenerator";
 import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
+import AdminOrders from "./pages/admin/AdminOrders";
+import MyOrders from "./pages/MyOrders";
 import { CartProvider } from "@/hooks/useCart";
 
 // Admin Pages
@@ -98,6 +100,7 @@ const App = () => (
               <Route path="/notifications" element={<ProtectedRoute><FeatureGate flag="section_notifications"><Notifications /></FeatureGate></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/paper-generator" element={<ProtectedRoute><PaperGenerator /></ProtectedRoute>} />
+              <Route path="/my-orders" element={<ProtectedRoute><FeatureGate flag="section_shop"><MyOrders /></FeatureGate></ProtectedRoute>} />
 
               {/* Protected Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
@@ -119,6 +122,7 @@ const App = () => (
               <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
               <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute>} />
               <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
+              <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />

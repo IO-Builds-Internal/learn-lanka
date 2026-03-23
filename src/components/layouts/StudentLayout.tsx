@@ -13,7 +13,9 @@ import {
   X,
   LogOut,
   Shield,
-  Code2
+  Code2,
+  MessageCircle,
+  Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -132,6 +134,22 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
               {/* Theme Toggle */}
               <ThemeToggle />
 
+              {/* My Orders */}
+              {settings?.section_shop !== false && (
+                <Link to="/my-orders">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Package className="w-5 h-5" />
+                  </Button>
+                </Link>
+              )}
+
+              {/* Contact / Messages */}
+              <Link to="/contact">
+                <Button variant="ghost" size="icon">
+                  <MessageCircle className="w-5 h-5" />
+                </Button>
+              </Link>
+
               {/* Notifications */}
               {settings?.section_notifications !== false && (
                 <Link to="/notifications">
@@ -211,6 +229,24 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
                     Admin Panel
                   </Link>
                 )}
+                {settings?.section_shop !== false && (
+                  <Link
+                    to="/my-orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Package className="w-5 h-5" />
+                    My Orders
+                  </Link>
+                )}
+                <Link
+                  to="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Contact
+                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
