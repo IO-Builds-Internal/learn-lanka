@@ -268,16 +268,16 @@ const AdminClasses = () => {
         description="Manage your ICT classes"
         breadcrumbs={[{ label: 'Academics' }, { label: 'Classes' }]}
         actions={
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            if (open) { setEditingClass(null); resetForm(); } else { closeDialog(); }
-            setIsDialogOpen(open);
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Class
-              </Button>
-            </DialogTrigger>
+          <Button onClick={() => { setEditingClass(null); resetForm(); setIsDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Class
+          </Button>
+        }
+      />
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        if (open) { setEditingClass(null); resetForm(); } else { closeDialog(); }
+        setIsDialogOpen(open);
+      }}>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingClass ? 'Edit Class' : 'Create New Class'}</DialogTitle>
