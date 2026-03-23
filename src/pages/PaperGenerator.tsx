@@ -858,7 +858,9 @@ const AnswerLookup = () => {
   const [paper, setPaper] = useState<any>(null);
   const [accessStatus, setAccessStatus] = useState<'loading' | 'enrolled' | 'paid' | 'none' | null>(null);
   const [paying, setPaying] = useState(false);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(() => {
+    return new URLSearchParams(window.location.search).get('pay') === '1';
+  });
   const [slipFile, setSlipFile] = useState<File | null>(null);
 
   const { data: settings } = useQuery({
