@@ -299,7 +299,7 @@ const PaperGenerator = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="generate">
+        <Tabs defaultValue={new URLSearchParams(window.location.search).get('tab') || 'generate'}>
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="generate" className="flex items-center justify-center gap-2">
               <Wand2 className="w-4 h-4" />
