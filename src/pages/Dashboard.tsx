@@ -317,15 +317,15 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-4">
+        <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-3">
           {settings?.section_classes !== false && (
             <Link to="/classes" className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                  <div className="p-2 sm:p-3 rounded-full bg-primary/10 mb-1 sm:mb-3">
-                    <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                  <div className="p-2 rounded-full bg-primary/10">
+                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <h3 className="font-medium text-xs sm:text-sm">Classes</h3>
+                  <h3 className="font-medium text-xs leading-tight">Classes</h3>
                 </CardContent>
               </Card>
             </Link>
@@ -334,11 +334,11 @@ const Dashboard = () => {
           {settings?.section_rank_papers !== false && (
             <Link to="/rank-papers" className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                  <div className="p-2 sm:p-3 rounded-full bg-accent/10 mb-1 sm:mb-3">
-                    <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-accent" />
+                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                  <div className="p-2 rounded-full bg-accent/10">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                   </div>
-                  <h3 className="font-medium text-xs sm:text-sm">Rank Papers</h3>
+                  <h3 className="font-medium text-xs leading-tight">Rank Papers</h3>
                 </CardContent>
               </Card>
             </Link>
@@ -347,11 +347,11 @@ const Dashboard = () => {
           {settings?.section_shop !== false && (
             <Link to="/shop" className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                  <div className="p-2 sm:p-3 rounded-full bg-success/10 mb-1 sm:mb-3">
-                    <ShoppingBag className="w-4 h-4 sm:w-6 sm:h-6 text-success" />
+                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                  <div className="p-2 rounded-full bg-success/10">
+                    <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                   </div>
-                  <h3 className="font-medium text-xs sm:text-sm">Shop</h3>
+                  <h3 className="font-medium text-xs leading-tight">Shop</h3>
                 </CardContent>
               </Card>
             </Link>
@@ -360,11 +360,11 @@ const Dashboard = () => {
           {settings?.section_papers !== false && (
             <Link to="/papers" className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                  <div className="p-2 sm:p-3 rounded-full bg-secondary mb-1 sm:mb-3">
-                    <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-secondary-foreground" />
+                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                  <div className="p-2 rounded-full bg-secondary">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-secondary-foreground" />
                   </div>
-                  <h3 className="font-medium text-xs sm:text-sm">Past Papers</h3>
+                  <h3 className="font-medium text-xs leading-tight">Past Papers</h3>
                 </CardContent>
               </Card>
             </Link>
@@ -373,11 +373,11 @@ const Dashboard = () => {
           {settings?.section_playground !== false && (
             <Link to="/playground" className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                  <div className="p-2 sm:p-3 rounded-full bg-primary/10 mb-1 sm:mb-3">
-                    <Code2 className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                  <div className="p-2 rounded-full bg-primary/10">
+                    <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <h3 className="font-medium text-xs sm:text-sm">Playground</h3>
+                  <h3 className="font-medium text-xs leading-tight">Playground</h3>
                 </CardContent>
               </Card>
             </Link>
@@ -386,23 +386,45 @@ const Dashboard = () => {
           {settings?.section_paper_generator !== false && (
             <Link to="/paper-generator" className="block">
               <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-                <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                  <div className="p-2 sm:p-3 rounded-full bg-accent/10 mb-1 sm:mb-3">
-                    <Wand2 className="w-4 h-4 sm:w-6 sm:h-6 text-accent" />
+                <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                  <div className="p-2 rounded-full bg-accent/10">
+                    <Wand2 className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                   </div>
-                  <h3 className="font-medium text-xs sm:text-sm">Paper Gen</h3>
+                  <h3 className="font-medium text-xs leading-tight">Paper Gen</h3>
                 </CardContent>
               </Card>
             </Link>
           )}
 
+          <Link to="/my-orders" className="block">
+            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+              <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                <div className="p-2 rounded-full bg-success/10">
+                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+                </div>
+                <h3 className="font-medium text-xs leading-tight">My Orders</h3>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/notifications" className="block">
+            <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
+              <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                <div className="p-2 rounded-full bg-warning/10">
+                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
+                </div>
+                <h3 className="font-medium text-xs leading-tight">Notifications</h3>
+              </CardContent>
+            </Card>
+          </Link>
+
           <Link to="/contact" className="block">
             <Card className="card-elevated hover:border-primary/50 transition-colors h-full">
-              <CardContent className="p-2 sm:p-4 flex flex-col items-center text-center">
-                <div className="p-2 sm:p-3 rounded-full bg-warning/10 mb-1 sm:mb-3">
-                  <MessageCircle className="w-4 h-4 sm:w-6 sm:h-6 text-warning" />
+              <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center gap-1 sm:gap-2">
+                <div className="p-2 rounded-full bg-warning/10">
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
                 </div>
-                <h3 className="font-medium text-xs sm:text-sm">Contact</h3>
+                <h3 className="font-medium text-xs leading-tight">Contact</h3>
               </CardContent>
             </Card>
           </Link>
@@ -494,7 +516,11 @@ const Dashboard = () => {
                   paper.essay_count > 0 && `${paper.essay_count} Essay`,
                 ].filter(Boolean).join(' · ');
                 return (
-                  <Card key={paper.id} className="card-elevated">
+                  <Card
+                    key={paper.id}
+                    className="card-elevated cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                    onClick={() => downloadingId === null && handleDownloadPaper(paper)}
+                  >
                     <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -508,18 +534,14 @@ const Dashboard = () => {
                           {parts} &nbsp;·&nbsp; {createdAt.toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDownloadPaper(paper)}
-                        disabled={downloadingId === paper.id}
-                        className="shrink-0"
-                      >
+                      <div className="shrink-0 flex items-center gap-1 text-muted-foreground">
                         {downloadingId === paper.id
-                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          : <Download className="w-3.5 h-3.5" />}
-                        <span className="ml-1.5 hidden sm:inline">Download PDF</span>
-                      </Button>
+                          ? <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          : <Download className="w-4 h-4" />}
+                        <span className="text-xs hidden sm:inline">
+                          {downloadingId === paper.id ? 'Downloading...' : 'Download PDF'}
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
                 );
