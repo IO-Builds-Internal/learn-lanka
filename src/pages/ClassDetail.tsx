@@ -79,7 +79,7 @@ const ClassDetail = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('class_id', id)
-        .eq('status', 'ACTIVE')
+        .in('status', ['ACTIVE', 'PENDING'])
         .maybeSingle();
       if (error) throw error;
       return data;
