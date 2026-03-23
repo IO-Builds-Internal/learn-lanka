@@ -173,7 +173,7 @@ const AdminSettings = () => {
           <p className="text-muted-foreground">Manage your platform settings</p>
         </div>
 
-        <Tabs defaultValue="branding" className="space-y-6">
+        <Tabs value={defaultTab} className="space-y-6">
           <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
