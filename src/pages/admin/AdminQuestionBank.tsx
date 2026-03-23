@@ -293,7 +293,7 @@ const AdminQuestionBank = () => {
   };
 
   const typeColor = (t: string) =>
-    t === 'MCQ' ? 'bg-primary/10 text-primary' : t === 'ESSAY' ? 'bg-orange-500/10 text-orange-500' : 'bg-yellow-500/10 text-yellow-600';
+    t === 'MCQ' ? 'bg-primary/10 text-primary' : t === 'ESSAY' ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground';
 
   return (
     <AdminLayout>
