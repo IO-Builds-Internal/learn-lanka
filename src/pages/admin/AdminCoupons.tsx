@@ -288,7 +288,6 @@ const AdminCoupons = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Coupons Table */}
         <Card className="card-elevated">

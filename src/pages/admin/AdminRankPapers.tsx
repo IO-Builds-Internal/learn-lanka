@@ -489,7 +489,15 @@ const AdminRankPapers = () => {
         title="Rank Papers"
         description="Manage timed exams and quizzes"
         breadcrumbs={[{ label: 'Academics' }, { label: 'Rank Papers' }]}
-        actions={<div className="flex flex-wrap items-center gap-2">
+        actions={
+          <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Paper
+          </Button>
+        }
+      />
+      {/* Search + Filter bar */}
+      <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
