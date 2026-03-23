@@ -929,7 +929,7 @@ const AnswerLookup = () => {
     if (!user || !slipFile) return;
     setPaying(true);
     try {
-      const fileName = `answer-access/${user.id}/${Date.now()}-slip.jpg`;
+      const fileName = `${user.id}/answer-access/${Date.now()}-slip.jpg`;
       const { error: uploadErr } = await supabase.storage
         .from('payment-slips')
         .upload(fileName, slipFile);
