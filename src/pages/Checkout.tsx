@@ -306,7 +306,14 @@ const Checkout = () => {
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
+    // Update order status to PAYMENT_UPLOADED
+    if (orderId) {
+      await supabase
+        .from('shop_orders')
+        .update({ status: 'PAYMENT_UPLOADED' })
+        .eq('id', orderId);
+    }
     setStep('success');
   };
 
