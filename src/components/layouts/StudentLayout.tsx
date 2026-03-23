@@ -15,7 +15,8 @@ import {
   Shield,
   Code2,
   MessageCircle,
-  Package
+  Package,
+  Wand2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
