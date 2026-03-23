@@ -101,6 +101,12 @@ const AdminSettings = () => {
         setSectionShop(flag('section_shop'));
         setSectionPlayground(flag('section_playground'));
         setSectionNotifications(flag('section_notifications'));
+        // Paper template settings
+        setPaperSchoolName(settings['paper_template_school_name'] || 'ICT Academy');
+        setPaperInstructionsDaily(settings['paper_template_instructions_daily'] || '');
+        setPaperInstructionsFull(settings['paper_template_instructions_full'] || '');
+        setPaperFooter(settings['paper_template_footer'] || '');
+        setAnswerAccessFee(settings['answer_access_fee'] || '2000');
       } catch (err) {
         console.error('Failed to load settings:', err);
       } finally {
