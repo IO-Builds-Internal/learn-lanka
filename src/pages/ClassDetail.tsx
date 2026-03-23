@@ -182,17 +182,42 @@ const ClassDetail = () => {
   const enrollMutation = useMutation({
     mutationFn: async () => {
       if (!user || !id) throw new Error('Not authenticated');
+
+      // Validate private class code
+      if (classData?.is_private) {
+        if (!enrollCode.trim()) throw new Error('Please enter the class code');
+        if (classData.private_code && enrollCode.trim() !== classData.private_code) {
+          throw new Error('Invalid class code');
+        }
+      }
+
+      // Check for duplicate enrollment
+      const { data: existing } = await supabase
+        .from('class_enrollments')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .eq('class_id', id)
+        .maybeSingle();
+
+      if (existing) {
+        if (existing.status === 'ACTIVE') throw new Error('You are already enrolled in this class');
+        throw new Error('Your enrollment request is already submitted');
+      }
+
       const { error } = await supabase
         .from('class_enrollments')
         .insert({
           user_id: user.id,
           class_id: id,
-          status: 'ACTIVE',
+          status: classData?.is_private ? 'PENDING' : 'ACTIVE',
         });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Successfully enrolled!');
+      const msg = classData?.is_private
+        ? 'Enrollment request submitted! Wait for admin approval.'
+        : 'Successfully enrolled!';
+      toast.success(msg);
       queryClient.invalidateQueries({ queryKey: ['enrollment'] });
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
     },
