@@ -442,9 +442,9 @@ const AdminQuestionBank = () => {
                           </span>
                         )}
                         {q.explain_video_url && (
-                          <span className="bg-muted px-2 py-0.5 rounded flex items-center gap-1 text-red-500">
-                            <Youtube className="w-3 h-3" /> Explanation video
-                          </span>
+                           <span className="bg-muted px-2 py-0.5 rounded flex items-center gap-1 text-destructive">
+                             <Youtube className="w-3 h-3" /> Explanation video
+                           </span>
                         )}
                       </div>
 
