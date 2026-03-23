@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      answer_access_payments: {
+        Row: {
+          created_at: string
+          granted_at: string | null
+          id: string
+          payment_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_at?: string | null
+          id?: string
+          payment_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_at?: string | null
+          id?: string
+          payment_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answer_access_payments_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_accounts: {
         Row: {
           account_name: string
@@ -469,6 +504,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      generated_papers: {
+        Row: {
+          created_at: string
+          essay_count: number
+          grade: number
+          id: string
+          lesson_weights: Json
+          mcq_count: number
+          paper_type: string
+          question_ids: Json
+          short_essay_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          essay_count?: number
+          grade: number
+          id: string
+          lesson_weights?: Json
+          mcq_count?: number
+          paper_type?: string
+          question_ids?: Json
+          short_essay_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          essay_count?: number
+          grade?: number
+          id?: string
+          lesson_weights?: Json
+          mcq_count?: number
+          paper_type?: string
+          question_ids?: Json
+          short_essay_count?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       lesson_attachments: {
         Row: {
