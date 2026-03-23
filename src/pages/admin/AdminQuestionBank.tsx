@@ -694,26 +694,19 @@ const AdminQuestionBank = () => {
                         </Button>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                        {uploadingField === 'options_img' ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <>
-                            <Upload className="w-5 h-5 text-muted-foreground mb-1" />
-                            <span className="text-xs text-muted-foreground">Upload one image containing all options (A–E)</span>
-                          </>
-                        )}
-                        <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
+                      <ImageDropZone
+                        uploading={uploadingField === 'options_img'}
+                        label="One image with all options (A–E)"
+                        listenPaste={form.optionsMode === 'single_image'}
+                        onFile={async file => {
                           try {
                             const url = await uploadImage(file, 'options_img');
                             setForm(f => ({ ...f, options_image_url: url }));
                           } catch (err: unknown) {
                             toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
                           }
-                        }} />
-                      </label>
+                        }}
+                      />
                     )}
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground font-medium">Select the correct answer:</p>
