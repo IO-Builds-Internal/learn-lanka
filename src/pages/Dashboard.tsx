@@ -32,6 +32,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
+  const { data: settings } = useSiteSettings();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
   const currentYearMonth = new Date().toISOString().slice(0, 7);
