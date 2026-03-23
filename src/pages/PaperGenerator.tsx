@@ -725,21 +725,21 @@ const GeneratedPapersHistory = () => {
           .eq('user_id', user.id)
           .eq('status', 'ACTIVE')
           .limit(1),
-        (supabase as any)
+        supabase
           .from('answer_access_payments')
           .select('status')
           .eq('user_id', user.id)
           .maybeSingle(),
       ]);
-      return (enrollments && enrollments.length > 0) || accessPayment?.status === 'APPROVED';
+      return (enrollments && enrollments.length > 0) || (accessPayment as any)?.status === 'APPROVED';
     },
     enabled: !!user,
     staleTime: 0,
     refetchOnWindowFocus: true,
-    refetchInterval: 3000, // poll every 3s for real-time feel
+    // No polling — realtime handles instant unlock below
   });
 
-  // Realtime: when admin approves, re-check access immediately
+  // Realtime: when admin approves, instantly invalidate and refetch access
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -748,17 +748,14 @@ const GeneratedPapersHistory = () => {
         event: 'UPDATE',
         schema: 'public',
         table: 'answer_access_payments',
-      }, (payload) => {
-        // Only react to changes for this user
-        if ((payload.new as any)?.user_id === user.id) {
-          queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['access-gate-status', user.id] });
-          refetchAccess();
-        }
+      }, () => {
+        // Any update to this table for this user — re-check access
+        queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['access-gate-status', user.id] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, queryClient, refetchAccess]);
+  }, [user, queryClient]);
 
   const { data: papers = [], isLoading } = useQuery({
     queryKey: ['generated-papers-history', user?.id],
