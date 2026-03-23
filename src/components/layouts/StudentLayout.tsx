@@ -13,7 +13,9 @@ import {
   X,
   LogOut,
   Shield,
-  Code2
+  Code2,
+  MessageCircle,
+  Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
