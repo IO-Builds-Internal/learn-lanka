@@ -267,13 +267,11 @@ const PaperGenerator = () => {
       toast.error(err.message || 'Failed to generate PDF');
     } finally {
       setDownloadingPdf(false);
+    }
+  };
 
   return (
     <StudentLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Page header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Page header */}
         <div>
