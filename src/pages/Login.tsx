@@ -35,10 +35,17 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Format phone for email-like login
-      const formattedPhone = phone.replace(/\D/g, '');
+      // Format phone to local format (0XXXXXXXXX) to match registration email mapping
+      let formattedPhone = phone.replace(/\D/g, '');
+      // If entered with country code 94, convert to local 0X format
+      if (formattedPhone.startsWith('94') && formattedPhone.length === 11) {
+        formattedPhone = '0' + formattedPhone.substring(2);
+      }
+      // Ensure starts with 0
+      if (!formattedPhone.startsWith('0')) {
+        formattedPhone = '0' + formattedPhone;
+      }
       const phoneEmail = `${formattedPhone}@phone.alict.lk`;
-
 
       const { error } = await supabase.auth.signInWithPassword({
         email: phoneEmail,
