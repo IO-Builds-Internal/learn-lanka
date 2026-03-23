@@ -300,14 +300,18 @@ const PaperGenerator = () => {
         </div>
 
         <Tabs defaultValue="generate">
-          <TabsList>
-            <TabsTrigger value="generate">
-              <Wand2 className="w-4 h-4 mr-2" />
-              Generate Paper
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="generate" className="flex items-center justify-center gap-2">
+              <Wand2 className="w-4 h-4" />
+              <span>Generate Paper</span>
             </TabsTrigger>
-            <TabsTrigger value="answers">
-              <Search className="w-4 h-4 mr-2" />
-              Find Answers
+            <TabsTrigger value="answers" className="flex items-center justify-center gap-2">
+              <Search className="w-4 h-4" />
+              <span>Find Answers</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center justify-center gap-2">
+              <History className="w-4 h-4" />
+              <span>Generated Papers</span>
             </TabsTrigger>
           </TabsList>
 
