@@ -182,16 +182,12 @@ const AdminUsers = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Users</h1>
-            <p className="text-muted-foreground">Manage student and moderator accounts</p>
-          </div>
-          <Badge variant="secondary" className="w-fit">
-            {users.length} total users
-          </Badge>
-        </div>
+        <AdminPageHeader
+          title="Students"
+          description="Manage student and moderator accounts"
+          breadcrumbs={[{ label: 'People' }, { label: 'Students' }]}
+          actions={<Badge variant="secondary">{users.length} total users</Badge>}
+        />
 
         {/* Filters */}
         <Card className="card-elevated">
