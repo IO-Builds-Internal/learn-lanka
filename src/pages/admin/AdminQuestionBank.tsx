@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import ImageDropZone from '@/components/ui/ImageDropZone';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
