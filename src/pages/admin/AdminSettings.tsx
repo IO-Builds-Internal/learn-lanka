@@ -11,7 +11,17 @@ import {
   Database,
   Loader2,
   X,
-  FileText
+  FileText,
+  LayoutDashboard,
+  BookOpen,
+  Award,
+  ShoppingBag,
+  Code2,
+  MessageCircle,
+  Package,
+  User,
+  Monitor,
+  Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
