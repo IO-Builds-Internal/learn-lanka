@@ -168,6 +168,7 @@ const AdminQuestionBank = () => {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
         question_image_url: form.questionInputMode === 'image' ? form.question_image_url : null,
+        options_image_url: form.question_type === 'MCQ' ? form.options_image_url : null,
         category: form.category,
         past_paper_ref: form.category === 'PAST_PAPER' ? form.past_paper_ref || null : null,
         medium: form.medium || null,
