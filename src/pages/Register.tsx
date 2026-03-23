@@ -65,11 +65,11 @@ const Register = () => {
         return;
       }
 
-      if (data.success) {
+      if ((data as any)?.success) {
         toast.success('OTP sent successfully!');
         setStep('otp');
       } else {
-        throw new Error(data.error || 'Failed to send OTP');
+        throw new Error((data as any)?.error || 'Failed to send OTP');
       }
     } catch (error: any) {
       console.error('Send OTP error:', error);
