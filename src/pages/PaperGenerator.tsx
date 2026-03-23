@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Plus, Trash2, Wand2, Download, Search,
-  BookOpen, Loader2, ChevronDown, ChevronUp, Info
+  FileText, Plus, Trash2, Wand2, Download,
+  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -95,6 +95,8 @@ const PaperGenerator = () => {
   const [selectedGrade, setSelectedGrade] = useState<string>('12');
   const [paperType, setPaperType] = useState<'DAILY' | 'FULL'>('DAILY');
   const [selectedLessons, setSelectedLessons] = useState<WeightedLesson[]>([]);
+  const [pickerLessonId, setPickerLessonId] = useState<string>('');
+  const [pickerWeight, setPickerWeight] = useState<number>(3);
   const [lessonSearch, setLessonSearch] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generatedPaper, setGeneratedPaper] = useState<{ id: string; questions: GeneratedQuestion[] } | null>(null);
@@ -115,13 +117,22 @@ const PaperGenerator = () => {
     },
   });
 
-  const filteredLessons = allLessons.filter(l =>
-    l.title.toLowerCase().includes(lessonSearch.toLowerCase()) &&
-    !selectedLessons.find(s => s.lessonId === l.id)
+  // Available (not yet added) lessons
+  const availableLessons = allLessons.filter(
+    l => !selectedLessons.find(s => s.lessonId === l.id)
   );
 
-  const addLesson = (lesson: LessonItem) => {
-    setSelectedLessons(prev => [...prev, { lessonId: lesson.id, lessonTitle: lesson.title, weight: 3 }]);
+  const filteredAvailable = lessonSearch.trim()
+    ? availableLessons.filter(l => l.title.toLowerCase().includes(lessonSearch.toLowerCase()))
+    : availableLessons;
+
+  const addLesson = () => {
+    const lesson = allLessons.find(l => l.id === pickerLessonId);
+    if (!lesson) return;
+    setSelectedLessons(prev => [...prev, { lessonId: lesson.id, lessonTitle: lesson.title, weight: pickerWeight }]);
+    setPickerLessonId('');
+    setPickerWeight(3);
+    setLessonSearch('');
   };
 
   const removeLesson = (lessonId: string) => {
@@ -435,88 +446,131 @@ const PaperGenerator = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">Step 2 — Select Lessons & Weights</CardTitle>
                     <CardDescription>
-                      Higher weight = more questions from that lesson. Questions are picked proportionally.
+                      Pick each lesson from the list, set a weight (higher = more questions from that lesson), then click Add.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Lesson search */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search lessons..."
-                        className="pl-9"
-                        value={lessonSearch}
-                        onChange={e => setLessonSearch(e.target.value)}
-                      />
-                    </div>
+                    {/* Lesson picker row */}
+                    <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Add a Lesson</p>
 
-                    {lessonSearch && filteredLessons.length > 0 && (
-                      <ScrollArea className="h-40 rounded-lg border bg-muted/30">
-                        <div className="p-2 space-y-1">
-                          {filteredLessons.map(l => (
+                      {/* Search filter */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                        <input
+                          type="text"
+                          placeholder="Filter lessons..."
+                          value={lessonSearch}
+                          onChange={e => { setLessonSearch(e.target.value); setPickerLessonId(''); }}
+                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+
+                      {/* Scrollable lesson list */}
+                      <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-background divide-y divide-border">
+                        {filteredAvailable.length === 0 ? (
+                          <div className="py-6 text-center text-sm text-muted-foreground">
+                            {availableLessons.length === 0 ? 'All lessons added' : 'No lessons match'}
+                          </div>
+                        ) : (
+                          filteredAvailable.map(l => (
                             <button
                               key={l.id}
-                              onClick={() => { addLesson(l); setLessonSearch(''); }}
-                              className="w-full flex items-center gap-2 text-sm px-3 py-2 rounded-md hover:bg-primary/10 text-left transition-colors"
+                              onClick={() => setPickerLessonId(l.id)}
+                              className={cn(
+                                'w-full flex items-center gap-2 px-3 py-2.5 text-sm text-left transition-colors',
+                                pickerLessonId === l.id
+                                  ? 'bg-primary/10 text-primary font-medium'
+                                  : 'hover:bg-muted text-foreground'
+                              )}
                             >
-                              <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
-                              {l.title}
-                              {l.parent_id && <span className="text-xs text-muted-foreground">(sub-topic)</span>}
+                              <BookOpen className={cn('w-3.5 h-3.5 shrink-0', pickerLessonId === l.id ? 'text-primary' : 'text-muted-foreground')} />
+                              <span className="flex-1 truncate">{l.title}</span>
+                              {l.parent_id && <span className="text-xs text-muted-foreground shrink-0">sub-topic</span>}
+                              {pickerLessonId === l.id && (
+                                <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full shrink-0">Selected</span>
+                              )}
                             </button>
-                          ))}
+                          ))
+                        )}
+                      </div>
+
+                      {/* Weight selector + Add button */}
+                      <div className="flex items-end gap-3">
+                        <div className="flex-1 space-y-1.5">
+                          <label className="text-xs font-medium text-muted-foreground">Weight (1 = Low · 5 = High)</label>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map(w => (
+                              <button
+                                key={w}
+                                onClick={() => setPickerWeight(w)}
+                                className={cn(
+                                  'flex-1 py-1.5 rounded-md text-sm font-semibold transition-colors border',
+                                  pickerWeight === w
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-background text-muted-foreground border-border hover:border-primary/50'
+                                )}
+                              >
+                                {w}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </ScrollArea>
-                    )}
+                        <Button
+                          onClick={addLesson}
+                          disabled={!pickerLessonId}
+                          className="shrink-0"
+                        >
+                          <Plus className="w-4 h-4 mr-1.5" />
+                          Add Lesson
+                        </Button>
+                      </div>
+                    </div>
 
-                    {lessonSearch && filteredLessons.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-4">No lessons found</p>
-                    )}
-
-                    {/* Selected lessons */}
+                    {/* Added lessons */}
                     {selectedLessons.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Search and add lessons above</p>
+                      <div className="text-center py-6 text-muted-foreground border border-dashed rounded-xl">
+                        <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">No lessons added yet — pick one above</p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {selectedLessons.map(l => (
-                          <div key={l.lessonId} className="rounded-lg border bg-card p-3 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-foreground">{l.lessonTitle}</span>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
-                                  Weight {l.weight}
-                                  {totalWeight > 0 && (
-                                    <span className="ml-1 text-muted-foreground">
-                                      ({Math.round((l.weight / totalWeight) * 100)}%)
-                                    </span>
-                                  )}
-                                </Badge>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 text-destructive"
-                                  onClick={() => removeLesson(l.lessonId)}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Added Lessons ({selectedLessons.length})</p>
+                        {selectedLessons.map(l => {
+                          const pct = totalWeight > 0 ? Math.round((l.weight / totalWeight) * 100) : 0;
+                          return (
+                            <div key={l.lessonId} className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5">
+                              <BookOpen className="w-4 h-4 text-primary shrink-0" />
+                              <span className="flex-1 text-sm font-medium text-foreground truncate">{l.lessonTitle}</span>
+                              {/* inline weight chips */}
+                              <div className="flex items-center gap-1 shrink-0">
+                                {[1, 2, 3, 4, 5].map(w => (
+                                  <button
+                                    key={w}
+                                    onClick={() => updateWeight(l.lessonId, w)}
+                                    className={cn(
+                                      'w-6 h-6 rounded-md text-xs font-bold transition-colors',
+                                      l.weight === w
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted text-muted-foreground hover:bg-primary/20'
+                                    )}
+                                  >
+                                    {w}
+                                  </button>
+                                ))}
                               </div>
+                              <span className="text-xs text-muted-foreground w-9 text-right shrink-0">{pct}%</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
+                                onClick={() => removeLesson(l.lessonId)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
-                            <Slider
-                              min={1}
-                              max={5}
-                              step={1}
-                              value={[l.weight]}
-                              onValueChange={([v]) => updateWeight(l.lessonId, v)}
-                              className="w-full"
-                            />
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>Low</span>
-                              <span>High</span>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </CardContent>
@@ -792,7 +846,7 @@ const AnswerLookup = () => {
             )}
 
             {accessStatus === 'none' && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+              <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 space-y-3">
                 <p className="text-sm font-medium text-foreground">
                   🔒 Answer access requires an active class enrollment or a one-time payment of{' '}
                   <strong>Rs. {fee.toLocaleString()}</strong>
