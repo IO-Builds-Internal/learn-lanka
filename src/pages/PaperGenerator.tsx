@@ -736,8 +736,7 @@ const GeneratedPapersHistory = () => {
     enabled: !!user,
     staleTime: 0,
     refetchOnWindowFocus: true,
-    // Poll every 8s while access not yet granted so page updates without manual refresh
-    refetchInterval: (data) => (data ? false : 8000),
+    refetchInterval: 3000, // poll every 3s for real-time feel
   });
 
   // Realtime: when admin approves, re-check access immediately
