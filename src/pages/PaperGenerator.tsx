@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plus, Trash2, Wand2, Download, History,
-  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp, Calendar
+  BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp, Calendar,
+  Building2, CreditCard, CheckCircle2, Clock, XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,7 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import StudentLayout from '@/components/layouts/StudentLayout';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
