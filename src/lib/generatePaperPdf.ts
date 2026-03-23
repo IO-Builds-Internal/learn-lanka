@@ -177,11 +177,23 @@ export async function downloadGeneratedPaperPdf(params: {
 
   html += `</div></body></html>`;
 
-  const win = window.open('', '_blank');
+  // Use a Blob URL to avoid popup blocker (window.open with a real URL is not blocked)
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
   if (win) {
-    win.document.write(html);
-    win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); }, 600);
+    // Give the page time to load then trigger print
+    setTimeout(() => {
+      try { win.print(); } catch (_) {}
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }, 800);
+  } else {
+    // Fallback: direct download as HTML file
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `paper-${paperId}.html`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 }
