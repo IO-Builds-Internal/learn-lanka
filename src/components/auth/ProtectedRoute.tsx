@@ -28,7 +28,9 @@ const ProtectedRoute = ({ children, requireAdmin, requireModerator }: ProtectedR
   }
 
   // Admins/mods visiting student-only routes → send to admin panel
-  if ((isAdmin || isModerator) && !requireAdmin && !requireModerator) {
+  // Unless they have explicitly enabled student preview mode
+  const isStudentPreview = sessionStorage.getItem('admin_student_preview') === 'true';
+  if ((isAdmin || isModerator) && !requireAdmin && !requireModerator && !isStudentPreview) {
     const isStudentOnly = STUDENT_ONLY_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
     if (isStudentOnly) {
       return <Navigate to="/admin" replace />;
