@@ -38,7 +38,7 @@ const ForgotPassword = () => {
 
       // Send OTP
       const { data, error } = await invokeFunction('send-otp', {
-        body: { phone, purpose: 'RESET_PASSWORD' }
+        body: { phone, purpose: 'reset_password' }
       });
 
       if (error) throw error;
@@ -69,7 +69,7 @@ const ForgotPassword = () => {
     
     try {
       const { data, error } = await invokeFunction('verify-otp', {
-        body: { phone, otp, purpose: 'RESET_PASSWORD' }
+        body: { phone, otp, purpose: 'reset_password' }
       });
 
       if (error) throw error;
@@ -128,7 +128,7 @@ const ForgotPassword = () => {
     setIsLoading(true);
     try {
       const { data, error } = await invokeFunction('send-otp', {
-        body: { phone, purpose: 'RESET_PASSWORD' }
+        body: { phone, purpose: 'reset_password' }
       });
 
       if (error) throw error;

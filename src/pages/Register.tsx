@@ -54,7 +54,7 @@ const Register = () => {
     
     try {
       const { data, error } = await invokeFunction('send-otp', {
-        body: { phone, purpose: 'REGISTER' }
+        body: { phone, purpose: 'register' }
       });
 
       if (error) throw error;
@@ -95,7 +95,7 @@ const Register = () => {
     
     try {
       const { data, error } = await invokeFunction('verify-otp', {
-        body: { phone, otp, purpose: 'REGISTER' }
+        body: { phone, otp, purpose: 'register' }
       });
 
       if (error) throw error;
@@ -191,7 +191,7 @@ const Register = () => {
     setIsLoading(true);
     try {
       const { data, error } = await invokeFunction('send-otp', {
-        body: { phone, purpose: 'REGISTER' }
+        body: { phone, purpose: 'register' }
       });
 
       if (error) throw error;
