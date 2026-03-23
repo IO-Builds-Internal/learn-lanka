@@ -2,20 +2,25 @@ import {
   Users, 
   BookOpen, 
   CreditCard,
-  DollarSign,
+  TrendingUp,
   Clock,
   CheckCircle,
-  Loader2
+  Loader2,
+  ArrowRight,
+  AlertCircle,
+  GraduationCap,
+  BarChart3,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import ClassScheduleGantt from '@/components/admin/ClassScheduleGantt';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 const AdminDashboard = () => {
-  // Fetch stats from database
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -23,26 +28,26 @@ const AdminDashboard = () => {
         { count: totalUsers },
         { count: activeClasses },
         { count: pendingPayments },
-        { data: approvedPayments }
+        { data: approvedPayments },
+        { count: totalQuestions },
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('classes').select('*', { count: 'exact', head: true }),
         supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'PENDING'),
-        supabase.from('payments').select('amount').eq('status', 'APPROVED')
+        supabase.from('payments').select('amount').eq('status', 'APPROVED'),
+        supabase.from('question_bank').select('*', { count: 'exact', head: true }),
       ]);
-
       const monthlyRevenue = approvedPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-
       return {
         totalUsers: totalUsers || 0,
         activeClasses: activeClasses || 0,
         pendingPayments: pendingPayments || 0,
         monthlyRevenue,
+        totalQuestions: totalQuestions || 0,
       };
     },
   });
 
-  // Fetch recent payments
   const { data: recentPayments = [] } = useQuery({
     queryKey: ['admin-recent-payments'],
     queryFn: async () => {
@@ -50,10 +55,9 @@ const AdminDashboard = () => {
         .from('payments')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(6);
       if (error) throw error;
       if (!data || data.length === 0) return [];
-      // Fetch profiles separately
       const userIds = [...new Set(data.map(p => p.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
@@ -64,30 +68,23 @@ const AdminDashboard = () => {
     },
   });
 
-  // Fetch classes with enrollment counts
   const { data: classStats = [] } = useQuery({
     queryKey: ['admin-class-stats'],
     queryFn: async () => {
       const { data: classes, error } = await supabase
         .from('classes')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(5);
       if (error) throw error;
-
-      // Get enrollment counts for each class
       const stats = await Promise.all((classes || []).map(async (cls) => {
         const { count: enrolled } = await supabase
           .from('class_enrollments')
           .select('*', { count: 'exact', head: true })
           .eq('class_id', cls.id)
           .eq('status', 'ACTIVE');
-        
-        return {
-          ...cls,
-          enrolledCount: enrolled || 0,
-        };
+        return { ...cls, enrolledCount: enrolled || 0 };
       }));
-
       return stats;
     },
   });
@@ -95,157 +92,210 @@ const AdminDashboard = () => {
   if (statsLoading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+          </div>
         </div>
       </AdminLayout>
     );
   }
 
+  const statCards = [
+    {
+      label: 'Total Students',
+      value: stats?.totalUsers || 0,
+      icon: Users,
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
+      link: '/admin/users',
+    },
+    {
+      label: 'Active Classes',
+      value: stats?.activeClasses || 0,
+      icon: BookOpen,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+      link: '/admin/classes',
+    },
+    {
+      label: 'Pending Payments',
+      value: stats?.pendingPayments || 0,
+      icon: Clock,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+      link: '/admin/payments',
+      alert: (stats?.pendingPayments || 0) > 0,
+    },
+    {
+      label: 'Total Revenue',
+      value: `Rs. ${((stats?.monthlyRevenue || 0) / 1000).toFixed(1)}k`,
+      icon: TrendingUp,
+      color: 'text-violet-500',
+      bg: 'bg-violet-500/10',
+      border: 'border-violet-500/20',
+      link: '/admin/payments',
+    },
+  ];
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your platform</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Welcome back! Here's what's happening.</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
+            <BarChart3 className="w-4 h-4" />
+            <span>{stats?.totalQuestions || 0} questions in bank</span>
+          </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="card-elevated">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          {statCards.map((card) => (
+            <Link key={card.label} to={card.link}>
+              <div className={cn(
+                "relative rounded-xl border p-5 bg-card hover:shadow-md transition-all duration-200 group cursor-pointer",
+                card.border
+              )}>
+                {card.alert && (
+                  <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                )}
+                <div className="flex items-start justify-between">
+                  <div className={cn("p-2.5 rounded-lg", card.bg)}>
+                    <card.icon className={cn("w-5 h-5", card.color)} />
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors mt-1" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl font-bold">{stats?.totalUsers || 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Total Users</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-elevated">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-success/10 flex-shrink-0">
-                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl font-bold">{stats?.activeClasses || 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Classes</p>
+                <div className="mt-4">
+                  <p className="text-2xl font-bold tracking-tight">{card.value}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{card.label}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-elevated">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-warning/10 flex-shrink-0">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl font-bold">{stats?.pendingPayments || 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-elevated">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10 flex-shrink-0">
-                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl font-bold truncate">Rs. {((stats?.monthlyRevenue || 0) / 1000).toFixed(0)}k</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Revenue</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </Link>
+          ))}
         </div>
 
-        {/* Class Schedule - Gantt Chart */}
-        <ClassScheduleGantt />
-
-        {/* Recent Payments */}
-        <Card className="card-elevated">
-          <CardHeader>
-            <CardTitle className="text-lg">Recent Payments</CardTitle>
-            <CardDescription>Latest payment submissions requiring verification</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentPayments.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No recent payments</p>
-            ) : (
-              <div className="space-y-3">
-                {recentPayments.map((payment: any) => (
-                  <div key={payment.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate">
-                          {payment.profiles?.first_name} {payment.profiles?.last_name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{payment.payment_type}</p>
-                      </div>
+        {/* Main content grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Recent Payments - takes 2 cols */}
+          <div className="xl:col-span-2 rounded-xl border bg-card">
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div>
+                <h2 className="font-semibold text-base">Recent Payments</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Latest submissions requiring review</p>
+              </div>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/admin/payments" className="text-xs gap-1">
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              </Button>
+            </div>
+            <div className="divide-y">
+              {recentPayments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <CreditCard className="w-8 h-8 mb-2 opacity-40" />
+                  <p className="text-sm">No payments yet</p>
+                </div>
+              ) : (
+                recentPayments.map((payment: any) => (
+                  <div key={payment.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-primary">
+                        {payment.profiles?.first_name?.[0]}{payment.profiles?.last_name?.[0]}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                      <span className="font-semibold text-sm">Rs. {payment.amount?.toLocaleString()}</span>
-                      <Badge 
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {payment.profiles?.first_name} {payment.profiles?.last_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{payment.payment_type}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0 flex items-center gap-3">
+                      <span className="text-sm font-semibold">Rs. {payment.amount?.toLocaleString()}</span>
+                      <Badge
                         variant="outline"
-                        className={payment.status === 'APPROVED' ? 'badge-paid' : 'badge-pending'}
+                        className={cn(
+                          "text-xs px-2 py-0.5 flex items-center gap-1",
+                          payment.status === 'APPROVED'
+                            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
+                            : payment.status === 'REJECTED'
+                            ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                            : 'border-amber-500/30 bg-amber-500/10 text-amber-600'
+                        )}
                       >
                         {payment.status === 'APPROVED' ? (
-                          <><CheckCircle className="w-3 h-3 mr-1" /><span className="hidden sm:inline">Approved</span></>
+                          <><CheckCircle className="w-3 h-3" /> Approved</>
+                        ) : payment.status === 'REJECTED' ? (
+                          <><AlertCircle className="w-3 h-3" /> Rejected</>
                         ) : (
-                          <><Clock className="w-3 h-3 mr-1" /><span className="hidden sm:inline">Pending</span></>
+                          <><Clock className="w-3 h-3" /> Pending</>
                         )}
                       </Badge>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ))
+              )}
+            </div>
+          </div>
 
-        {/* Class Statistics */}
-        <Card className="card-elevated">
-          <CardHeader>
-            <CardTitle className="text-lg">Class Statistics</CardTitle>
-            <CardDescription>Enrollment summary by class</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {classStats.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No classes yet</p>
-            ) : (
-              <div className="space-y-3">
-                {classStats.map((cls: any) => (
-                  <div key={cls.id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground text-sm truncate">{cls.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Grade {cls.grade_min === cls.grade_max ? cls.grade_min : `${cls.grade_min}-${cls.grade_max}`}
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0 text-center">
-                      <p className="font-semibold text-foreground text-sm">{cls.enrolledCount}</p>
-                      <p className="text-xs text-muted-foreground">Students</p>
-                    </div>
-                  </div>
-                ))}
+          {/* Class stats - 1 col */}
+          <div className="rounded-xl border bg-card">
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div>
+                <h2 className="font-semibold text-base">Class Enrollment</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Active students per class</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/admin/classes" className="text-xs gap-1">
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              </Button>
+            </div>
+            <div className="p-4 space-y-3">
+              {classStats.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                  <GraduationCap className="w-8 h-8 mb-2 opacity-40" />
+                  <p className="text-sm">No classes yet</p>
+                </div>
+              ) : (
+                classStats.map((cls: any) => {
+                  const maxStudents = cls.max_students || 50;
+                  const pct = Math.min((cls.enrolledCount / maxStudents) * 100, 100);
+                  return (
+                    <div key={cls.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium truncate max-w-[160px]">{cls.title}</p>
+                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                          {cls.enrolledCount}{cls.max_students ? `/${cls.max_students}` : ''} students
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all",
+                            pct >= 90 ? 'bg-destructive' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500'
+                          )}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Gantt Chart */}
+        <ClassScheduleGantt />
       </div>
     </AdminLayout>
   );

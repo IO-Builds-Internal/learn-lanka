@@ -298,17 +298,41 @@ const AdminQuestionBank = () => {
   const typeColor = (t: string) =>
     t === 'MCQ' ? 'bg-primary/10 text-primary' : t === 'ESSAY' ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground';
 
+  // Summary stats
+  const mcqCount = questions.filter(q => q.question_type === 'MCQ').length;
+  const essayCount = questions.filter(q => q.question_type === 'ESSAY').length;
+  const shortEssayCount = questions.filter(q => q.question_type === 'SHORT_ESSAY').length;
+  const withExplainCount = questions.filter(q => !!q.explain_video_url).length;
+
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Question Bank</h1>
-            <p className="text-muted-foreground text-sm mt-1">{questions.length} questions</p>
+            <p className="text-muted-foreground text-sm mt-1">{questions.length} total questions</p>
           </div>
           <Button onClick={openAdd}>
             <Plus className="w-4 h-4 mr-2" /> Add Question
           </Button>
+        </div>
+
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'MCQ', count: mcqCount, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Essay', count: essayCount, color: 'text-destructive', bg: 'bg-destructive/10' },
+            { label: 'Short Essay', count: shortEssayCount, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10' },
+            { label: 'With Explain Video', count: withExplainCount, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
+          ].map(s => (
+            <div key={s.label} className="rounded-lg border bg-card p-4 flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${s.bg}`}>
+                <span className={`text-base font-bold ${s.color}`}>{s.count}</span>
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">{s.label}</p>
+            </div>
+          ))}
         </div>
 
         {/* Filters */}
