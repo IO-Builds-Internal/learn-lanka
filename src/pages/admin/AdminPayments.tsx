@@ -183,17 +183,17 @@ const AdminPayments = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Payments</h1>
-            <p className="text-sm text-muted-foreground">Verify and manage payments</p>
-          </div>
-          <Button variant="outline" size="sm" onClick={fetchPayments} disabled={loading}>
-            <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
+        <AdminPageHeader
+          title="Payments"
+          description="Verify and manage all payment submissions"
+          breadcrumbs={[{ label: 'Finance' }, { label: 'Payments' }]}
+          actions={
+            <Button variant="outline" size="sm" onClick={fetchPayments} disabled={loading}>
+              <RefreshCw className={cn("w-4 h-4 mr-2", loading && "animate-spin")} />
+              Refresh
+            </Button>
+          }
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4">
