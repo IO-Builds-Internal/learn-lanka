@@ -46,7 +46,10 @@ type SyllabusLesson = {
   created_at: string;
 };
 
-const GRADES = Array.from({ length: 13 }, (_, i) => i + 1);
+const GRADES: { value: number; label: string }[] = [
+  ...Array.from({ length: 6 }, (_, i) => ({ value: i + 6, label: `Grade ${i + 6}` })), // 6–11
+  { value: 12, label: 'G.C.E A/L' }, // 12 & 13 combined
+];
 const MEDIUMS = ['sinhala', 'english', 'tamil'];
 
 const defaultForm = {
@@ -187,7 +190,7 @@ const AdminSyllabus = () => {
             <SelectContent>
               <SelectItem value="all">All Grades</SelectItem>
               {GRADES.map(g => (
-                <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
+                <SelectItem key={g.value} value={g.value.toString()}>{g.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -226,7 +229,9 @@ const AdminSyllabus = () => {
                         <span className="font-medium truncate">{lesson.title}</span>
                         <div className="flex items-center gap-1 flex-wrap">
                           {lesson.grade && (
-                            <Badge variant="secondary" className="text-xs">Grade {lesson.grade}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {lesson.grade >= 12 ? 'G.C.E A/L' : `Grade ${lesson.grade}`}
+                            </Badge>
                           )}
                           {lesson.medium && (
                             <Badge variant="outline" className="text-xs capitalize">{lesson.medium}</Badge>
@@ -342,7 +347,7 @@ const AdminSyllabus = () => {
                   <SelectContent>
                     <SelectItem value="__none__">Any grade</SelectItem>
                     {GRADES.map(g => (
-                      <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
+                      <SelectItem key={g.value} value={g.value.toString()}>{g.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
