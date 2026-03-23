@@ -114,6 +114,8 @@ const AdminSettingsFeatures = () => {
                     </div>
                     {sectionClasses && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><BookOpen className="w-2.5 h-2.5" /> Classes</div>}
                     {sectionRankPapers && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><Award className="w-2.5 h-2.5" /> Rank Papers</div>}
+                    {sectionPapers && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><FileText className="w-2.5 h-2.5" /> Past Papers</div>}
+                    {sectionPaperGenerator && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><Wand2 className="w-2.5 h-2.5" /> Paper Gen</div>}
                     {sectionShop && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><ShoppingBag className="w-2.5 h-2.5" /> Shop</div>}
                     {sectionPlayground && <div className="flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground text-[10px] font-medium whitespace-nowrap hover:bg-muted"><Code2 className="w-2.5 h-2.5" /> Playground</div>}
                   </div>
