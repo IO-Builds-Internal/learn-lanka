@@ -678,7 +678,7 @@ const AdminQuestionBank = () => {
                         >
                           {opt.is_correct && <Check className="w-3 h-3" />}
                         </button>
-                        <span className={`text-xs font-bold w-5 h-5 rounded flex items-center justify-center shrink-0 ${opt.is_correct ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                        <span className={`text-xs font-bold w-5 h-5 rounded flex items-center justify-center shrink-0 ${opt.is_correct ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`} aria-label={`Option ${String.fromCharCode(64 + opt.option_no)}`}>
                           {String.fromCharCode(64 + opt.option_no)}
                         </span>
                         {opt.is_correct && (
