@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -12,7 +13,9 @@ import {
   CheckCircle,
   AlertCircle,
   MessageCircle,
-  Code2
+  Code2,
+  Wand2,
+  Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,9 +26,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { useRankPaperStatus } from '@/hooks/useRankPaperStatus';
+import { downloadGeneratedPaperPdf } from '@/lib/generatePaperPdf';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
   const currentYearMonth = new Date().toISOString().slice(0, 7);
 
@@ -81,6 +87,39 @@ const Dashboard = () => {
 
   // Fetch rank paper attempt statuses
   const { data: paperStatuses = [] } = useRankPaperStatus();
+
+  // Fetch previously generated papers
+  const { data: generatedPapers = [] } = useQuery({
+    queryKey: ['generated-papers-dashboard', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await (supabase as any)
+        .from('generated_papers')
+        .select('id, grade, paper_type, mcq_count, short_essay_count, essay_count, created_at, question_ids')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const handleDownloadPaper = async (paper: any) => {
+    setDownloadingId(paper.id);
+    try {
+      await downloadGeneratedPaperPdf({
+        paperId: paper.id,
+        grade: paper.grade,
+        paperType: paper.paper_type,
+        questionIds: paper.question_ids || [],
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate PDF');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   // Get payment status for a class (considers private vs public classes)
   const getPaymentStatus = (classId: string, isPrivate: boolean, paymentReceivedAt: string | null): 'PAID' | 'PENDING' | 'UNPAID' | 'ENROLLED' => {
@@ -401,6 +440,61 @@ const Dashboard = () => {
                           {isCompleted ? 'View Results' : isInProgress ? 'Continue' : 'Start Paper'}
                         </Button>
                       </Link>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* My Generated Papers */}
+        {generatedPapers.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <Wand2 className="w-4 h-4 text-primary" />
+                My Generated Papers
+              </h2>
+              <Link to="/paper-generator" className="text-xs sm:text-sm text-primary hover:text-primary/80">
+                Generate New
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {generatedPapers.map((paper: any) => {
+                const createdAt = new Date(paper.created_at);
+                const parts = [
+                  paper.mcq_count > 0 && `${paper.mcq_count} MCQ`,
+                  paper.short_essay_count > 0 && `${paper.short_essay_count} S.Essay`,
+                  paper.essay_count > 0 && `${paper.essay_count} Essay`,
+                ].filter(Boolean).join(' · ');
+                return (
+                  <Card key={paper.id} className="card-elevated">
+                    <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-semibold text-primary">{paper.id}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {paper.paper_type === 'DAILY' ? 'Daily' : 'Full'}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">Grade {paper.grade}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {parts} &nbsp;·&nbsp; {createdAt.toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadPaper(paper)}
+                        disabled={downloadingId === paper.id}
+                        className="shrink-0"
+                      >
+                        {downloadingId === paper.id
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          : <Download className="w-3.5 h-3.5" />}
+                        <span className="ml-1.5 hidden sm:inline">Download PDF</span>
+                      </Button>
                     </CardContent>
                   </Card>
                 );
