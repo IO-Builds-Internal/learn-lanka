@@ -610,9 +610,43 @@ const PaperGenerator = () => {
   );
 };
 
+// ── Bank Accounts Inline ───────────────────────────────────────────────────────
+const BankAccountsInline = () => {
+  const { data: accounts = [], isLoading } = useQuery({
+    queryKey: ['bank-accounts-inline'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('bank_accounts').select('*').eq('is_active', true);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) return <div className="animate-pulse h-16 bg-muted/50 rounded-lg" />;
+  if (accounts.length === 0) return null;
+
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <Building2 className="w-3.5 h-3.5" /> Bank Accounts — Transfer to any:
+      </p>
+      <div className="grid gap-2">
+        {accounts.map((acc: any) => (
+          <div key={acc.id} className="rounded-md bg-background border px-3 py-2 text-sm">
+            <p className="font-semibold text-foreground">{acc.bank_name} <span className="text-muted-foreground font-normal">· {acc.branch}</span></p>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              A/C: <span className="font-mono text-foreground">{acc.account_number}</span> · {acc.account_name}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ── Generated Papers History Sub-component ───────────────────────────────────
 const GeneratedPapersHistory = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [questionsMap, setQuestionsMap] = useState<Record<string, any[]>>({});
@@ -639,7 +673,26 @@ const GeneratedPapersHistory = () => {
       return (enrollments && enrollments.length > 0) || accessPayment?.status === 'APPROVED';
     },
     enabled: !!user,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
+
+  // Realtime: when admin approves, re-check access immediately
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('history-access-rt')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'answer_access_payments',
+        filter: `user_id=eq.${user.id}`,
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['history-answer-access', user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, queryClient]);
 
   const { data: papers = [], isLoading } = useQuery({
     queryKey: ['generated-papers-history', user?.id],
