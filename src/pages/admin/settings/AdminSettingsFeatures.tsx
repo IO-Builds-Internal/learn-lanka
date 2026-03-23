@@ -34,6 +34,7 @@ const AdminSettingsFeatures = () => {
       setSectionShop(flag('section_shop'));
       setSectionPlayground(flag('section_playground'));
       setSectionNotifications(flag('section_notifications'));
+      setSectionPaperGenerator(flag('section_paper_generator'));
     })();
   }, []);
 
