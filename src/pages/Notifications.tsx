@@ -116,27 +116,28 @@ const Notifications = () => {
       <div className="section-spacing max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-            <p className="text-muted-foreground mt-1">
-              Stay updated with class announcements
-              {unreadCount > 0 && (
-                <span className="ml-2 text-primary font-medium">({unreadCount} unread)</span>
-              )}
-            </p>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => markAllAsReadMutation.mutate()}
-            disabled={markAllAsReadMutation.isPending || unreadCount === 0}
-          >
-            {markAllAsReadMutation.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Check className="w-4 h-4 mr-2" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Notifications</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+            Stay updated with class announcements
+            {unreadCount > 0 && (
+              <span className="ml-2 text-primary font-medium">({unreadCount} unread)</span>
             )}
-            Mark all as read
-          </Button>
+          </p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => markAllAsReadMutation.mutate()}
+          disabled={markAllAsReadMutation.isPending || unreadCount === 0}
+          className="shrink-0"
+        >
+          {markAllAsReadMutation.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin sm:mr-2" />
+          ) : (
+            <Check className="w-4 h-4 sm:mr-2" />
+          )}
+          <span className="hidden sm:inline">Mark all read</span>
+        </Button>
         </div>
 
         <div className="space-y-3">

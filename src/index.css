@@ -51,15 +51,15 @@
 
     --radius: 0.75rem;
 
-    /* Sidebar - Deep Navy Blue */
-    --sidebar-background: 226 45% 14%;
-    --sidebar-foreground: 220 20% 88%;
-    --sidebar-primary: 217 91% 60%;
+    /* Sidebar - Clean Light (light mode) */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 30% 15%;
+    --sidebar-primary: 220 80% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 226 40% 22%;
-    --sidebar-accent-foreground: 220 20% 95%;
-    --sidebar-border: 226 35% 24%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 220 20% 93%;
+    --sidebar-accent-foreground: 222 30% 15%;
+    --sidebar-border: 220 20% 88%;
+    --sidebar-ring: 220 80% 46%;
   }
 
   .dark {
