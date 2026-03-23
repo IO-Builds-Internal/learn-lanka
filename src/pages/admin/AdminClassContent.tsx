@@ -697,7 +697,7 @@ const AdminClassContent = () => {
           </Card>
         ) : (
           <Tabs defaultValue="schedule" className="space-y-6">
-            <TabsList>
+            <TabsList className="w-full">
               <TabsTrigger value="schedule" className="gap-2">
                 <Calendar className="w-4 h-4" />
                 Schedule
