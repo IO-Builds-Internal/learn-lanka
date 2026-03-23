@@ -349,9 +349,9 @@ const Papers = () => {
             {sortedGrades.length === 0 ? (
               <EmptyState message={isGuest ? "No free school exams available. Log in for more!" : "No school exams available yet"} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {sortedGrades.map((grade) => (
-                  <GradeCard 
+                  <GradeCard
                     key={grade} 
                     grade={grade} 
                     papers={schoolExamsByGrade[grade]} 
