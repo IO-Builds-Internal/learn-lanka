@@ -179,7 +179,8 @@ const PaperGenerator = () => {
       }
 
       const mcqPool = (allQs as any[]).filter(q => q.question_type === 'MCQ');
-      const essayPool = (allQs as any[]).filter(q => q.question_type !== 'MCQ');
+      const shortEssayPool = (allQs as any[]).filter(q => q.question_type === 'SHORT_ESSAY');
+      const essayPool = (allQs as any[]).filter(q => q.question_type === 'ESSAY');
 
       // Weighted pick of MCQs
       const pickedMcq: typeof mcqPool = [];
@@ -204,10 +205,24 @@ const PaperGenerator = () => {
       }
       const finalMcq = pickedMcq.slice(0, config.mcq).sort(() => Math.random() - 0.5);
 
-      // Essays (random)
+      // Essays: pick from typed pools, fill remainder from any non-MCQ if short
+      const shuffledShortEssay = shortEssayPool.sort(() => Math.random() - 0.5);
       const shuffledEssay = essayPool.sort(() => Math.random() - 0.5);
-      const shortEssays = shuffledEssay.slice(0, config.short_essay);
-      const essays = shuffledEssay.slice(config.short_essay, config.short_essay + config.essay);
+
+      let shortEssays = shuffledShortEssay.slice(0, config.short_essay);
+      // If not enough SHORT_ESSAY, fill from ESSAY pool
+      if (shortEssays.length < config.short_essay) {
+        const fallback = shuffledEssay.filter(q => !shortEssays.find((s: any) => s.id === q.id));
+        shortEssays = [...shortEssays, ...fallback.slice(0, config.short_essay - shortEssays.length)];
+      }
+
+      const usedIds = new Set([...pickedMcq.map((q: any) => q.id), ...shortEssays.map((q: any) => q.id)]);
+      let essays = shuffledEssay.filter(q => !usedIds.has(q.id)).slice(0, config.essay);
+      // If not enough ESSAY, fill from SHORT_ESSAY pool
+      if (essays.length < config.essay) {
+        const fallback = shuffledShortEssay.filter(q => !usedIds.has(q.id) && !essays.find((e: any) => e.id === q.id));
+        essays = [...essays, ...fallback.slice(0, config.essay - essays.length)];
+      }
 
       const questions: GeneratedQuestion[] = [
         ...finalMcq,
