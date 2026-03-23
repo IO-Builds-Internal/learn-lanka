@@ -50,6 +50,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import ClassDetailDialog from '@/components/admin/ClassDetailDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
