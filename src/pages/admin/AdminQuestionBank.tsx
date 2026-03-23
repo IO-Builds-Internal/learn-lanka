@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import ImageDropZone from '@/components/ui/ImageDropZone';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -632,26 +633,19 @@ const AdminQuestionBank = () => {
                       </Button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                      {uploadingField === 'question' ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <>
-                          <Upload className="w-6 h-6 text-muted-foreground mb-1" />
-                          <span className="text-xs text-muted-foreground">Upload question image</span>
-                        </>
-                      )}
-                      <input ref={qImageRef} type="file" accept="image/*" className="hidden" onChange={async e => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
+                    <ImageDropZone
+                      uploading={uploadingField === 'question'}
+                      label="Question image"
+                      listenPaste={form.questionInputMode === 'image'}
+                      onFile={async file => {
                         try {
                           const url = await uploadImage(file, 'question');
                           setForm(f => ({ ...f, question_image_url: url }));
                         } catch (err: unknown) {
                           toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
                         }
-                      }} />
-                    </label>
+                      }}
+                    />
                   )}
                 </TabsContent>
               </Tabs>
@@ -700,26 +694,19 @@ const AdminQuestionBank = () => {
                         </Button>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                        {uploadingField === 'options_img' ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <>
-                            <Upload className="w-5 h-5 text-muted-foreground mb-1" />
-                            <span className="text-xs text-muted-foreground">Upload one image containing all options (A–E)</span>
-                          </>
-                        )}
-                        <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
+                      <ImageDropZone
+                        uploading={uploadingField === 'options_img'}
+                        label="One image with all options (A–E)"
+                        listenPaste={form.optionsMode === 'single_image'}
+                        onFile={async file => {
                           try {
                             const url = await uploadImage(file, 'options_img');
                             setForm(f => ({ ...f, options_image_url: url }));
                           } catch (err: unknown) {
                             toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
                           }
-                        }} />
-                      </label>
+                        }}
+                      />
                     )}
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground font-medium">Select the correct answer:</p>
@@ -750,33 +737,12 @@ const AdminQuestionBank = () => {
                           </span>
                           {opt.is_correct && <span className="text-xs font-medium text-primary ml-1">✓ Correct Answer</span>}
                         </div>
-                        <div className="px-3 pb-2 flex gap-2 items-center">
-                          <Input className="flex-1 h-8 text-sm"
+                        <div className="px-3 pb-2 space-y-2">
+                          <Input className="h-8 text-sm"
                             placeholder={`Option ${String.fromCharCode(64 + opt.option_no)} text (optional if image added)`}
                             value={opt.option_text}
                             onChange={e => setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_text: e.target.value } : o) }))} />
-                          <label className="cursor-pointer shrink-0">
-                            {uploadingField === `opt_${opt.option_no}` ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                            ) : (
-                              <Button type="button" variant={opt.option_image_url ? 'default' : 'outline'} size="icon" className="h-8 w-8" asChild>
-                                <span title="Add image for this option"><ImageIcon className="w-4 h-4" /></span>
-                              </Button>
-                            )}
-                            <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-                              try {
-                                const url = await uploadImage(file, `opt_${opt.option_no}`);
-                                setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: url } : o) }));
-                              } catch (err: unknown) {
-                                toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
-                              }
-                            }} />
-                          </label>
-                        </div>
-                        {opt.option_image_url && (
-                          <div className="px-3 pb-2">
+                          {opt.option_image_url ? (
                             <div className="relative inline-block">
                               <img src={opt.option_image_url} alt={`Option ${String.fromCharCode(64 + opt.option_no)}`} className="max-h-24 rounded border" />
                               <Button variant="destructive" size="icon" className="absolute -top-1.5 -right-1.5 h-5 w-5"
@@ -784,8 +750,22 @@ const AdminQuestionBank = () => {
                                 <X className="w-3 h-3" />
                               </Button>
                             </div>
-                          </div>
-                        )}
+                          ) : (
+                            <ImageDropZone
+                              uploading={uploadingField === `opt_${opt.option_no}`}
+                              label={`Image for option ${String.fromCharCode(64 + opt.option_no)} (optional)`}
+                              className="h-20"
+                              onFile={async file => {
+                                try {
+                                  const url = await uploadImage(file, `opt_${opt.option_no}`);
+                                  setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: url } : o) }));
+                                } catch (err: unknown) {
+                                  toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
+                                }
+                              }}
+                            />
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
