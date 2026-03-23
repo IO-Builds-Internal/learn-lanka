@@ -654,58 +654,84 @@ const AdminQuestionBank = () => {
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
               <div className="space-y-2">
-                <Label>Options (click circle to mark correct answer)</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Options</Label>
+                  <span className="text-xs text-muted-foreground">Click the circle to mark the correct answer</span>
+                </div>
+                {!form.correct_option_no && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-md border border-amber-200 dark:border-amber-800">
+                    ⚠️ No correct answer selected yet — click a circle to mark one.
+                  </p>
+                )}
                 <div className="space-y-2">
-                  {form.options.map((opt, idx) => (
-                    <div key={opt.option_no} className={`p-2 rounded-lg border transition-colors ${opt.is_correct ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-border'}`}>
-                      <div className="flex items-center gap-2">
+                  {form.options.map((opt) => (
+                    <div
+                      key={opt.option_no}
+                      className={`rounded-lg border transition-all ${opt.is_correct ? 'border-primary bg-primary/5' : 'border-border'}`}
+                    >
+                      {/* Option header: radio + letter + correct label */}
+                      <div className="flex items-center gap-2 px-3 py-2">
                         <button
                           type="button"
                           onClick={() => setOptionCorrect(opt.option_no)}
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${opt.is_correct ? 'border-green-500 bg-green-500 text-white' : 'border-muted-foreground hover:border-primary'}`}
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${opt.is_correct ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground hover:border-primary'}`}
                         >
                           {opt.is_correct && <Check className="w-3 h-3" />}
                         </button>
-                        <Badge variant="secondary" className="text-xs shrink-0">{String.fromCharCode(64 + opt.option_no)}</Badge>
-
-                        {opt.option_image_url ? (
-                          <div className="relative inline-block flex-1">
-                            <img src={opt.option_image_url} alt="" className="max-h-12 rounded border" />
-                            <Button variant="destructive" size="icon" className="absolute -top-1 -right-1 h-4 w-4"
-                              onClick={() => setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: null } : o) }))}>
-                              <X className="w-2 h-2" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <>
-                            <Input
-                              className="flex-1 h-8 text-sm"
-                              placeholder={`Option ${String.fromCharCode(64 + opt.option_no)}`}
-                              value={opt.option_text}
-                              onChange={e => setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_text: e.target.value } : o) }))}
-                            />
-                            <label className="cursor-pointer shrink-0">
-                              {uploadingField === `opt_${opt.option_no}` ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                  <span><ImageIcon className="w-4 h-4" /></span>
-                                </Button>
-                              )}
-                              <input type="file" accept="image/*" className="hidden" onChange={async e => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                try {
-                                  const url = await uploadImage(file, `opt_${opt.option_no}`);
-                                  setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: url } : o) }));
-                                } catch (err: unknown) {
-                                  toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
-                                }
-                              }} />
-                            </label>
-                          </>
+                        <span className={`text-xs font-bold w-5 h-5 rounded flex items-center justify-center shrink-0 ${opt.is_correct ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                          {String.fromCharCode(64 + opt.option_no)}
+                        </span>
+                        {opt.is_correct && (
+                          <span className="text-xs font-medium text-primary ml-1">✓ Correct Answer</span>
                         )}
                       </div>
+
+                      {/* Text input row */}
+                      <div className="px-3 pb-2 flex gap-2 items-center">
+                        <Input
+                          className="flex-1 h-8 text-sm"
+                          placeholder={`Option ${String.fromCharCode(64 + opt.option_no)} text (optional if image added)`}
+                          value={opt.option_text}
+                          onChange={e => setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_text: e.target.value } : o) }))}
+                        />
+                        {/* Image upload button */}
+                        <label className="cursor-pointer shrink-0">
+                          {uploadingField === `opt_${opt.option_no}` ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                          ) : (
+                            <Button type="button" variant={opt.option_image_url ? 'default' : 'outline'} size="icon" className="h-8 w-8" asChild>
+                              <span title="Add/replace image"><ImageIcon className="w-4 h-4" /></span>
+                            </Button>
+                          )}
+                          <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              const url = await uploadImage(file, `opt_${opt.option_no}`);
+                              setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: url } : o) }));
+                            } catch (err: unknown) {
+                              toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
+                            }
+                          }} />
+                        </label>
+                      </div>
+
+                      {/* Image preview */}
+                      {opt.option_image_url && (
+                        <div className="px-3 pb-2">
+                          <div className="relative inline-block">
+                            <img src={opt.option_image_url} alt={`Option ${String.fromCharCode(64 + opt.option_no)}`} className="max-h-24 rounded border" />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute -top-1.5 -right-1.5 h-5 w-5"
+                              onClick={() => setForm(f => ({ ...f, options: f.options.map(o => o.option_no === opt.option_no ? { ...o, option_image_url: null } : o) }))}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
