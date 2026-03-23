@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { invokeFunction } from '@/lib/functions';
 
 const DatabaseBackupRestore = () => {
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -37,7 +38,7 @@ const DatabaseBackupRestore = () => {
         return;
       }
 
-      const response = await supabase.functions.invoke('database-backup', {
+      const response = await invokeFunction('database-backup', {
         body: { action: 'backup' },
       });
 
@@ -100,7 +101,7 @@ const DatabaseBackupRestore = () => {
         throw new Error('Invalid backup file format');
       }
 
-      const response = await supabase.functions.invoke('database-backup', {
+      const response = await invokeFunction('database-backup', {
         body: { action: 'restore', backupData },
       });
 
@@ -139,7 +140,7 @@ const DatabaseBackupRestore = () => {
         return;
       }
 
-      const response = await supabase.functions.invoke('seed-database', {
+      const response = await invokeFunction('seed-database', {
         body: { action: 'seed' },
       });
 
@@ -166,7 +167,7 @@ const DatabaseBackupRestore = () => {
         return;
       }
 
-      const response = await supabase.functions.invoke('seed-database', {
+      const response = await invokeFunction('seed-database', {
         body: { action: 'clear' },
       });
 

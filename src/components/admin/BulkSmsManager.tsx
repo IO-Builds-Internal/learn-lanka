@@ -36,6 +36,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
+import { invokeFunction } from '@/lib/functions';
 
 interface SmsTemplate {
   id: string;
@@ -242,7 +243,7 @@ const BulkSmsManager = () => {
         schedule_time = `${scheduleDate} ${scheduleTime}`;
       }
 
-      const { data, error } = await supabase.functions.invoke('send-bulk-sms', {
+      const { data, error } = await invokeFunction('send-bulk-sms', {
         body: {
           recipients: recipientList,
           message: message,

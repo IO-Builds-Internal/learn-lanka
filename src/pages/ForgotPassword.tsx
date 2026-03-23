@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { invokeFunction } from '@/lib/functions';
 
 type Step = 'phone' | 'otp' | 'password';
 
@@ -36,17 +37,17 @@ const ForgotPassword = () => {
       // OTP verification + backend password reset will validate the phone securely.
 
       // Send OTP
-      const { data, error } = await supabase.functions.invoke('send-otp', {
+      const { data, error } = await invokeFunction('send-otp', {
         body: { phone, purpose: 'RESET_PASSWORD' }
       });
 
       if (error) throw error;
 
-      if (data.success) {
+      if ((data as any)?.success) {
         toast.success('OTP sent successfully!');
         setStep('otp');
       } else {
-        throw new Error(data.error || 'Failed to send OTP');
+        throw new Error((data as any)?.error || 'Failed to send OTP');
       }
     } catch (error: any) {
       console.error('Send OTP error:', error);
@@ -67,16 +68,16 @@ const ForgotPassword = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
+      const { data, error } = await invokeFunction('verify-otp', {
         body: { phone, otp, purpose: 'RESET_PASSWORD' }
       });
 
       if (error) throw error;
 
-      if (data.success && data.verified) {
+      if ((data as any)?.success && (data as any)?.verified) {
         setStep('password');
       } else {
-        throw new Error(data.error || 'Invalid OTP');
+        throw new Error((data as any)?.error || 'Invalid OTP');
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
@@ -103,17 +104,17 @@ const ForgotPassword = () => {
     
     try {
       // Update user password (backend will resolve the user by phone)
-      const { data, error } = await supabase.functions.invoke('reset-password', {
+      const { data, error } = await invokeFunction('reset-password', {
         body: { phone, newPassword: password }
       });
 
       if (error) throw error;
 
-      if (data.success) {
+      if ((data as any)?.success) {
         toast.success('Password reset successfully! Please login with your new password.');
         navigate('/login');
       } else {
-        throw new Error(data.error || 'Failed to reset password');
+        throw new Error((data as any)?.error || 'Failed to reset password');
       }
     } catch (error: any) {
       console.error('Reset password error:', error);
@@ -126,7 +127,7 @@ const ForgotPassword = () => {
   const handleResendOtp = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
+      const { data, error } = await invokeFunction('send-otp', {
         body: { phone, purpose: 'RESET_PASSWORD' }
       });
 

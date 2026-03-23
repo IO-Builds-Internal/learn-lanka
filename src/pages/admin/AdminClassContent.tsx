@@ -62,6 +62,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { invokeFunction } from '@/lib/functions';
 
 const AdminClassContent = () => {
   const { id } = useParams<{ id: string }>();
@@ -216,7 +217,7 @@ const AdminClassContent = () => {
           
           // Send SMS notification
           try {
-            await supabase.functions.invoke('send-sms-notification', {
+            await invokeFunction('send-sms-notification', {
               body: {
                 type: 'schedule_rescheduled',
                 classId: id,
@@ -250,7 +251,7 @@ const AdminClassContent = () => {
           
           // Send SMS notification
           try {
-            await supabase.functions.invoke('send-sms-notification', {
+            await invokeFunction('send-sms-notification', {
               body: {
                 type: 'meeting_link',
                 classId: id,
@@ -297,7 +298,7 @@ const AdminClassContent = () => {
             .eq('id', newDay.id);
           
           try {
-            await supabase.functions.invoke('send-sms-notification', {
+            await invokeFunction('send-sms-notification', {
               body: {
                 type: 'meeting_link',
                 classId: id,
@@ -382,7 +383,7 @@ const AdminClassContent = () => {
       
       // Send SMS notification
       try {
-        await supabase.functions.invoke('send-sms-notification', {
+        await invokeFunction('send-sms-notification', {
           body: {
             type: 'schedule_published',
             classId: id,
@@ -569,7 +570,7 @@ const AdminClassContent = () => {
       // Convert to ISO 8601 format for Zoom
       const startTime = `${dayDate}T${dayStartTime}:00`;
 
-      const { data, error } = await supabase.functions.invoke('create-zoom-meeting', {
+      const { data, error } = await invokeFunction('create-zoom-meeting', {
         body: {
           classDayId,
           topic: `${classData?.title} - ${dayTitle}`,

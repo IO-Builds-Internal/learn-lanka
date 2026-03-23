@@ -72,6 +72,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { invokeFunction } from '@/lib/functions';
 
 interface RankPaper {
   id: string;
@@ -227,7 +228,7 @@ const AdminRankPapers = () => {
 
         // Send SMS notification
         try {
-          await supabase.functions.invoke('send-sms-notification', {
+          await invokeFunction('send-sms-notification', {
             body: {
               type: 'rank_paper_published',
               classId: paper.class_id || undefined,

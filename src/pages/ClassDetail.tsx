@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import PaymentUploadForm from '@/components/payments/PaymentUploadForm';
 import BankAccountsList from '@/components/payments/BankAccountsList';
+import { invokeFunction } from '@/lib/functions';
 
 const ClassDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -523,7 +524,7 @@ const ClassDetail = () => {
                               setJoiningMeeting(day.id);
                               try {
                                 // Get unique join link via Zoom registration
-                                const { data, error } = await supabase.functions.invoke('register-zoom-meeting', {
+                                const { data, error } = await invokeFunction('register-zoom-meeting', {
                                   body: { classDayId: day.id },
                                 });
                                 
