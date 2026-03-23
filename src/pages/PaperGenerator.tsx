@@ -973,6 +973,44 @@ const AnswerLookup = () => {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      {/* Standalone payment form when redirected via ?pay=1 */}
+      {showPaymentForm && !paper && user && (
+        <Card className="card-elevated border-primary/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Get Lifetime Answer Access</CardTitle>
+            <CardDescription>
+              Pay Rs. {fee.toLocaleString()} once to unlock answers & review videos for all your generated papers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground space-y-1">
+              <p>1. Transfer Rs. {fee.toLocaleString()} to any of the bank accounts listed below.</p>
+              <p>2. Upload the transfer slip here.</p>
+              <p>3. Admin will verify and grant you lifetime access.</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Upload Payment Slip</label>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={e => setSlipFile(e.target.files?.[0] || null)}
+                className="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer border rounded-md p-2"
+              />
+              {slipFile && (
+                <p className="text-xs text-muted-foreground">Selected: {slipFile.name} ({(slipFile.size / 1024).toFixed(1)} KB)</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={submitPayment} disabled={paying || !slipFile} className="flex-1">
+                {paying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {paying ? 'Submitting...' : 'Submit Payment Slip'}
+              </Button>
+              <Button variant="outline" onClick={() => setShowPaymentForm(false)}>Cancel</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search */}
       <Card className="card-elevated">
         <CardHeader className="pb-3">
