@@ -395,7 +395,7 @@ const AdminQuestionBank = () => {
                               : '[Empty]'}
                           </span>
                           <div className="flex gap-1 shrink-0">
-                            {q.grade && <Badge variant="secondary" className="text-xs">G{q.grade}</Badge>}
+                            {q.grade && <Badge variant="secondary" className="text-xs">{q.grade >= 12 ? 'A/L' : `G${q.grade}`}</Badge>}
                             {q.medium && <Badge variant="outline" className="text-xs capitalize">{q.medium}</Badge>}
                           </div>
                         </button>
