@@ -315,7 +315,7 @@ const Papers = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="PAST_PAPER">Past Papers</TabsTrigger>
             <TabsTrigger value="SCHOOL_EXAM">School Exams</TabsTrigger>
             <TabsTrigger value="MODEL_PAPER">Model Papers</TabsTrigger>
