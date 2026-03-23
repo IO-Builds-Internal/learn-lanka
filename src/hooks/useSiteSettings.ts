@@ -8,6 +8,13 @@ export interface SiteSettings {
   login_bg_url: string | null;
   contact_phone: string;
   contact_email: string;
+  // Section feature flags (default true = enabled)
+  section_classes: boolean;
+  section_rank_papers: boolean;
+  section_papers: boolean;
+  section_shop: boolean;
+  section_playground: boolean;
+  section_notifications: boolean;
 }
 
 export const useSiteSettings = () => {
