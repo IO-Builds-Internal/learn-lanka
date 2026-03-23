@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import StudentPreviewBanner from '@/components/admin/StudentPreviewBanner';
 import { 
   GraduationCap, 
   LayoutDashboard, 

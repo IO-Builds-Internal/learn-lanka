@@ -21,7 +21,6 @@ import {
   MessageCircle,
   ChevronDown,
   ChevronRight,
-  Database,
   Palette,
   ToggleLeft,
   Phone,
@@ -29,7 +28,7 @@ import {
   FileCode,
   HardDriveDownload,
   HelpCircle,
-  Code2,
+  Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
