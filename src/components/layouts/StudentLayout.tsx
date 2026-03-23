@@ -55,10 +55,14 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
     const dashboard = ALL_NAV_ITEMS.find(i => i.key === 'dashboard')!;
     const savedOrder: string[] = settings?.nav_order || DEFAULT_ORDER;
     // Build ordered list: dashboard always first, rest by saved order
+    // Filter: hide if nav_hidden_* is true (but page still accessible)
     const rest = savedOrder
       .map(k => ALL_NAV_ITEMS.find(i => i.key === k))
       .filter((i): i is typeof ALL_NAV_ITEMS[0] => !!i && i.flag !== null)
-      .filter(i => (settings as any)?.[i.flag!] !== false);
+      .filter(i => {
+        const hiddenKey = `nav_hidden_${i.key.replace('-', '_')}` as keyof typeof settings;
+        return !(settings as any)?.[hiddenKey];
+      });
     return [dashboard, ...rest];
   })();
 
