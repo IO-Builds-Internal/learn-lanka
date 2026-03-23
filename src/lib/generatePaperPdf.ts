@@ -177,23 +177,31 @@ export async function downloadGeneratedPaperPdf(params: {
 
   html += `</div></body></html>`;
 
-  // Use a Blob URL to avoid popup blocker (window.open with a real URL is not blocked)
+  // Open in new tab and auto-print (saves as PDF via browser print dialog)
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, '_blank');
   if (win) {
     win.focus();
-    // Give the page time to load then trigger print
+    win.onload = () => {
+      try {
+        win.print();
+      } catch (_) {}
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    };
+    // Fallback if onload doesn't fire
     setTimeout(() => {
       try { win.print(); } catch (_) {}
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    }, 800);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }, 1200);
   } else {
-    // Fallback: direct download as HTML file
+    // Popup blocked: direct HTML download as fallback
     const a = document.createElement('a');
     a.href = url;
     a.download = `paper-${paperId}.html`;
+    document.body.appendChild(a);
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
   }
 }

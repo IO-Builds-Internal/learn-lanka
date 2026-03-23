@@ -613,6 +613,9 @@ const PaperGenerator = () => {
 const GeneratedPapersHistory = () => {
   const { user } = useAuth();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [questionsMap, setQuestionsMap] = useState<Record<string, any[]>>({});
+  const [loadingQuestionsId, setLoadingQuestionsId] = useState<string | null>(null);
 
   const { data: papers = [], isLoading } = useQuery({
     queryKey: ['generated-papers-history', user?.id],
@@ -646,6 +649,23 @@ const GeneratedPapersHistory = () => {
     }
   };
 
+  const toggleExpand = async (paper: any) => {
+    const id = paper.id;
+    if (expandedId === id) { setExpandedId(null); return; }
+    setExpandedId(id);
+    if (questionsMap[id]) return; // already loaded
+    setLoadingQuestionsId(id);
+    try {
+      const qIds = (paper.question_ids as any[]).map((q: any) => q.id || q);
+      const { data, error } = await supabase
+        .from('question_bank')
+        .select('id, question_text, question_type, explain_video_url, question_bank_options(option_no, option_text, is_correct)')
+        .in('id', qIds);
+      if (!error && data) setQuestionsMap(prev => ({ ...prev, [id]: data }));
+    } catch (_) {}
+    finally { setLoadingQuestionsId(null); }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -667,43 +687,126 @@ const GeneratedPapersHistory = () => {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">{papers.length} paper{papers.length !== 1 ? 's' : ''} generated</p>
-      {papers.map((paper: any) => (
-        <Card key={paper.id} className="card-elevated">
-          <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono font-bold text-primary text-sm">{paper.id}</span>
-                <Badge variant={paper.paper_type === 'DAILY' ? 'secondary' : 'default'} className="text-xs">
-                  {PAPER_CONFIGS[paper.paper_type as 'DAILY' | 'FULL']?.label || paper.paper_type}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {GRADES.find(g => g.value === String(paper.grade))?.label || `Grade ${paper.grade}`}
-                </Badge>
+      {papers.map((paper: any) => {
+        const isExpanded = expandedId === paper.id;
+        const qs: any[] = questionsMap[paper.id] || [];
+        const videoQuestions = qs.filter(q => q.explain_video_url);
+        const mcqs = qs.filter(q => q.question_type === 'MCQ');
+
+        return (
+          <Card key={paper.id} className="card-elevated">
+            <CardContent className="p-4 space-y-3">
+              {/* Header row */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono font-bold text-primary text-sm">{paper.id}</span>
+                    <Badge variant={paper.paper_type === 'DAILY' ? 'secondary' : 'default'} className="text-xs">
+                      {PAPER_CONFIGS[paper.paper_type as 'DAILY' | 'FULL']?.label || paper.paper_type}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {GRADES.find(g => g.value === String(paper.grade))?.label || `Grade ${paper.grade}`}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(paper.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    &nbsp;·&nbsp;
+                    {paper.mcq_count} MCQ
+                    {paper.short_essay_count > 0 ? ` · ${paper.short_essay_count} S.Essay` : ''}
+                    {paper.essay_count > 0 ? ` · ${paper.essay_count} Essay` : ''}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-wrap shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleExpand(paper)}
+                  >
+                    {loadingQuestionsId === paper.id
+                      ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                      : isExpanded ? <ChevronUp className="w-4 h-4 mr-1.5" /> : <ChevronDown className="w-4 h-4 mr-1.5" />}
+                    {isExpanded ? 'Hide' : 'View Answers & Reviews'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleDownload(paper)}
+                    disabled={downloadingId === paper.id}
+                  >
+                    {downloadingId === paper.id
+                      ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                      : <Download className="w-4 h-4 mr-1.5" />}
+                    Download PDF
+                  </Button>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {new Date(paper.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                &nbsp;·&nbsp;
-                {paper.mcq_count} MCQ
-                {paper.short_essay_count > 0 ? ` · ${paper.short_essay_count} S.Essay` : ''}
-                {paper.essay_count > 0 ? ` · ${paper.essay_count} Essay` : ''}
-              </p>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleDownload(paper)}
-              disabled={downloadingId === paper.id}
-              className="shrink-0"
-            >
-              {downloadingId === paper.id
-                ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                : <Download className="w-4 h-4 mr-1.5" />}
-              Download PDF
-            </Button>
-          </CardContent>
-        </Card>
-      ))}
+
+              {/* Expanded: answers + review videos */}
+              {isExpanded && (
+                <div className="pt-2 border-t space-y-4">
+                  {loadingQuestionsId === paper.id ? (
+                    <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                  ) : qs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-3">No question data found</p>
+                  ) : (
+                    <>
+                      {/* MCQ answers grid */}
+                      {mcqs.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">MCQ Answers</p>
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                            {mcqs.map((q, idx) => {
+                              const correct = (q.question_bank_options || []).find((o: any) => o.is_correct);
+                              return (
+                                <div key={q.id} className="rounded-md bg-primary/5 border border-primary/20 p-2 text-center">
+                                  <p className="text-xs text-muted-foreground">Q{idx + 1}</p>
+                                  <p className="font-bold text-primary text-sm">
+                                    {correct ? String.fromCharCode(64 + correct.option_no) : '—'}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Review / explanation videos */}
+                      {videoQuestions.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            🎬 Marking Review Videos ({videoQuestions.length})
+                          </p>
+                          <div className="space-y-2">
+                            {videoQuestions.map((q, idx) => (
+                              <a
+                                key={q.id}
+                                href={q.explain_video_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 hover:bg-primary/5 hover:border-primary/30 px-3 py-2.5 transition-colors text-sm text-primary font-medium"
+                              >
+                                <BookOpen className="w-4 h-4 shrink-0" />
+                                <span className="flex-1 truncate">
+                                  {q.question_text ? `Q: ${q.question_text.slice(0, 60)}${q.question_text.length > 60 ? '…' : ''}` : `Question ${idx + 1} Explanation`}
+                                </span>
+                                <span className="text-xs text-muted-foreground shrink-0">Watch →</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {videoQuestions.length === 0 && mcqs.length > 0 && (
+                        <p className="text-xs text-muted-foreground">No explanation videos available for this paper's questions.</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };
