@@ -447,6 +447,61 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        {/* My Generated Papers */}
+        {generatedPapers.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                <Wand2 className="w-4 h-4 text-primary" />
+                My Generated Papers
+              </h2>
+              <Link to="/paper-generator" className="text-xs sm:text-sm text-primary hover:text-primary/80">
+                Generate New
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {generatedPapers.map((paper: any) => {
+                const createdAt = new Date(paper.created_at);
+                const parts = [
+                  paper.mcq_count > 0 && `${paper.mcq_count} MCQ`,
+                  paper.short_essay_count > 0 && `${paper.short_essay_count} S.Essay`,
+                  paper.essay_count > 0 && `${paper.essay_count} Essay`,
+                ].filter(Boolean).join(' · ');
+                return (
+                  <Card key={paper.id} className="card-elevated">
+                    <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-semibold text-primary">{paper.id}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {paper.paper_type === 'DAILY' ? 'Daily' : 'Full'}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">Grade {paper.grade}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {parts} &nbsp;·&nbsp; {createdAt.toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadPaper(paper)}
+                        disabled={downloadingId === paper.id}
+                        className="shrink-0"
+                      >
+                        {downloadingId === paper.id
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          : <Download className="w-3.5 h-3.5" />}
+                        <span className="ml-1.5 hidden sm:inline">Download PDF</span>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </StudentLayout>
   );
