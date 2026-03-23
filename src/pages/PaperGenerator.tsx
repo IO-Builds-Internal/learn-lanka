@@ -60,6 +60,12 @@ const GRADES = [
   { value: '12', label: 'G.C.E A/L (Grade 12 & 13)' },
 ];
 
+const MEDIUMS = [
+  { value: 'English', label: 'English' },
+  { value: 'Sinhala', label: 'Sinhala (සිංහල)' },
+  { value: 'Tamil', label: 'Tamil (தமிழ்)' },
+];
+
 // Daily: 10 MCQ + 1 essay
 // Full: 50 MCQ + 4 short essay + 6 essay
 const PAPER_CONFIGS = {
