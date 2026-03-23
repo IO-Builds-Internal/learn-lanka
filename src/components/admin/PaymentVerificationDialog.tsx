@@ -146,16 +146,16 @@ const PaymentVerificationDialog = ({
           created_by: user.id,
         });
 
-      // Send SMS notification
+      // Send SMS notification (fire-and-forget, non-critical)
       try {
+        const templateKey = approved ? 'payment_approved' : 'payment_rejected';
         await invokeFunction('send-sms-notification', {
           body: {
-            type: 'payment_status',
+            template_key: templateKey,
             targetUsers: [payment.user_id],
-            data: {
-              approved,
+            variables: {
               amount: payment.amount.toLocaleString(),
-              reason: !approved && note ? note : undefined,
+              reason: !approved && note ? note : 'Please contact support',
             },
           },
         });
