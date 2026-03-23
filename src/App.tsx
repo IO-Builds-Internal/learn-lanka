@@ -52,6 +52,7 @@ import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminRankPapers from "./pages/admin/AdminRankPapers";
 import AdminRankPaperQuestions from "./pages/admin/AdminRankPaperQuestions";
 import AdminRankPaperAttempts from "./pages/admin/AdminRankPaperAttempts";
+import AdminRankPaperAttemptsIndex from "./pages/admin/AdminRankPaperAttemptsIndex";
 import AdminShop from "./pages/admin/AdminShop";
 import AdminPapers from "./pages/admin/AdminPapers";
 import AdminBulkSms from "./pages/admin/AdminBulkSms";
@@ -118,6 +119,7 @@ const App = () => (
               <Route path="/admin/coupons" element={<ProtectedRoute requireModerator><AdminCoupons /></ProtectedRoute>} />
               <Route path="/admin/rank-papers" element={<ProtectedRoute requireModerator><AdminRankPapers /></ProtectedRoute>} />
               <Route path="/admin/rank-papers/:paperId/questions" element={<ProtectedRoute requireModerator><AdminRankPaperQuestions /></ProtectedRoute>} />
+              <Route path="/admin/rank-paper-attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttemptsIndex /></ProtectedRoute>} />
               <Route path="/admin/rank-papers/:paperId/attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttempts /></ProtectedRoute>} />
               <Route path="/admin/shop" element={<ProtectedRoute requireModerator><AdminShop /></ProtectedRoute>} />
               <Route path="/admin/papers" element={<ProtectedRoute requireModerator><AdminPapers /></ProtectedRoute>} />
