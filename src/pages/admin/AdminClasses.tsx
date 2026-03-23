@@ -427,7 +427,6 @@ const AdminClasses = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Search */}
         <div className="relative max-w-md">

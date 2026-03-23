@@ -247,6 +247,7 @@ const AdminShop = () => {
 
   return (
     <AdminLayout>
+      <div className="space-y-6">
       <AdminPageHeader
         title="Shop Products"
         description="Manage books, notes, and materials"

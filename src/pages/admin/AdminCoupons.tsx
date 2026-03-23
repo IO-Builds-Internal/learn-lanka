@@ -192,13 +192,13 @@ const AdminCoupons = () => {
         description="Manage discount coupons and promotions"
         breadcrumbs={[{ label: 'Finance' }, { label: 'Coupons' }]}
         actions={
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Coupon
-              </Button>
-            </DialogTrigger>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Coupon
+          </Button>
+        }
+      />
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Create Coupon</DialogTitle>

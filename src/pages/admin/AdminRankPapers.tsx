@@ -670,7 +670,6 @@ const AdminRankPapers = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (
