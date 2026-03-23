@@ -95,6 +95,8 @@ const PaperGenerator = () => {
   const [selectedGrade, setSelectedGrade] = useState<string>('12');
   const [paperType, setPaperType] = useState<'DAILY' | 'FULL'>('DAILY');
   const [selectedLessons, setSelectedLessons] = useState<WeightedLesson[]>([]);
+  const [pickerLessonId, setPickerLessonId] = useState<string>('');
+  const [pickerWeight, setPickerWeight] = useState<number>(3);
   const [lessonSearch, setLessonSearch] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generatedPaper, setGeneratedPaper] = useState<{ id: string; questions: GeneratedQuestion[] } | null>(null);
@@ -115,13 +117,22 @@ const PaperGenerator = () => {
     },
   });
 
-  const filteredLessons = allLessons.filter(l =>
-    l.title.toLowerCase().includes(lessonSearch.toLowerCase()) &&
-    !selectedLessons.find(s => s.lessonId === l.id)
+  // Available (not yet added) lessons
+  const availableLessons = allLessons.filter(
+    l => !selectedLessons.find(s => s.lessonId === l.id)
   );
 
-  const addLesson = (lesson: LessonItem) => {
-    setSelectedLessons(prev => [...prev, { lessonId: lesson.id, lessonTitle: lesson.title, weight: 3 }]);
+  const filteredAvailable = lessonSearch.trim()
+    ? availableLessons.filter(l => l.title.toLowerCase().includes(lessonSearch.toLowerCase()))
+    : availableLessons;
+
+  const addLesson = () => {
+    const lesson = allLessons.find(l => l.id === pickerLessonId);
+    if (!lesson) return;
+    setSelectedLessons(prev => [...prev, { lessonId: lesson.id, lessonTitle: lesson.title, weight: pickerWeight }]);
+    setPickerLessonId('');
+    setPickerWeight(3);
+    setLessonSearch('');
   };
 
   const removeLesson = (lessonId: string) => {
