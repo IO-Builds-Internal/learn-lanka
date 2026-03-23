@@ -53,17 +53,27 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      // Step 1: Check if phone already exists in profiles before sending OTP
+      const formattedPhone = phone.replace(/\D/g, '');
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', formattedPhone)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingProfile) {
+        setAlreadyRegisteredError(true);
+        return;
+      }
+
+      // Step 2: Phone is new — send OTP
       const { data, error } = await invokeFunction('send-otp', {
         body: { phone, purpose: 'register' }
       });
 
       if (error) throw error;
-
-      if ((data as any)?.alreadyRegistered) {
-        setAlreadyRegisteredError(true);
-        toast.error('This phone number is already registered');
-        return;
-      }
 
       if ((data as any)?.success) {
         toast.success('OTP sent successfully!');
@@ -73,10 +83,6 @@ const Register = () => {
       }
     } catch (error: any) {
       console.error('Send OTP error:', error);
-      // Check if error response contains alreadyRegistered
-      if (error?.message?.includes('already registered')) {
-        setAlreadyRegisteredError(true);
-      }
       toast.error(error.message || 'Failed to send OTP. Please try again.');
     } finally {
       setIsLoading(false);
@@ -292,18 +298,27 @@ const Register = () => {
                   {alreadyRegisteredError && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
                       <p className="text-amber-800 text-sm font-medium">
-                        This phone number is already registered
+                        📱 This phone number is already registered
                       </p>
                       <p className="text-amber-700 text-xs mt-1">
-                        Please sign in with your existing account instead.
+                        An account already exists for this number. You can sign in or reset your password.
                       </p>
-                      <Link 
-                        to="/login" 
-                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm mt-2"
-                      >
-                        Go to Sign In
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        <Link 
+                          to="/login" 
+                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm"
+                        >
+                          <ArrowRight className="w-3 h-3" />
+                          Sign in with password
+                        </Link>
+                        <Link 
+                          to="/forgot-password" 
+                          className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 font-medium text-sm"
+                        >
+                          <ArrowRight className="w-3 h-3" />
+                          Forgot password? Reset it
+                        </Link>
+                      </div>
                     </div>
                   )}
                 </div>
