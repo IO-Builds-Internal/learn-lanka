@@ -6,20 +6,27 @@ const corsHeaders = {
 }
 
 // Tables to backup (in order for proper restore with foreign keys)
-// This list includes ALL public tables in the correct dependency order
 const BACKUP_TABLES = [
-  // Independent tables (no foreign keys)
+  // Independent tables
   'bank_accounts',
   'sms_templates',
   'coupons',
   'shop_products',
   'papers',
   'notifications',
-  
-  // User-related (but public schema)
+
+  // Syllabus & Question Bank
+  'syllabus_lessons',
+  'question_bank',
+  'question_bank_options',
+
+  // Generated Papers
+  'generated_papers',
+
+  // User-related
   'profiles',
   'user_roles',
-  
+
   // Classes hierarchy
   'classes',
   'class_months',
@@ -27,25 +34,27 @@ const BACKUP_TABLES = [
   'lessons',
   'lesson_attachments',
   'class_papers',
-  
+
   // Enrollments
   'class_enrollments',
   'enrollment_payments',
   'moderator_class_assignments',
-  
+
   // Coupons usage
   'coupon_usages',
-  
+
   // Notifications
   'user_notification_reads',
-  
+
   // Papers attachments
   'paper_attachments',
   'paper_attachment_user_access',
-  
-  // Payments
+  'paper_attachment_users',
+
+  // Payments & answer access
   'payments',
-  
+  'answer_access_payments',
+
   // Rank Papers hierarchy
   'rank_papers',
   'rank_paper_attachments',
@@ -55,13 +64,14 @@ const BACKUP_TABLES = [
   'rank_answers_mcq',
   'rank_answers_uploads',
   'rank_marks',
-  
+
   // Shop orders
   'shop_orders',
   'shop_order_items',
-  
+
   // Contact & SMS
   'contact_messages',
+  'contact_replies',
   'sms_logs',
   'otp_requests',
 ];
