@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Plus, Trash2, Wand2, Download,
+  FileText, Plus, Trash2, Wand2, Download,
   BookOpen, Loader2, Info, Search, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
