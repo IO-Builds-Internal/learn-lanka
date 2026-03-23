@@ -127,6 +127,17 @@ const PaymentVerificationDialog = ({
 
       if (error) throw error;
 
+      // If this is an ANSWER_ACCESS payment, sync the answer_access_payments record too
+      if (payment.payment_type === 'ANSWER_ACCESS') {
+        await (supabase as any)
+          .from('answer_access_payments')
+          .update({
+            status: approved ? 'APPROVED' : 'REJECTED',
+            granted_at: approved ? new Date().toISOString() : null,
+          })
+          .eq('payment_id', payment.id);
+      }
+
       // Create notification for the user
       const notificationTitle = approved 
         ? 'Payment Approved ✅' 
