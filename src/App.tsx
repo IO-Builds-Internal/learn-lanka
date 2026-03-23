@@ -30,6 +30,7 @@ import Profile from "./pages/Profile";
 import PaperGenerator from "./pages/PaperGenerator";
 import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminPrices from "./pages/admin/AdminPrices";
 import MyOrders from "./pages/MyOrders";
 import { CartProvider } from "@/hooks/useCart";
 
