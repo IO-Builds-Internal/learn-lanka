@@ -688,7 +688,7 @@ const AdminQuestionBank = () => {
             {/* Explain Video */}
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5">
-                <Youtube className="w-4 h-4 text-red-500" />
+                <Youtube className="w-4 h-4 text-destructive" />
                 Explanation Video URL (optional)
               </Label>
               <Input
