@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { downloadGeneratedPaperPdf } from '@/lib/generatePaperPdf';
 
 // ── types ────────────────────────────────────────────────────────────────────
 interface LessonItem {
