@@ -178,6 +178,17 @@ const RankPapers = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={mediumFilter} onValueChange={setMediumFilter}>
+            <SelectTrigger className="w-full sm:w-[130px] h-10">
+              <SelectValue placeholder="Medium" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Mediums</SelectItem>
+              <SelectItem value="sinhala">Sinhala</SelectItem>
+              <SelectItem value="english">English</SelectItem>
+              <SelectItem value="tamil">Tamil</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Stats */}
