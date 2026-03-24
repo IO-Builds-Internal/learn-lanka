@@ -191,9 +191,9 @@ const AdminQuestionBank = () => {
       const payload = {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
-        // Store first image in legacy field for backward compat; full array in question_images
         question_image_url: form.questionInputMode === 'image' ? (form.question_images[0] || null) : null,
-        options_image_url: form.question_type === 'MCQ' ? form.options_image_url : null,
+        // options_image_url: only used in 'single_image' mode
+        options_image_url: (form.question_type === 'MCQ' && form.optionsMode === 'single_image') ? form.options_image_url : null,
         category: form.category,
         past_paper_ref: form.category === 'PAST_PAPER' ? form.past_paper_ref || null : null,
         medium: form.medium || null,
@@ -206,7 +206,6 @@ const AdminQuestionBank = () => {
         question_part: form.category === 'PAST_PAPER' ? (form.question_part || null) : null,
         linked_group_id: form.question_type === 'MCQ' && linkedGroupEnabled && form.linked_group_id
           ? form.linked_group_id.trim() || null : null,
-        // All images in order (used for all question types in image mode)
         question_images: form.questionInputMode === 'image' ? form.question_images : [],
       };
 
@@ -225,18 +224,23 @@ const AdminQuestionBank = () => {
         if (editing) {
           await supabase.from('question_bank_options').delete().eq('question_id', questionId);
         }
-        const filledOptions = form.options.filter(o => o.option_text.trim() || o.option_image_url);
-        if (filledOptions.length > 0) {
-          const { error } = await supabase.from('question_bank_options').insert(
-            filledOptions.map(o => ({
-              question_id: questionId!,
-              option_no: o.option_no,
-              option_text: o.option_text || null,
-              option_image_url: o.option_image_url,
-              is_correct: o.option_no === form.correct_option_no,
-            }))
-          );
-          if (error) throw error;
+        // 'image_with_answers': question image has everything, only store correct_option_no (no option rows needed)
+        // 'single_image': same — only correct_option_no
+        // 'individual': store each option text/image
+        if (form.optionsMode === 'individual') {
+          const filledOptions = form.options.filter(o => o.option_text.trim() || o.option_image_url);
+          if (filledOptions.length > 0) {
+            const { error } = await supabase.from('question_bank_options').insert(
+              filledOptions.map(o => ({
+                question_id: questionId!,
+                option_no: o.option_no,
+                option_text: o.option_text || null,
+                option_image_url: o.option_image_url,
+                is_correct: o.option_no === form.correct_option_no,
+              }))
+            );
+            if (error) throw error;
+          }
         }
       }
     },
