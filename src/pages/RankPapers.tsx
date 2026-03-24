@@ -32,6 +32,7 @@ const RankPapers = () => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
+  const [mediumFilter, setMediumFilter] = useState<string>('all');
 
   // Fetch published rank papers
   const { data: rankPapers = [], isLoading: loadingPapers } = useQuery({
