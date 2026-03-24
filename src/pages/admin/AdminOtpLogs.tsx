@@ -6,8 +6,25 @@ import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Search, Clock, Phone, AlertTriangle } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { RefreshCw, Search, Clock, Phone, AlertTriangle, FlaskConical } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
+import { invokeFunction } from '@/lib/functions';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -18,14 +35,18 @@ import {
 } from '@/components/ui/table';
 
 const PURPOSE_LABELS: Record<string, { label: string; color: string }> = {
-  REGISTER:      { label: 'Register',       color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
-  LOGIN:         { label: 'Login',          color: 'bg-green-500/15 text-green-600 dark:text-green-400' },
-  RECOVERY:      { label: 'Password Reset', color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400' },
-  PRIVATE_ENROLL:{ label: 'Private Enroll', color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
+  REGISTER:       { label: 'Register',       color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  LOGIN:          { label: 'Login',          color: 'bg-green-500/15 text-green-600 dark:text-green-400' },
+  RECOVERY:       { label: 'Password Reset', color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400' },
+  PRIVATE_ENROLL: { label: 'Private Enroll', color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
 };
 
 const AdminOtpLogs = () => {
   const [search, setSearch] = useState('');
+  const [testOpen, setTestOpen] = useState(false);
+  const [testPhone, setTestPhone] = useState('');
+  const [testPurpose, setTestPurpose] = useState<'LOGIN' | 'REGISTER' | 'RECOVERY'>('LOGIN');
+  const [sending, setSending] = useState(false);
 
   const { data: logs = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin-otp-logs'],
@@ -38,7 +59,7 @@ const AdminOtpLogs = () => {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 15000, // auto-refresh every 15s
+    refetchInterval: 15000,
   });
 
   const filtered = logs.filter(log =>
@@ -49,6 +70,28 @@ const AdminOtpLogs = () => {
 
   const isExpired = (expiresAt: string) => new Date(expiresAt) < new Date();
 
+  const handleSendTest = async () => {
+    if (!testPhone.trim()) {
+      toast.error('Please enter a phone number');
+      return;
+    }
+    setSending(true);
+    try {
+      const { data, error } = await invokeFunction('send-otp', {
+        body: { phone: testPhone.trim(), purpose: testPurpose },
+      });
+      if (error) throw error;
+      toast.success(`Test OTP sent to ...${(data as any)?.phone ?? testPhone.slice(-4)}`);
+      setTestOpen(false);
+      setTestPhone('');
+      setTimeout(() => refetch(), 1500);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to send test OTP');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
@@ -58,7 +101,7 @@ const AdminOtpLogs = () => {
         />
 
         {/* Toolbar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -77,6 +120,15 @@ const AdminOtpLogs = () => {
           >
             <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
             Refresh
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setTestOpen(true)}
+            className="gap-2"
+          >
+            <FlaskConical className="w-4 h-4" />
+            Send Test OTP
           </Button>
           <span className="text-xs text-muted-foreground ml-auto">
             Auto-refreshes every 15s · Showing last 200
@@ -113,14 +165,14 @@ const AdminOtpLogs = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
                     Loading OTP logs...
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     No OTP logs found
                   </TableCell>
                 </TableRow>
@@ -139,9 +191,9 @@ const AdminOtpLogs = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        {(log as any).otp_plain ? (
+                        {log.otp_plain ? (
                           <span className="font-mono font-bold tracking-widest text-primary text-base">
-                            {(log as any).otp_plain}
+                            {log.otp_plain}
                           </span>
                         ) : (
                           <span className="text-xs text-muted-foreground italic">—</span>
@@ -180,6 +232,49 @@ const AdminOtpLogs = () => {
           </Table>
         </div>
       </div>
+
+      {/* Test OTP Dialog */}
+      <Dialog open={testOpen} onOpenChange={setTestOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FlaskConical className="w-4 h-4 text-primary" />
+              Send Test OTP
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Phone Number</Label>
+              <Input
+                placeholder="07XXXXXXXX"
+                value={testPhone}
+                onChange={e => setTestPhone(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSendTest()}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Purpose</Label>
+              <Select value={testPurpose} onValueChange={v => setTestPurpose(v as any)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LOGIN">Login</SelectItem>
+                  <SelectItem value="REGISTER">Register</SelectItem>
+                  <SelectItem value="RECOVERY">Password Reset</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTestOpen(false)}>Cancel</Button>
+            <Button onClick={handleSendTest} disabled={sending} className="gap-2">
+              {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FlaskConical className="w-4 h-4" />}
+              {sending ? 'Sending...' : 'Send OTP'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
