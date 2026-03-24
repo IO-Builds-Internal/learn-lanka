@@ -818,7 +818,7 @@ const AdminQuestionBank = () => {
 
                 {/* Correct answer warning */}
                 {!form.correct_option_no && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-md border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs text-destructive bg-destructive/10 px-3 py-1.5 rounded-md border border-destructive/30">
                     ⚠️ No correct answer selected — click a circle to mark one.
                   </p>
                 )}
