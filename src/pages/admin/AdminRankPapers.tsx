@@ -723,9 +723,10 @@ const AdminRankPapers = () => {
                     />
                   </TableHead>
                   <TableHead>Paper</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Sections</TableHead>
+                   <TableHead>Grade</TableHead>
+                   <TableHead>Medium</TableHead>
+                   <TableHead>Time</TableHead>
+                   <TableHead>Sections</TableHead>
                   <TableHead>Fee</TableHead>
                   <TableHead>Attempts</TableHead>
                   <TableHead>Status</TableHead>
