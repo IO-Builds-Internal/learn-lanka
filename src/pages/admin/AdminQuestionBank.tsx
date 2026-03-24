@@ -188,7 +188,8 @@ const AdminQuestionBank = () => {
       const payload = {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
-        question_image_url: form.questionInputMode === 'image' ? form.question_image_url : null,
+        // Store first image in legacy field for backward compat; full array in question_images
+        question_image_url: form.questionInputMode === 'image' ? (form.question_images[0] || null) : null,
         options_image_url: form.question_type === 'MCQ' ? form.options_image_url : null,
         category: form.category,
         past_paper_ref: form.category === 'PAST_PAPER' ? form.past_paper_ref || null : null,
@@ -198,14 +199,12 @@ const AdminQuestionBank = () => {
         lesson_id: form.lesson_id || null,
         correct_option_no: form.question_type === 'MCQ' ? form.correct_option_no : null,
         explain_video_url: form.explain_video_url || null,
-        // New fields - only for PAST_PAPER
         question_no: form.category === 'PAST_PAPER' ? form.question_no : null,
         question_part: form.category === 'PAST_PAPER' ? (form.question_part || null) : null,
-        linked_group_id: form.question_type === 'MCQ' && form.linked_group_id ? form.linked_group_id.trim() || null : null,
-        // Multiple images for essay/short-essay
-        question_images: (form.question_type === 'ESSAY' || form.question_type === 'SHORT_ESSAY')
-          ? form.question_images
-          : [],
+        linked_group_id: form.question_type === 'MCQ' && linkedGroupEnabled && form.linked_group_id
+          ? form.linked_group_id.trim() || null : null,
+        // All images in order (used for all question types in image mode)
+        question_images: form.questionInputMode === 'image' ? form.question_images : [],
       };
 
       let questionId = editing?.id;
