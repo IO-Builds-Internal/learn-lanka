@@ -78,6 +78,7 @@ interface RankPaper {
   id: string;
   title: string;
   grade: number;
+  medium: string | null;
   time_limit_minutes: number;
   has_mcq: boolean;
   has_short_essay: boolean;
