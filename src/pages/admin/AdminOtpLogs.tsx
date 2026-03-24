@@ -194,7 +194,8 @@ const AdminOtpLogs = () => {
               ) : (
                 filtered.map((log: any) => {
                   const expired = isExpired(log.expires_at);
-                  const purposeMeta = PURPOSE_LABELS[log.purpose] ?? { label: log.purpose, color: 'bg-muted text-muted-foreground' };
+                  const purposeKey = normalizePurpose(log.purpose);
+                  const purposeMeta = PURPOSE_LABELS[purposeKey] ?? { label: purposeKey || log.purpose, color: 'bg-muted text-muted-foreground' };
                   return (
                     <TableRow key={log.id}>
                       <TableCell className="font-mono font-medium">
