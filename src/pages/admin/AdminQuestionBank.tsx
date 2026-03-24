@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import ImageDropZone from '@/components/ui/ImageDropZone';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import {
   Select,
   SelectContent,
@@ -94,6 +94,13 @@ const QUESTION_TYPES = ['MCQ', 'ESSAY', 'SHORT_ESSAY'];
 const CATEGORIES = ['OTHER', 'PAST_PAPER'];
 const PARTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
+// Past paper year list (2011 → current year, default = current year)
+const CURRENT_YEAR = new Date().getFullYear();
+const PAST_PAPER_YEARS = Array.from(
+  { length: CURRENT_YEAR - 2010 },
+  (_, i) => CURRENT_YEAR - i
+);
+
 // Question number ranges per type (for past papers)
 const Q_NO_RANGES: Record<string, { min: number; max: number }> = {
   MCQ: { min: 1, max: 50 },
@@ -109,7 +116,8 @@ const defaultForm = () => ({
   question_text: '',
   question_image_url: null as string | null,
   category: 'OTHER',
-  past_paper_ref: '',
+  past_paper_ref: CURRENT_YEAR.toString(),
+  past_paper_ref_custom: '',   // if user types a custom value
   medium: '',
   grade: '',
   lesson_id: '',
@@ -122,11 +130,9 @@ const defaultForm = () => ({
   // 'single_image'       = one image for all options (legacy)
   optionsMode: 'image_with_answers' as 'image_with_answers' | 'individual' | 'single_image',
   options_image_url: null as string | null,
-  // New fields
   question_no: null as number | null,
   question_part: null as string | null,
   linked_group_id: '',
-  // Multiple images for question content (all types)
   question_images: [] as string[],
 });
 
@@ -195,7 +201,9 @@ const AdminQuestionBank = () => {
         // options_image_url: only used in 'single_image' mode
         options_image_url: (form.question_type === 'MCQ' && form.optionsMode === 'single_image') ? form.options_image_url : null,
         category: form.category,
-        past_paper_ref: form.category === 'PAST_PAPER' ? form.past_paper_ref || null : null,
+        past_paper_ref: form.category === 'PAST_PAPER'
+          ? (form.past_paper_ref === 'custom' ? form.past_paper_ref_custom.trim() || null : form.past_paper_ref || null)
+          : null,
         medium: form.medium || null,
         grade: form.grade ? Number(form.grade) : null,
         subject: 'ICT',
@@ -294,12 +302,16 @@ const AdminQuestionBank = () => {
     else if (hasIndividualOptions) optionsMode = 'individual';
 
     setLinkedGroupEnabled(!!q.linked_group_id);
+    // Detect if saved past_paper_ref is a year or custom
+    const savedRef = q.past_paper_ref || CURRENT_YEAR.toString();
+    const isYearRef = PAST_PAPER_YEARS.map(String).includes(savedRef);
     setForm({
       question_type: q.question_type,
       question_text: q.question_text || '',
       question_image_url: imgs[0] || null,
       category: q.category,
-      past_paper_ref: q.past_paper_ref || '',
+      past_paper_ref: isYearRef ? savedRef : 'custom',
+      past_paper_ref_custom: isYearRef ? '' : savedRef,
       medium: q.medium || '',
       grade: q.grade?.toString() || '',
       lesson_id: q.lesson_id || '',
@@ -687,8 +699,27 @@ const AdminQuestionBank = () => {
               </div>
               {form.category === 'PAST_PAPER' && (
                 <div className="space-y-1.5">
-                  <Label>Past Paper Reference</Label>
-                  <Input placeholder="e.g. 2023 A/L ICT Paper I" value={form.past_paper_ref} onChange={e => setForm(f => ({ ...f, past_paper_ref: e.target.value }))} />
+                  <Label>Year</Label>
+                  <Select
+                    value={form.past_paper_ref}
+                    onValueChange={v => setForm(f => ({ ...f, past_paper_ref: v, past_paper_ref_custom: '' }))}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
+                    <SelectContent>
+                      {PAST_PAPER_YEARS.map(y => (
+                        <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                      ))}
+                      <SelectItem value="custom">Other / Custom...</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.past_paper_ref === 'custom' && (
+                    <Input
+                      className="mt-1.5"
+                      placeholder="e.g. 2009 Paper I"
+                      value={form.past_paper_ref_custom}
+                      onChange={e => setForm(f => ({ ...f, past_paper_ref_custom: e.target.value }))}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -816,30 +847,40 @@ const AdminQuestionBank = () => {
 
             {/* Question content - Text or multiple images (all types) */}
             <div className="space-y-2">
-              <Label>
-                Question Content *
-                {form.question_type === 'MCQ' && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">(image recommended — include all options)</span>
-                )}
-              </Label>
-              <Tabs value={form.questionInputMode} onValueChange={v => setForm(f => ({ ...f, questionInputMode: v as 'text' | 'image' }))}>
-                <TabsList className="h-8 w-40">
-                  <TabsTrigger value="text" className="text-xs flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <Label>
+                  Question Content *
+                  {form.question_type === 'MCQ' && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">(image recommended — include all options)</span>
+                  )}
+                </Label>
+                <div className="flex rounded-md border overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, questionInputMode: 'text' }))}
+                    className={`flex items-center gap-1 px-3 py-1.5 font-medium transition-colors ${form.questionInputMode === 'text' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
                     <Type className="w-3 h-3" /> Text
-                  </TabsTrigger>
-                  <TabsTrigger value="image" className="text-xs flex items-center gap-1">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, questionInputMode: 'image' }))}
+                    className={`flex items-center gap-1 px-3 py-1.5 font-medium transition-colors border-l ${form.questionInputMode === 'image' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
                     <ImageIcon className="w-3 h-3" /> Image
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="text" className="mt-2">
-                  <Textarea
-                    placeholder="Enter question text..."
-                    value={form.question_text}
-                    onChange={e => setForm(f => ({ ...f, question_text: e.target.value }))}
-                    rows={3}
-                  />
-                </TabsContent>
-                <TabsContent value="image" className="mt-2 space-y-2">
+                  </button>
+                </div>
+              </div>
+
+              {form.questionInputMode === 'text' ? (
+                <Textarea
+                  placeholder="Enter question text..."
+                  value={form.question_text}
+                  onChange={e => setForm(f => ({ ...f, question_text: e.target.value }))}
+                  rows={3}
+                />
+              ) : (
+                <div className="space-y-2">
                   {/* Existing images in order */}
                   {form.question_images.map((url, idx) => (
                     <div key={idx} className="flex items-start gap-2 p-2 border rounded-lg bg-muted/20">
@@ -873,9 +914,10 @@ const AdminQuestionBank = () => {
                   {form.question_images.length > 1 && (
                     <p className="text-xs text-muted-foreground">{form.question_images.length} images added in order</p>
                   )}
-                </TabsContent>
-              </Tabs>
+                </div>
+              )}
             </div>
+
 
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
