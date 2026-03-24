@@ -44,7 +44,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Upload,
   X,
   Image as ImageIcon,
   Type,
@@ -56,6 +55,8 @@ import {
   Loader2,
   BookOpen,
   FileQuestion,
+  Link2,
+  Hash,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
@@ -77,16 +78,27 @@ type QuestionBankRow = {
   correct_option_no: number | null;
   explain_video_url: string | null;
   created_at: string;
+  question_no: number | null;
+  question_part: string | null;
+  linked_group_id: string | null;
   question_bank_options: QBOption[];
 };
 
 const GRADES: { value: number; label: string }[] = [
-  ...Array.from({ length: 6 }, (_, i) => ({ value: i + 6, label: `Grade ${i + 6}` })), // 6–11
-  { value: 12, label: 'G.C.E A/L' }, // 12 & 13 combined
+  ...Array.from({ length: 6 }, (_, i) => ({ value: i + 6, label: `Grade ${i + 6}` })),
+  { value: 12, label: 'G.C.E A/L' },
 ];
 const MEDIUMS = ['sinhala', 'english', 'tamil', 'both'];
 const QUESTION_TYPES = ['MCQ', 'ESSAY', 'SHORT_ESSAY'];
 const CATEGORIES = ['OTHER', 'PAST_PAPER'];
+const PARTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+// Question number ranges per type (for past papers)
+const Q_NO_RANGES: Record<string, { min: number; max: number }> = {
+  MCQ: { min: 1, max: 50 },
+  SHORT_ESSAY: { min: 1, max: 4 },
+  ESSAY: { min: 5, max: 10 },
+};
 
 const emptyOptions = (): QBOption[] =>
   [1, 2, 3, 4, 5].map(n => ({ option_no: n, option_text: '', option_image_url: null, is_correct: false }));
@@ -106,6 +118,10 @@ const defaultForm = () => ({
   questionInputMode: 'text' as 'text' | 'image',
   optionsMode: 'individual' as 'individual' | 'single_image',
   options_image_url: null as string | null,
+  // New fields
+  question_no: null as number | null,
+  question_part: null as string | null,
+  linked_group_id: '',
 });
 
 // ──────────────── Component ────────────────
@@ -122,7 +138,6 @@ const AdminQuestionBank = () => {
   const [filterMedium, setFilterMedium] = useState('all');
   const [filterLesson, setFilterLesson] = useState('all');
   const [uploadingField, setUploadingField] = useState<string | null>(null);
-  const qImageRef = useRef<HTMLInputElement>(null);
 
   // Lessons
   const { data: lessons = [] } = useQuery<SyllabusLesson[]>({
@@ -178,6 +193,10 @@ const AdminQuestionBank = () => {
         lesson_id: form.lesson_id || null,
         correct_option_no: form.question_type === 'MCQ' ? form.correct_option_no : null,
         explain_video_url: form.explain_video_url || null,
+        // New fields - only for PAST_PAPER
+        question_no: form.category === 'PAST_PAPER' ? form.question_no : null,
+        question_part: form.category === 'PAST_PAPER' ? (form.question_part || null) : null,
+        linked_group_id: form.question_type === 'MCQ' && form.linked_group_id ? form.linked_group_id.trim() || null : null,
       };
 
       let questionId = editing?.id;
@@ -264,6 +283,9 @@ const AdminQuestionBank = () => {
       questionInputMode: q.question_image_url ? 'image' : 'text',
       optionsMode: optImgUrl ? 'single_image' : 'individual',
       options_image_url: optImgUrl,
+      question_no: q.question_no,
+      question_part: q.question_part,
+      linked_group_id: q.linked_group_id || '',
     });
     setDialogOpen(true);
   };
@@ -305,11 +327,21 @@ const AdminQuestionBank = () => {
   const typeColor = (t: string) =>
     t === 'MCQ' ? 'bg-primary/10 text-primary' : t === 'ESSAY' ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground';
 
+  // Get question number range for current type
+  const qNoRange = Q_NO_RANGES[form.question_type] || { min: 1, max: 50 };
+  const qNoOptions = Array.from({ length: qNoRange.max - qNoRange.min + 1 }, (_, i) => qNoRange.min + i);
+
   // Summary stats
   const mcqCount = questions.filter(q => q.question_type === 'MCQ').length;
   const essayCount = questions.filter(q => q.question_type === 'ESSAY').length;
   const shortEssayCount = questions.filter(q => q.question_type === 'SHORT_ESSAY').length;
   const withExplainCount = questions.filter(q => !!q.explain_video_url).length;
+
+  // Format question label for display (e.g. "Q12" or "Q3B")
+  const formatQLabel = (q: QuestionBankRow) => {
+    if (q.category !== 'PAST_PAPER' || !q.question_no) return null;
+    return `Q${q.question_no}${q.question_part || ''}`;
+  };
 
   return (
     <AdminLayout>
@@ -418,6 +450,19 @@ const AdminQuestionBank = () => {
                           {q.category === 'PAST_PAPER' && (
                             <Badge variant="outline" className="text-xs shrink-0">Past Paper</Badge>
                           )}
+                          {/* Question number badge */}
+                          {formatQLabel(q) && (
+                            <Badge variant="secondary" className="text-xs shrink-0 font-mono font-bold">
+                              {formatQLabel(q)}
+                            </Badge>
+                          )}
+                          {/* Linked group badge */}
+                          {q.linked_group_id && (
+                            <Badge variant="outline" className="text-xs shrink-0 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 flex items-center gap-0.5">
+                              <Link2 className="w-2.5 h-2.5" />
+                              {q.linked_group_id}
+                            </Badge>
+                          )}
                           <span className="text-sm truncate flex-1">
                             {q.question_text
                               ? q.question_text.slice(0, 80) + (q.question_text.length > 80 ? '...' : '')
@@ -469,6 +514,17 @@ const AdminQuestionBank = () => {
                       <div className="flex flex-wrap gap-2 text-xs">
                         {q.category === 'PAST_PAPER' && q.past_paper_ref && (
                           <span className="bg-muted px-2 py-0.5 rounded">📄 {q.past_paper_ref}</span>
+                        )}
+                        {q.category === 'PAST_PAPER' && q.question_no && (
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded font-mono font-bold flex items-center gap-1">
+                            <Hash className="w-3 h-3" />
+                            Q{q.question_no}{q.question_part || ''}
+                          </span>
+                        )}
+                        {q.linked_group_id && (
+                          <span className="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+                            <Link2 className="w-3 h-3" /> Linked: {q.linked_group_id}
+                          </span>
                         )}
                         {getLessonLabel(q.lesson_id) && (
                           <span className="bg-muted px-2 py-0.5 rounded flex items-center gap-1">
@@ -536,7 +592,7 @@ const AdminQuestionBank = () => {
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Question Type *</Label>
-                <Select value={form.question_type} onValueChange={v => setForm(f => ({ ...f, question_type: v }))}>
+                <Select value={form.question_type} onValueChange={v => setForm(f => ({ ...f, question_type: v, question_no: null, question_part: null }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {QUESTION_TYPES.map(t => <SelectItem key={t} value={t}>{t.replace('_', ' ')}</SelectItem>)}
@@ -569,7 +625,7 @@ const AdminQuestionBank = () => {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Category *</Label>
-                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v, question_no: null, question_part: null }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c.replace('_', ' ')}</SelectItem>)}
@@ -583,6 +639,91 @@ const AdminQuestionBank = () => {
                 </div>
               )}
             </div>
+
+            {/* Past Paper Question Number + Part */}
+            {form.category === 'PAST_PAPER' && (
+              <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/20">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Hash className="w-4 h-4" />
+                  Past Paper Question Number
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">
+                      Question No.{' '}
+                      <span className="text-muted-foreground font-normal">
+                        ({form.question_type === 'MCQ' ? '1–50' : form.question_type === 'SHORT_ESSAY' ? '1–4' : '5–10'})
+                      </span>
+                    </Label>
+                    <Select
+                      value={form.question_no?.toString() || '__none__'}
+                      onValueChange={v => setForm(f => ({ ...f, question_no: v === '__none__' ? null : Number(v) }))}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select Q No." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">— Not specified —</SelectItem>
+                        {qNoOptions.map(n => (
+                          <SelectItem key={n} value={n.toString()}>Q{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Sub-part only for SHORT_ESSAY / ESSAY */}
+                  {(form.question_type === 'SHORT_ESSAY' || form.question_type === 'ESSAY') && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">
+                        Sub-part <span className="text-muted-foreground font-normal">(A–H, optional)</span>
+                      </Label>
+                      <Select
+                        value={form.question_part || '__none__'}
+                        onValueChange={v => setForm(f => ({ ...f, question_part: v === '__none__' ? null : v }))}
+                      >
+                        <SelectTrigger><SelectValue placeholder="No sub-part" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">No sub-part</SelectItem>
+                          {PARTS.map(p => (
+                            <SelectItem key={p} value={p}>{p}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+                {form.question_no && (
+                  <p className="text-xs text-primary font-mono bg-primary/10 px-2 py-1 rounded inline-block">
+                    Label: Q{form.question_no}{form.question_part || ''}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Linked MCQ Group — MCQ only */}
+            {form.question_type === 'MCQ' && (
+              <div className="rounded-lg border border-dashed p-4 space-y-2 bg-blue-50/30 dark:bg-blue-950/10 border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
+                  <Link2 className="w-4 h-4" />
+                  Linked Questions Group
+                  <span className="text-xs text-muted-foreground font-normal ml-1">(optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Questions with the same group ID will always appear together in paper generation (e.g. Q35, Q36, Q37 linked to passage).
+                </p>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Group ID <span className="text-muted-foreground font-normal">(e.g. "passage-1", "q35-37")</span></Label>
+                  <Input
+                    placeholder="Leave empty for standalone question"
+                    value={form.linked_group_id}
+                    onChange={e => setForm(f => ({ ...f, linked_group_id: e.target.value }))}
+                    className="font-mono text-sm"
+                  />
+                </div>
+                {form.linked_group_id.trim() && (
+                  <p className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded inline-flex items-center gap-1">
+                    <Link2 className="w-3 h-3" /> Group: {form.linked_group_id.trim()}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Lesson */}
             <div className="space-y-1.5">
