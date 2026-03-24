@@ -68,6 +68,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 
 import NotFound from "./pages/NotFound";
 import Playground from "./pages/Playground";
+import MainPortal from "./pages/MainPortal";
 
 const queryClient = new QueryClient();
 
