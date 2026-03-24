@@ -116,14 +116,17 @@ const defaultForm = () => ({
   explain_video_url: '',
   options: emptyOptions(),
   correct_option_no: null as number | null,
-  questionInputMode: 'text' as 'text' | 'image',
-  optionsMode: 'individual' as 'individual' | 'single_image',
+  questionInputMode: 'image' as 'text' | 'image',
+  // 'image_with_answers' = question image includes all options, just pick correct
+  // 'individual'         = separate text/image per option
+  // 'single_image'       = one image for all options (legacy)
+  optionsMode: 'image_with_answers' as 'image_with_answers' | 'individual' | 'single_image',
   options_image_url: null as string | null,
   // New fields
   question_no: null as number | null,
   question_part: null as string | null,
   linked_group_id: '',
-  // Multiple images for essay/short-essay
+  // Multiple images for question content (all types)
   question_images: [] as string[],
 });
 
