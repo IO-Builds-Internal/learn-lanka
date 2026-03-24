@@ -55,7 +55,6 @@ const AdminOtpLogs = () => {
         <AdminPageHeader
           title="OTP Logs"
           description="Real-time log of sent OTP verification codes"
-          icon={KeyRound}
         />
 
         {/* Toolbar */}
