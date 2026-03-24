@@ -51,13 +51,30 @@ const AdminOtpLogs = () => {
   const { data: logs = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin-otp-logs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('otp_requests')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return data;
+      // Use direct project URL (same as invokeFunction) to bypass custom domain routing issues on self-hosted
+      const SUPABASE_PROJECT_URL = 'https://nckmcsbjwopunctljakr.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ja21jc2Jqd29wdW5jdGxqYWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQ3NjgsImV4cCI6MjA4NjA1MDc2OH0.OAVOQgiQvRQ8L_CQuIugIaZ5SEYQd1I6CxUk6LRa_fs';
+      let authHeader = `Bearer ${SUPABASE_ANON_KEY}`;
+      try {
+        const raw = localStorage.getItem('sb-nckmcsbjwopunctljakr-auth-token');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.access_token) authHeader = `Bearer ${parsed.access_token}`;
+        }
+      } catch { /* fallback to anon */ }
+
+      const res = await fetch(
+        `${SUPABASE_PROJECT_URL}/rest/v1/otp_requests?select=*&order=created_at.desc&limit=200`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (!res.ok) throw new Error(`Failed to load OTP logs: ${res.status}`);
+      return res.json();
     },
     refetchInterval: 15000,
   });
