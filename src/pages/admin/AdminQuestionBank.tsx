@@ -123,6 +123,8 @@ const defaultForm = () => ({
   question_no: null as number | null,
   question_part: null as string | null,
   linked_group_id: '',
+  // Multiple images for essay/short-essay
+  question_images: [] as string[],
 });
 
 // ──────────────── Component ────────────────
