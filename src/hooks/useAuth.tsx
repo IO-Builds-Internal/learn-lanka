@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useRef, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,20 +25,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
 
-  const fetchProfileAndRoles = async (userId: string): Promise<string[]> => {
+  // Track last fetched userId to prevent duplicate/repeated fetches
+  const lastFetchedUserId = useRef<string | null>(null);
+  const fetchInProgress = useRef(false);
+
+  const fetchProfileAndRoles = async (userId: string, force = false): Promise<string[]> => {
+    // Skip if same user already fetched and not forced
+    if (!force && lastFetchedUserId.current === userId && fetchInProgress.current === false) {
+      return roles;
+    }
+    if (fetchInProgress.current) return roles;
+
+    fetchInProgress.current = true;
+    lastFetchedUserId.current = userId;
     setRolesLoading(true);
     try {
-      // Add a 5s timeout so a network hang never blocks the app forever
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 5000)
-      );
-      const [profileResult, rolesResult] = await Promise.race([
-        Promise.all([
-          supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-          supabase.from('user_roles').select('role').eq('user_id', userId),
-        ]),
-        timeout,
-      ]) as any;
+      const [profileResult, rolesResult] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+        supabase.from('user_roles').select('role').eq('user_id', userId),
+      ]);
       setProfile(profileResult?.data ?? null);
       const userRoles = rolesResult?.data?.map((r: any) => r.role) || ['student'];
       setRoles(userRoles);
@@ -49,36 +54,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return ['student'];
     } finally {
       setRolesLoading(false);
+      fetchInProgress.current = false;
     }
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfileAndRoles(user.id);
+    if (user) await fetchProfileAndRoles(user.id, true);
   };
 
   useEffect(() => {
     let isMounted = true;
 
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // Use setTimeout to avoid Supabase deadlock from awaiting inside onAuthStateChange
-          setTimeout(() => {
-            if (isMounted) fetchProfileAndRoles(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-          setRoles([]);
-          setRolesLoading(false);
-        }
-      }
-    );
-
-    // Then get initial session
+    // Get initial session first, then listen for changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       setSession(session);
@@ -97,6 +84,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setRolesLoading(false);
       }
     });
+
+    // Listen for auth changes (sign in / sign out)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!isMounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          // Only re-fetch if user actually changed (e.g. new login, not token refresh)
+          const isNewUser = lastFetchedUserId.current !== session.user.id;
+          if (isNewUser || event === 'SIGNED_IN') {
+            setTimeout(() => {
+              if (isMounted) fetchProfileAndRoles(session.user.id, true);
+            }, 0);
+          }
+        } else {
+          lastFetchedUserId.current = null;
+          setProfile(null);
+          setRoles([]);
+          setRolesLoading(false);
+        }
+      }
+    );
 
     return () => {
       isMounted = false;
