@@ -115,6 +115,7 @@ const AdminRankPapers = () => {
   // Form state
   const [title, setTitle] = useState('');
   const [grade, setGrade] = useState('');
+  const [medium, setMedium] = useState('sinhala');
   const [timeLimit, setTimeLimit] = useState('180');
   const [hasMcq, setHasMcq] = useState(true);
   const [hasShortEssay, setHasShortEssay] = useState(false);
