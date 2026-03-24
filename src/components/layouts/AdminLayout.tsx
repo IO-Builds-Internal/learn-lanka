@@ -134,6 +134,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'System',
     entries: [
+      { type: 'leaf', path: '/admin/otp-logs', label: 'OTP Logs', icon: ListChecks },
       {
         type: 'subgroup',
         label: 'Settings',
