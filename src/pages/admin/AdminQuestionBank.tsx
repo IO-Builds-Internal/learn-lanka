@@ -864,35 +864,78 @@ const AdminQuestionBank = () => {
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
               <div className="space-y-3">
-                {/* Mode toggle */}
                 <div className="flex items-center justify-between">
-                  <Label>Options</Label>
-                  <div className="flex rounded-lg border overflow-hidden text-xs">
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, optionsMode: 'individual' }))}
-                      className={`px-3 py-1.5 font-medium transition-colors ${form.optionsMode === 'individual' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
-                    >
-                      Separate (A–E)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, optionsMode: 'single_image' }))}
-                      className={`px-3 py-1.5 font-medium transition-colors ${form.optionsMode === 'single_image' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
-                    >
-                      One Image (all options)
-                    </button>
-                  </div>
+                  <Label>Answer Options</Label>
+                </div>
+
+                {/* Mode selector — 3 tabs */}
+                <div className="flex rounded-lg border overflow-hidden text-xs w-full">
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, optionsMode: 'image_with_answers' }))}
+                    className={`flex-1 px-2 py-2 font-medium transition-colors text-center ${form.optionsMode === 'image_with_answers' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
+                    <ImageIcon className="w-3 h-3 inline mr-1" />
+                    Image + Correct Answer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, optionsMode: 'individual' }))}
+                    className={`flex-1 px-2 py-2 font-medium transition-colors text-center border-l ${form.optionsMode === 'individual' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
+                    Separate A–E
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, optionsMode: 'single_image' }))}
+                    className={`flex-1 px-2 py-2 font-medium transition-colors text-center border-l ${form.optionsMode === 'single_image' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
+                    Options Image
+                  </button>
                 </div>
 
                 {/* Correct answer warning */}
                 {!form.correct_option_no && (
                   <p className="text-xs text-destructive bg-destructive/10 px-3 py-1.5 rounded-md border border-destructive/30">
-                    ⚠️ No correct answer selected — click a circle to mark one.
+                    ⚠️ No correct answer selected — click a letter to mark one.
                   </p>
                 )}
 
-                {/* SINGLE IMAGE MODE */}
+                {/* IMAGE WITH ANSWERS MODE (default) — question image includes the options, just pick correct */}
+                {form.optionsMode === 'image_with_answers' && (
+                  <div className="rounded-lg border border-dashed bg-muted/20 p-4 space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      The question image above already contains the options (A–E). Just select the correct answer below.
+                    </p>
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium">Correct Answer:</p>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map(n => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, correct_option_no: n }))}
+                            className={`w-11 h-11 rounded-full border-2 font-bold text-sm transition-all ${
+                              form.correct_option_no === n
+                                ? 'border-primary bg-primary text-primary-foreground scale-110 shadow-md'
+                                : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
+                            }`}
+                          >
+                            {String.fromCharCode(64 + n)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {form.correct_option_no && (
+                      <p className="text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5">
+                        <Check className="w-3 h-3" />
+                        Correct answer: <span className="font-bold">{String.fromCharCode(64 + form.correct_option_no)}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* SINGLE IMAGE OPTIONS MODE — separate options image */}
                 {form.optionsMode === 'single_image' && (
                   <div className="space-y-3">
                     {form.options_image_url ? (
@@ -906,7 +949,7 @@ const AdminQuestionBank = () => {
                     ) : (
                       <ImageDropZone
                         uploading={uploadingField === 'options_img'}
-                        label="One image with all options (A–E)"
+                        label="Upload image showing all options (A–E)"
                         listenPaste={form.optionsMode === 'single_image'}
                         onFile={async file => {
                           try {
@@ -918,12 +961,12 @@ const AdminQuestionBank = () => {
                         }}
                       />
                     )}
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground font-medium">Select the correct answer:</p>
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium">Correct Answer:</p>
                       <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map(n => (
                           <button key={n} type="button" onClick={() => setForm(f => ({ ...f, correct_option_no: n }))}
-                            className={`w-10 h-10 rounded-full border-2 font-bold text-sm transition-all ${form.correct_option_no === n ? 'border-primary bg-primary text-primary-foreground scale-110' : 'border-border text-muted-foreground hover:border-primary'}`}>
+                            className={`w-11 h-11 rounded-full border-2 font-bold text-sm transition-all ${form.correct_option_no === n ? 'border-primary bg-primary text-primary-foreground scale-110' : 'border-border text-muted-foreground hover:border-primary'}`}>
                             {String.fromCharCode(64 + n)}
                           </button>
                         ))}
@@ -932,7 +975,7 @@ const AdminQuestionBank = () => {
                   </div>
                 )}
 
-                {/* INDIVIDUAL MODE */}
+                {/* INDIVIDUAL MODE — separate text/image per option */}
                 {form.optionsMode === 'individual' && (
                   <div className="space-y-2">
                     {form.options.map((opt) => (
