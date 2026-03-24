@@ -778,6 +778,9 @@ const AdminRankPapers = () => {
                     </TableCell>
                     <TableCell>Grade {paper.grade}</TableCell>
                     <TableCell>
+                      <Badge variant="outline" className="text-xs capitalize">{paper.medium || 'Sinhala'}</Badge>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-muted-foreground" />
                         {paper.time_limit_minutes} min
