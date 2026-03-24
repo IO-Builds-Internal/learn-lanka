@@ -522,7 +522,7 @@ const AdminQuestionBank = () => {
                           </span>
                         )}
                         {q.linked_group_id && (
-                          <span className="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded flex items-center gap-1 border border-primary/30">
                             <Link2 className="w-3 h-3" /> Linked: {q.linked_group_id}
                           </span>
                         )}
