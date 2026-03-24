@@ -151,7 +151,7 @@ const AdminQuestionBank = () => {
   });
 
   // Questions
-  const { data: questions = [], isLoading } = useQuery<QuestionBankRow[]>({
+  const { data: questions = [] as QuestionBankRow[], isLoading } = useQuery<QuestionBankRow[]>({
     queryKey: ['question_bank'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -159,10 +159,11 @@ const AdminQuestionBank = () => {
         .select('*, question_bank_options(*)')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(q => ({
+      return ((data || []) as any[]).map(q => ({
         ...q,
+        question_images: Array.isArray(q.question_images) ? q.question_images : [],
         question_bank_options: (q.question_bank_options || []).sort((a: QBOption, b: QBOption) => a.option_no - b.option_no),
-      }));
+      })) as QuestionBankRow[];
     },
   });
 
