@@ -699,8 +699,27 @@ const AdminQuestionBank = () => {
               </div>
               {form.category === 'PAST_PAPER' && (
                 <div className="space-y-1.5">
-                  <Label>Past Paper Reference</Label>
-                  <Input placeholder="e.g. 2023 A/L ICT Paper I" value={form.past_paper_ref} onChange={e => setForm(f => ({ ...f, past_paper_ref: e.target.value }))} />
+                  <Label>Year</Label>
+                  <Select
+                    value={form.past_paper_ref}
+                    onValueChange={v => setForm(f => ({ ...f, past_paper_ref: v, past_paper_ref_custom: '' }))}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
+                    <SelectContent>
+                      {PAST_PAPER_YEARS.map(y => (
+                        <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                      ))}
+                      <SelectItem value="custom">Other / Custom...</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.past_paper_ref === 'custom' && (
+                    <Input
+                      className="mt-1.5"
+                      placeholder="e.g. 2009 Paper I"
+                      value={form.past_paper_ref_custom}
+                      onChange={e => setForm(f => ({ ...f, past_paper_ref_custom: e.target.value }))}
+                    />
+                  )}
                 </div>
               )}
             </div>
