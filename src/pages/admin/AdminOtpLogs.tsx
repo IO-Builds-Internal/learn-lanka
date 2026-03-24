@@ -10,18 +10,67 @@ import { RefreshCw, Search, Clock, Phone, AlertTriangle, FlaskConical } from 'lu
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY } from '@/lib/functions';
-import AdminLayout from '@/components/layouts/AdminLayout';
-import AdminPageHeader from '@/components/admin/AdminPageHeader';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { RefreshCw, Search, Clock, Phone, AlertTriangle, FlaskConical } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import { toast } from 'sonner';
-import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY } from '@/lib/functions';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
-  const filtered = logs.filter(log =>
+const PURPOSE_LABELS: Record<string, { label: string; color: string }> = {
+  REGISTER:       { label: 'Register',       color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  LOGIN:          { label: 'Login',          color: 'bg-green-500/15 text-green-600 dark:text-green-400' },
+  RECOVERY:       { label: 'Password Reset', color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400' },
+  PRIVATE_ENROLL: { label: 'Private Enroll', color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
+};
+
+const AdminOtpLogs = () => {
+  const [search, setSearch] = useState('');
+  const [testOpen, setTestOpen] = useState(false);
+  const [testPhone, setTestPhone] = useState('');
+  const [testPurpose, setTestPurpose] = useState<'LOGIN' | 'REGISTER' | 'RECOVERY'>('LOGIN');
+  const [sending, setSending] = useState(false);
+
+  const { data: logs = [], isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['admin-otp-logs'],
+    queryFn: async () => {
+      // Use getAuthHeader() which calls supabase.auth.getSession() — works on self-hosted
+      // custom domains where the localStorage key differs from the hardcoded project ID key.
+      const authHeader = await getAuthHeader();
+
+      const res = await fetch(
+        `${SUPABASE_PROJECT_URL}/rest/v1/otp_requests?select=*&order=created_at.desc&limit=200`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (!res.ok) throw new Error(`Failed to load OTP logs: ${res.status}`);
+      return res.json();
+    },
+    refetchInterval: 15000,
+  });
+
+  const filtered = logs.filter((log: any) =>
     !search ||
     log.phone.includes(search) ||
     log.purpose.toLowerCase().includes(search.toLowerCase())
@@ -97,7 +146,7 @@ import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY 
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(PURPOSE_LABELS).map(([key, { label, color }]) => {
-            const count = logs.filter(l => l.purpose === key).length;
+            const count = logs.filter((l: any) => l.purpose === key).length;
             return (
               <div key={key} className="bg-card border rounded-xl p-4 flex items-center gap-3">
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>{label}</span>
@@ -136,7 +185,7 @@ import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY 
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map(log => {
+                filtered.map((log: any) => {
                   const expired = isExpired(log.expires_at);
                   const purposeMeta = PURPOSE_LABELS[log.purpose] ?? { label: log.purpose, color: 'bg-muted text-muted-foreground' };
                   return (
