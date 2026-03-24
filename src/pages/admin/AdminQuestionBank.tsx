@@ -801,6 +801,46 @@ const AdminQuestionBank = () => {
               </Tabs>
             </div>
 
+            {/* Multiple images for Essay / Short Essay */}
+            {(form.question_type === 'ESSAY' || form.question_type === 'SHORT_ESSAY') && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4" />
+                  Question Images
+                  <span className="text-xs text-muted-foreground font-normal">(optional, added in order)</span>
+                </Label>
+                <div className="space-y-2">
+                  {form.question_images.map((url, idx) => (
+                    <div key={idx} className="flex items-start gap-2 p-2 border rounded-lg">
+                      <span className="text-xs text-muted-foreground font-mono mt-1 w-5 shrink-0">{idx + 1}.</span>
+                      <img src={url} alt={`Image ${idx + 1}`} className="max-h-32 rounded border object-contain flex-1" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive shrink-0"
+                        onClick={() => setForm(f => ({ ...f, question_images: f.question_images.filter((_, i) => i !== idx) }))}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  <ImageDropZone
+                    uploading={uploadingField === 'q_extra_img'}
+                    label={`Add image ${form.question_images.length + 1} (drag & drop or paste)`}
+                    className="h-24"
+                    onFile={async file => {
+                      try {
+                        const url = await uploadImage(file, 'q_extra_img');
+                        setForm(f => ({ ...f, question_images: [...f.question_images, url] }));
+                      } catch (err: unknown) {
+                        toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
               <div className="space-y-3">
