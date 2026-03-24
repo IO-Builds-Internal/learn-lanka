@@ -11,7 +11,8 @@ import {
   Loader2,
   Trash2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  UserPlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { cn } from '@/lib/utils';
@@ -51,6 +60,8 @@ import {
   useUpdateUserStatus, 
   useAddModeratorRole, 
   useRemoveModeratorRole,
+  useDeleteUser,
+  useCreateUser,
   UserWithDetails 
 } from '@/hooks/useAdminUsers';
 import { useAuth } from '@/hooks/useAuth';
@@ -69,11 +80,24 @@ const AdminUsers = () => {
     user: UserWithDetails;
   } | null>(null);
 
+  // Add user dialog
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    phone: '',
+    first_name: '',
+    last_name: '',
+    password: '',
+    grade: '',
+    school_name: '',
+  });
+
   const { isAdmin, loading: authLoading } = useAuth();
   const { data: users = [], isLoading, error } = useAdminUsers();
   const updateStatus = useUpdateUserStatus();
   const addModerator = useAddModeratorRole();
   const removeModerator = useRemoveModeratorRole();
+  const deleteUser = useDeleteUser();
+  const createUser = useCreateUser();
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch = 
@@ -88,14 +112,12 @@ const AdminUsers = () => {
     return matchesSearch && matchesStatus && matchesGrade && matchesRole;
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Reset to page 1 when filters change
   const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
     setter(value);
     setCurrentPage(1);
@@ -103,9 +125,7 @@ const AdminUsers = () => {
 
   const handleConfirmAction = async () => {
     if (!confirmAction) return;
-    
     const { type, user } = confirmAction;
-    
     switch (type) {
       case 'suspend':
         await updateStatus.mutateAsync({ userId: user.id, status: 'SUSPENDED' });
@@ -119,44 +139,85 @@ const AdminUsers = () => {
       case 'remove_mod':
         await removeModerator.mutateAsync(user.id);
         break;
+      case 'delete':
+        await deleteUser.mutateAsync(user.id);
+        break;
     }
-    
     setConfirmAction(null);
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUser.phone || !newUser.first_name || !newUser.last_name || !newUser.password) return;
+    await createUser.mutateAsync({
+      phone: newUser.phone,
+      first_name: newUser.first_name,
+      last_name: newUser.last_name,
+      password: newUser.password,
+      grade: newUser.grade ? parseInt(newUser.grade) : null,
+      school_name: newUser.school_name || null,
+    });
+    setNewUser({ phone: '', first_name: '', last_name: '', password: '', grade: '', school_name: '' });
+    setAddUserOpen(false);
   };
 
   const getConfirmationText = () => {
     if (!confirmAction) return { title: '', description: '' };
     const { type, user } = confirmAction;
     const name = `${user.first_name} ${user.last_name}`;
-    
     switch (type) {
-      case 'suspend':
-        return {
-          title: 'Suspend User',
-          description: `Are you sure you want to suspend ${name}? They will not be able to access the platform.`
-        };
-      case 'activate':
-        return {
-          title: 'Activate User',
-          description: `Are you sure you want to activate ${name}? They will regain access to the platform.`
-        };
-      case 'add_mod':
-        return {
-          title: 'Add Moderator Role',
-          description: `Are you sure you want to make ${name} a moderator? They will be able to manage content and verify payments.`
-        };
-      case 'remove_mod':
-        return {
-          title: 'Remove Moderator Role',
-          description: `Are you sure you want to remove moderator role from ${name}?`
-        };
-      case 'delete':
-        return {
-          title: 'Delete User',
-          description: `Are you sure you want to permanently delete ${name}? This action cannot be undone and will remove all their data.`
-        };
+      case 'suspend': return { title: 'Suspend User', description: `Are you sure you want to suspend ${name}? They will not be able to access the platform.` };
+      case 'activate': return { title: 'Activate User', description: `Are you sure you want to activate ${name}? They will regain access to the platform.` };
+      case 'add_mod': return { title: 'Add Moderator Role', description: `Are you sure you want to make ${name} a moderator? They will be able to manage content and verify payments.` };
+      case 'remove_mod': return { title: 'Remove Moderator Role', description: `Are you sure you want to remove moderator role from ${name}?` };
+      case 'delete': return { title: 'Delete User', description: `Are you sure you want to permanently delete ${name}? This action cannot be undone and will remove all their data.` };
     }
   };
+
+  const ActionMenu = ({ user }: { user: UserWithDetails }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <MoreVertical className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {isAdmin && !user.roles.includes('admin') && (
+          <>
+            {user.roles.includes('moderator') ? (
+              <DropdownMenuItem onClick={() => setConfirmAction({ type: 'remove_mod', user })}>
+                <ShieldOff className="w-4 h-4 mr-2" />Remove Moderator
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => setConfirmAction({ type: 'add_mod', user })}>
+                <Shield className="w-4 h-4 mr-2" />Make Moderator
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {!user.roles.includes('admin') && (
+          <>
+            <DropdownMenuItem 
+              className={user.status === 'ACTIVE' ? 'text-destructive' : 'text-success'}
+              onClick={() => setConfirmAction({ type: user.status === 'ACTIVE' ? 'suspend' : 'activate', user })}
+            >
+              {user.status === 'ACTIVE' 
+                ? <><Ban className="w-4 h-4 mr-2" />Suspend</> 
+                : <><CheckCircle className="w-4 h-4 mr-2" />Activate</>}
+            </DropdownMenuItem>
+            {isAdmin && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive" onClick={() => setConfirmAction({ type: 'delete', user })}>
+                  <Trash2 className="w-4 h-4 mr-2" />Delete User
+                </DropdownMenuItem>
+              </>
+            )}
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   if (isLoading || authLoading) {
     return (
@@ -186,7 +247,16 @@ const AdminUsers = () => {
           title="Students"
           description="Manage student and moderator accounts"
           breadcrumbs={[{ label: 'People' }, { label: 'Students' }]}
-          actions={<Badge variant="secondary">{users.length} total users</Badge>}
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{users.length} total users</Badge>
+              {isAdmin && (
+                <Button size="sm" onClick={() => setAddUserOpen(true)}>
+                  <UserPlus className="w-4 h-4 mr-2" />Add User
+                </Button>
+              )}
+            </div>
+          }
         />
 
         {/* Filters */}
@@ -198,7 +268,7 @@ const AdminUsers = () => {
                 <Input
                   placeholder="Search by name or phone..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   className="pl-9"
                 />
               </div>
@@ -262,17 +332,11 @@ const AdminUsers = () => {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                            user.roles.includes('admin') 
-                              ? "bg-destructive/10" 
-                              : user.roles.includes('moderator')
-                              ? "bg-warning/10"
-                              : "bg-primary/10"
+                            user.roles.includes('admin') ? "bg-destructive/10" : user.roles.includes('moderator') ? "bg-warning/10" : "bg-primary/10"
                           )}>
-                            {user.roles.includes('admin') || user.roles.includes('moderator') ? (
-                              <Shield className={cn("w-4 h-4", user.roles.includes('admin') ? "text-destructive" : "text-warning")} />
-                            ) : (
-                              <User className="w-4 h-4 text-primary" />
-                            )}
+                            {user.roles.includes('admin') || user.roles.includes('moderator')
+                              ? <Shield className={cn("w-4 h-4", user.roles.includes('admin') ? "text-destructive" : "text-warning")} />
+                              : <User className="w-4 h-4 text-primary" />}
                           </div>
                           <span className="font-medium text-sm">{user.first_name} {user.last_name}</span>
                         </div>
@@ -296,47 +360,7 @@ const AdminUsers = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {isAdmin && !user.roles.includes('admin') && (
-                              <>
-                                {user.roles.includes('moderator') ? (
-                                  <DropdownMenuItem onClick={() => setConfirmAction({ type: 'remove_mod', user })}>
-                                    <ShieldOff className="w-4 h-4 mr-2" />Remove Moderator
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => setConfirmAction({ type: 'add_mod', user })}>
-                                    <Shield className="w-4 h-4 mr-2" />Make Moderator
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                              </>
-                            )}
-                            {!user.roles.includes('admin') && (
-                              <>
-                                <DropdownMenuItem 
-                                  className={user.status === 'ACTIVE' ? 'text-destructive' : 'text-success'}
-                                  onClick={() => setConfirmAction({ type: user.status === 'ACTIVE' ? 'suspend' : 'activate', user })}
-                                >
-                                  {user.status === 'ACTIVE' ? <><Ban className="w-4 h-4 mr-2" />Suspend</> : <><CheckCircle className="w-4 h-4 mr-2" />Activate</>}
-                                </DropdownMenuItem>
-                                {isAdmin && (
-                                  <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive" onClick={() => setConfirmAction({ type: 'delete', user })}>
-                                      <Trash2 className="w-4 h-4 mr-2" />Delete User
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <ActionMenu user={user} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -354,7 +378,7 @@ const AdminUsers = () => {
                         "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
                         user.roles.includes('admin') ? "bg-destructive/10" : user.roles.includes('moderator') ? "bg-warning/10" : "bg-primary/10"
                       )}>
-                        {user.roles.includes('admin') || user.roles.includes('moderator') 
+                        {user.roles.includes('admin') || user.roles.includes('moderator')
                           ? <Shield className={cn("w-4 h-4", user.roles.includes('admin') ? "text-destructive" : "text-warning")} />
                           : <User className="w-4 h-4 text-primary" />}
                       </div>
@@ -363,47 +387,7 @@ const AdminUsers = () => {
                         <p className="text-xs text-muted-foreground font-mono">{formatPhoneDisplay(user.phone)}</p>
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {isAdmin && !user.roles.includes('admin') && (
-                          <>
-                            {user.roles.includes('moderator') ? (
-                              <DropdownMenuItem onClick={() => setConfirmAction({ type: 'remove_mod', user })}>
-                                <ShieldOff className="w-4 h-4 mr-2" />Remove Moderator
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => setConfirmAction({ type: 'add_mod', user })}>
-                                <Shield className="w-4 h-4 mr-2" />Make Moderator
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                          </>
-                        )}
-                        {!user.roles.includes('admin') && (
-                          <>
-                            <DropdownMenuItem 
-                              className={user.status === 'ACTIVE' ? 'text-destructive' : 'text-success'}
-                              onClick={() => setConfirmAction({ type: user.status === 'ACTIVE' ? 'suspend' : 'activate', user })}
-                            >
-                              {user.status === 'ACTIVE' ? <><Ban className="w-4 h-4 mr-2" />Suspend</> : <><CheckCircle className="w-4 h-4 mr-2" />Activate</>}
-                            </DropdownMenuItem>
-                            {isAdmin && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive" onClick={() => setConfirmAction({ type: 'delete', user })}>
-                                  <Trash2 className="w-4 h-4 mr-2" />Delete User
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <ActionMenu user={user} />
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     {user.roles.includes('admin') ? <Badge variant="destructive" className="text-xs">Admin</Badge>
@@ -465,19 +449,99 @@ const AdminUsers = () => {
       <AlertDialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{getConfirmationText().title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {getConfirmationText().description}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{getConfirmationText()?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{getConfirmationText()?.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmAction}>
-              Confirm
+            <AlertDialogAction
+              onClick={handleConfirmAction}
+              className={confirmAction?.type === 'delete' ? 'bg-destructive hover:bg-destructive/90' : ''}
+            >
+              {confirmAction?.type === 'delete' ? 'Delete' : 'Confirm'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>First Name *</Label>
+                <Input
+                  placeholder="First name"
+                  value={newUser.first_name}
+                  onChange={e => setNewUser(u => ({ ...u, first_name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Last Name *</Label>
+                <Input
+                  placeholder="Last name"
+                  value={newUser.last_name}
+                  onChange={e => setNewUser(u => ({ ...u, last_name: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>Phone Number *</Label>
+              <Input
+                placeholder="0771234567"
+                value={newUser.phone}
+                onChange={e => setNewUser(u => ({ ...u, phone: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Password *</Label>
+              <Input
+                type="password"
+                placeholder="Min 6 characters"
+                value={newUser.password}
+                onChange={e => setNewUser(u => ({ ...u, password: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Grade</Label>
+                <Select value={newUser.grade} onValueChange={v => setNewUser(u => ({ ...u, grade: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select grade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[6,7,8,9,10,11,12,13].map(g => (
+                      <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label>School Name</Label>
+                <Input
+                  placeholder="School name"
+                  value={newUser.school_name}
+                  onChange={e => setNewUser(u => ({ ...u, school_name: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddUserOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={!newUser.phone || !newUser.first_name || !newUser.last_name || !newUser.password || createUser.isPending}
+            >
+              {createUser.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserPlus className="w-4 h-4 mr-2" />}
+              Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
