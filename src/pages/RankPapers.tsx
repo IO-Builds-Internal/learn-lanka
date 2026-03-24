@@ -315,7 +315,7 @@ const RankPapers = () => {
                         <div className="min-w-0">
                           <CardTitle className="text-sm sm:text-base line-clamp-1">{paper.title}</CardTitle>
                           <CardDescription className="text-xs">
-                            Grade {paper.grade}
+                            Grade {paper.grade} · <span className="capitalize">{paper.medium || 'Sinhala'}</span>
                             {attempt?.submitted_at && (
                               <span className="ml-2">· {format(new Date(attempt.submitted_at), 'MMM d, yyyy')}</span>
                             )}
