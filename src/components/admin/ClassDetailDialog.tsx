@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import PrivateClassEnrollmentsManager from './PrivateClassEnrollmentsManager';
+import ClassEnrollmentsManager from './ClassEnrollmentsManager';
 
 interface ClassData {
   id: string;
