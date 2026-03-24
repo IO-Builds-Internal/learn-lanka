@@ -243,7 +243,7 @@ const RankPapers = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <CardTitle className="text-sm sm:text-base line-clamp-1">{paper.title}</CardTitle>
-                          <CardDescription className="text-xs">Grade {paper.grade}</CardDescription>
+                      <CardDescription className="text-xs">Grade {paper.grade}</CardDescription>
                         </div>
                         {isInProgress ? (
                           <Badge className="bg-warning/10 text-warning border-warning/20 text-xs shrink-0">
