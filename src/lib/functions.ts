@@ -1,14 +1,19 @@
 /**
- * Edge function invoker that always uses the direct Supabase project URL.
- * This is needed for VPS / custom domain deployments where VITE_SUPABASE_URL
- * may be set to a custom domain that doesn't route edge function calls correctly.
+ * Edge function invoker that always uses the Supabase project URL from env vars.
+ * Works for both Lovable Cloud and self-hosted VPS / Docker Supabase deployments.
+ *
+ * On Lovable Cloud: VITE_SUPABASE_URL = https://<project>.supabase.co
+ * On Self-hosted:   VITE_SUPABASE_URL = https://your-vps-domain (or http://localhost:8000)
+ *
+ * Auth token is retrieved via supabase.auth.getSession() so it works regardless
+ * of the custom domain / localStorage key variant used by the Supabase client.
  */
 
 import { supabase } from '@/integrations/supabase/client';
 
-export const SUPABASE_PROJECT_URL = 'https://nckmcsbjwopunctljakr.supabase.co';
-export const SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ja21jc2Jqd29wdW5jdGxqYWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQ3NjgsImV4cCI6MjA4NjA1MDc2OH0.OAVOQgiQvRQ8L_CQuIugIaZ5SEYQd1I6CxUk6LRa_fs';
+// Resolved at build time from .env — works on both Cloud and self-hosted VPS
+export const SUPABASE_PROJECT_URL: string = import.meta.env.VITE_SUPABASE_URL as string;
+export const SUPABASE_ANON_KEY: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 interface InvokeOptions {
   body?: Record<string, unknown>;
@@ -21,8 +26,8 @@ interface InvokeResult<T = unknown> {
 }
 
 /**
- * Returns the current user's Bearer token using supabase.auth.getSession(),
- * which works regardless of the custom domain / localStorage key used.
+ * Returns the current user's Bearer token using supabase.auth.getSession().
+ * This works regardless of the custom domain / localStorage key used by the client.
  */
 export async function getAuthHeader(): Promise<string> {
   try {
