@@ -139,6 +139,15 @@ const AdminOtpLogs = () => {
                         </span>
                       </TableCell>
                       <TableCell>
+                        {(log as any).otp_plain ? (
+                          <span className="font-mono font-bold tracking-widest text-primary text-base">
+                            {(log as any).otp_plain}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <span className={`flex items-center gap-1 text-sm ${log.attempts > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
                           {log.attempts > 0 && <AlertTriangle className="w-3.5 h-3.5" />}
                           {log.attempts} / 3
