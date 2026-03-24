@@ -134,6 +134,7 @@ const AdminQuestionBank = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<QuestionBankRow | null>(null);
   const [form, setForm] = useState(defaultForm());
+  const [linkedGroupEnabled, setLinkedGroupEnabled] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
