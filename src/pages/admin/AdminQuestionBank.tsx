@@ -94,6 +94,13 @@ const QUESTION_TYPES = ['MCQ', 'ESSAY', 'SHORT_ESSAY'];
 const CATEGORIES = ['OTHER', 'PAST_PAPER'];
 const PARTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
+// Past paper year list (2011 → current year, default = current year)
+const CURRENT_YEAR = new Date().getFullYear();
+const PAST_PAPER_YEARS = Array.from(
+  { length: CURRENT_YEAR - 2010 },
+  (_, i) => CURRENT_YEAR - i
+);
+
 // Question number ranges per type (for past papers)
 const Q_NO_RANGES: Record<string, { min: number; max: number }> = {
   MCQ: { min: 1, max: 50 },
