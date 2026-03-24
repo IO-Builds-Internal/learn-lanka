@@ -1,4 +1,3 @@
-// Auth hook — single source of truth for authentication context
 import { useState, useEffect, useRef, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -121,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setProfile(null);
     setRoles([]);
-    window.location.href = '/';
+    window.location.href = '/login';
   };
 
   const isAdmin = roles.includes('admin');
