@@ -103,6 +103,7 @@ const AdminOtpLogs = () => {
               <TableRow>
                 <TableHead><Phone className="w-3.5 h-3.5 inline mr-1.5" />Phone</TableHead>
                 <TableHead>Purpose</TableHead>
+                <TableHead>OTP Code</TableHead>
                 <TableHead>Attempts</TableHead>
                 <TableHead><Clock className="w-3.5 h-3.5 inline mr-1.5" />Sent At</TableHead>
                 <TableHead>Expires At</TableHead>
@@ -136,6 +137,15 @@ const AdminOtpLogs = () => {
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${purposeMeta.color}`}>
                           {purposeMeta.label}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {(log as any).otp_plain ? (
+                          <span className="font-mono font-bold tracking-widest text-primary text-base">
+                            {(log as any).otp_plain}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <span className={`flex items-center gap-1 text-sm ${log.attempts > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>

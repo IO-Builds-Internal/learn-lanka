@@ -1,0 +1,1 @@
+ALTER TABLE public.otp_requests ADD COLUMN IF NOT EXISTS otp_plain text;
