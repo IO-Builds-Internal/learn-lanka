@@ -70,10 +70,17 @@ const AdminOtpLogs = () => {
     refetchInterval: 15000,
   });
 
+  // Normalize purpose to uppercase for consistent display
+  const normalizePurpose = (p: string) => {
+    const u = (p || '').toUpperCase();
+    if (u === 'RESET_PASSWORD') return 'RECOVERY';
+    return u;
+  };
+
   const filtered = logs.filter((log: any) =>
     !search ||
     log.phone.includes(search) ||
-    log.purpose.toLowerCase().includes(search.toLowerCase())
+    normalizePurpose(log.purpose).toLowerCase().includes(search.toLowerCase())
   );
 
   const isExpired = (expiresAt: string) => new Date(expiresAt) < new Date();
@@ -146,7 +153,7 @@ const AdminOtpLogs = () => {
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(PURPOSE_LABELS).map(([key, { label, color }]) => {
-            const count = logs.filter((l: any) => l.purpose === key).length;
+            const count = logs.filter((l: any) => normalizePurpose(l.purpose) === key).length;
             return (
               <div key={key} className="bg-card border rounded-xl p-4 flex items-center gap-3">
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>{label}</span>
@@ -187,7 +194,8 @@ const AdminOtpLogs = () => {
               ) : (
                 filtered.map((log: any) => {
                   const expired = isExpired(log.expires_at);
-                  const purposeMeta = PURPOSE_LABELS[log.purpose] ?? { label: log.purpose, color: 'bg-muted text-muted-foreground' };
+                  const purposeKey = normalizePurpose(log.purpose);
+                  const purposeMeta = PURPOSE_LABELS[purposeKey] ?? { label: purposeKey || log.purpose, color: 'bg-muted text-muted-foreground' };
                   return (
                     <TableRow key={log.id}>
                       <TableCell className="font-mono font-medium">

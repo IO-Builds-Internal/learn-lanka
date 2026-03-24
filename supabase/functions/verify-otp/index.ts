@@ -36,7 +36,13 @@ Deno.serve(async (req) => {
 
   try {
     const { phone, otp, purpose }: VerifyOtpRequest = await req.json();
-    const normalizedPurpose = purpose === 'RESET_PASSWORD' ? 'RECOVERY' : purpose;
+    // Normalize purpose: uppercase all, then map aliases
+    const purposeUpper = (purpose || '').toUpperCase();
+    const normalizedPurpose = (purposeUpper === 'RESET_PASSWORD' || purposeUpper === 'RECOVERY')
+      ? 'RECOVERY'
+      : purposeUpper === 'REGISTER'
+      ? 'REGISTER'
+      : purposeUpper || purpose;
 
 
     if (!phone || !otp || !purpose) {
