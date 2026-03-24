@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 import alStudentsLogo from '@/assets/alstudents-logo.png';
 
 const subjects = [
