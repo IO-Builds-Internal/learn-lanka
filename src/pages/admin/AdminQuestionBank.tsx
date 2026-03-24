@@ -282,6 +282,13 @@ const AdminQuestionBank = () => {
     const optImgUrl = (q as any).options_image_url || null;
     const imgs = Array.isArray(q.question_images) ? q.question_images : 
                  q.question_image_url ? [q.question_image_url] : [];
+    const hasIndividualOptions = (q.question_bank_options || []).some(o => o.option_text || o.option_image_url);
+
+    // Determine options mode from saved data
+    let optionsMode: 'image_with_answers' | 'individual' | 'single_image' = 'image_with_answers';
+    if (optImgUrl) optionsMode = 'single_image';
+    else if (hasIndividualOptions) optionsMode = 'individual';
+
     setLinkedGroupEnabled(!!q.linked_group_id);
     setForm({
       question_type: q.question_type,
@@ -296,7 +303,7 @@ const AdminQuestionBank = () => {
       options: opts,
       correct_option_no: q.correct_option_no,
       questionInputMode: (q.question_image_url || imgs.length > 0) ? 'image' : 'text',
-      optionsMode: optImgUrl ? 'single_image' : 'individual',
+      optionsMode,
       options_image_url: optImgUrl,
       question_no: q.question_no,
       question_part: q.question_part,
