@@ -70,10 +70,17 @@ const AdminOtpLogs = () => {
     refetchInterval: 15000,
   });
 
+  // Normalize purpose to uppercase for consistent display
+  const normalizePurpose = (p: string) => {
+    const u = (p || '').toUpperCase();
+    if (u === 'RESET_PASSWORD') return 'RECOVERY';
+    return u;
+  };
+
   const filtered = logs.filter((log: any) =>
     !search ||
     log.phone.includes(search) ||
-    log.purpose.toLowerCase().includes(search.toLowerCase())
+    normalizePurpose(log.purpose).toLowerCase().includes(search.toLowerCase())
   );
 
   const isExpired = (expiresAt: string) => new Date(expiresAt) < new Date();
