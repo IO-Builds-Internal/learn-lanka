@@ -81,6 +81,7 @@ type QuestionBankRow = {
   question_no: number | null;
   question_part: string | null;
   linked_group_id: string | null;
+  question_images: string[] | null;
   question_bank_options: QBOption[];
 };
 

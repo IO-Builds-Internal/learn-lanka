@@ -61,6 +61,7 @@ import AdminContactMessages from "./pages/admin/AdminContactMessages";
 import AdminSyllabus from "./pages/admin/AdminSyllabus";
 import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
 import AdminOtpLogs from "./pages/admin/AdminOtpLogs";
+import AdminPaperCrop from "./pages/admin/AdminPaperCrop";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
