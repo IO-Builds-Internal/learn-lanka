@@ -425,6 +425,7 @@ const AdminRankPapers = () => {
   const resetForm = () => {
     setTitle('');
     setGrade('');
+    setMedium('sinhala');
     setTimeLimit('180');
     setHasMcq(true);
     setHasShortEssay(false);
