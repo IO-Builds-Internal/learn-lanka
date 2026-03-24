@@ -1019,6 +1019,7 @@ export type Database = {
           options_image_url: string | null
           past_paper_ref: string | null
           question_image_url: string | null
+          question_images: Json | null
           question_no: number | null
           question_part: string | null
           question_text: string | null
@@ -1039,6 +1040,7 @@ export type Database = {
           options_image_url?: string | null
           past_paper_ref?: string | null
           question_image_url?: string | null
+          question_images?: Json | null
           question_no?: number | null
           question_part?: string | null
           question_text?: string | null
@@ -1059,6 +1061,7 @@ export type Database = {
           options_image_url?: string | null
           past_paper_ref?: string | null
           question_image_url?: string | null
+          question_images?: Json | null
           question_no?: number | null
           question_part?: string | null
           question_text?: string | null
