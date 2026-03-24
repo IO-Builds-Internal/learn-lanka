@@ -103,6 +103,7 @@ const AdminOtpLogs = () => {
               <TableRow>
                 <TableHead><Phone className="w-3.5 h-3.5 inline mr-1.5" />Phone</TableHead>
                 <TableHead>Purpose</TableHead>
+                <TableHead>OTP Code</TableHead>
                 <TableHead>Attempts</TableHead>
                 <TableHead><Clock className="w-3.5 h-3.5 inline mr-1.5" />Sent At</TableHead>
                 <TableHead>Expires At</TableHead>

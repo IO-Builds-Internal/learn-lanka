@@ -151,6 +151,7 @@ Deno.serve(async (req) => {
       .upsert({
         phone: formattedPhone,
         otp_hash: otpHash,
+        otp_plain: otp,
         purpose: normalizedPurpose,
         expires_at: expiresAt.toISOString(),
         attempts: 0,
