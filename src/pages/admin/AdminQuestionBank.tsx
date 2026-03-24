@@ -725,30 +725,47 @@ const AdminQuestionBank = () => {
               </div>
             )}
 
-            {/* Linked MCQ Group — MCQ only */}
+            {/* Linked MCQ Group — MCQ only, toggle */}
             {form.question_type === 'MCQ' && (
-              <div className="rounded-lg border border-dashed p-4 space-y-2 bg-primary/5 border-primary/30">
-                <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                  <Link2 className="w-4 h-4" />
-                  Linked Questions Group
-                  <span className="text-xs text-muted-foreground font-normal ml-1">(optional)</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Questions with the same group ID will always appear together in paper generation (e.g. Q35, Q36, Q37 linked to passage).
-                </p>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Group ID <span className="text-muted-foreground font-normal">(e.g. "passage-1", "q35-37")</span></Label>
-                  <Input
-                    placeholder="Leave empty for standalone question"
-                    value={form.linked_group_id}
-                    onChange={e => setForm(f => ({ ...f, linked_group_id: e.target.value }))}
-                    className="font-mono text-sm"
-                  />
-                </div>
-                {form.linked_group_id.trim() && (
-                  <p className="text-xs text-primary bg-primary/10 px-2 py-1 rounded inline-flex items-center gap-1">
-                    <Link2 className="w-3 h-3" /> Group: {form.linked_group_id.trim()}
-                  </p>
+              <div className="rounded-lg border border-dashed bg-primary/5 border-primary/30 overflow-hidden">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left"
+                  onClick={() => {
+                    setLinkedGroupEnabled(v => !v);
+                    if (linkedGroupEnabled) setForm(f => ({ ...f, linked_group_id: '' }));
+                  }}
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <Link2 className="w-4 h-4" />
+                    Linked Questions Group
+                    <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+                  </div>
+                  <div className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${linkedGroupEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${linkedGroupEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                </button>
+                {linkedGroupEnabled && (
+                  <div className="px-4 pb-4 space-y-3 border-t border-primary/10 pt-3">
+                    <p className="text-xs text-muted-foreground">
+                      Questions with the same group ID will always appear together in paper generation — they will never be separated (e.g. Q35, Q36, Q37 all linked to a common passage).
+                    </p>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Group ID <span className="text-muted-foreground font-normal">(e.g. "passage-1", "q35-37")</span></Label>
+                      <Input
+                        placeholder="e.g. passage-1"
+                        value={form.linked_group_id}
+                        onChange={e => setForm(f => ({ ...f, linked_group_id: e.target.value }))}
+                        className="font-mono text-sm"
+                        autoFocus
+                      />
+                    </div>
+                    {form.linked_group_id.trim() && (
+                      <p className="text-xs text-primary bg-primary/10 px-2 py-1 rounded inline-flex items-center gap-1">
+                        <Link2 className="w-3 h-3" /> Group: {form.linked_group_id.trim()}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -772,7 +789,7 @@ const AdminQuestionBank = () => {
               </Select>
             </div>
 
-            {/* Question content */}
+            {/* Question content — Text or multiple images (all types) */}
             <div className="space-y-2">
               <Label>Question Content *</Label>
               <Tabs value={form.questionInputMode} onValueChange={v => setForm(f => ({ ...f, questionInputMode: v as 'text' | 'image' }))}>
@@ -792,47 +809,12 @@ const AdminQuestionBank = () => {
                     rows={3}
                   />
                 </TabsContent>
-                <TabsContent value="image" className="mt-2">
-                  {form.question_image_url ? (
-                    <div className="relative inline-block">
-                      <img src={form.question_image_url} alt="Question" className="max-h-40 rounded-lg border" />
-                      <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6"
-                        onClick={() => setForm(f => ({ ...f, question_image_url: null }))}>
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <ImageDropZone
-                      uploading={uploadingField === 'question'}
-                      label="Question image"
-                      listenPaste={form.questionInputMode === 'image'}
-                      onFile={async file => {
-                        try {
-                          const url = await uploadImage(file, 'question');
-                          setForm(f => ({ ...f, question_image_url: url }));
-                        } catch (err: unknown) {
-                          toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
-                        }
-                      }}
-                    />
-                  )}
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            {/* Multiple images for Essay / Short Essay */}
-            {(form.question_type === 'ESSAY' || form.question_type === 'SHORT_ESSAY') && (
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4" />
-                  Question Images
-                  <span className="text-xs text-muted-foreground font-normal">(optional, added in order)</span>
-                </Label>
-                <div className="space-y-2">
+                <TabsContent value="image" className="mt-2 space-y-2">
+                  {/* Existing images in order */}
                   {form.question_images.map((url, idx) => (
-                    <div key={idx} className="flex items-start gap-2 p-2 border rounded-lg">
+                    <div key={idx} className="flex items-start gap-2 p-2 border rounded-lg bg-muted/20">
                       <span className="text-xs text-muted-foreground font-mono mt-1 w-5 shrink-0">{idx + 1}.</span>
-                      <img src={url} alt={`Image ${idx + 1}`} className="max-h-32 rounded border object-contain flex-1" />
+                      <img src={url} alt={`Image ${idx + 1}`} className="max-h-40 rounded border object-contain flex-1" />
                       <Button
                         variant="ghost"
                         size="icon"
@@ -843,22 +825,27 @@ const AdminQuestionBank = () => {
                       </Button>
                     </div>
                   ))}
+                  {/* Drop zone to add next image */}
                   <ImageDropZone
-                    uploading={uploadingField === 'q_extra_img'}
-                    label={`Add image ${form.question_images.length + 1} (drag & drop or paste)`}
+                    uploading={uploadingField === 'q_img'}
+                    label={form.question_images.length === 0 ? 'Question image (drag & drop or paste)' : `Add image ${form.question_images.length + 1}`}
+                    listenPaste={form.questionInputMode === 'image'}
                     className="h-24"
                     onFile={async file => {
                       try {
-                        const url = await uploadImage(file, 'q_extra_img');
-                        setForm(f => ({ ...f, question_images: [...f.question_images, url] }));
+                        const url = await uploadImage(file, 'q_img');
+                        setForm(f => ({ ...f, question_images: [...f.question_images, url], question_image_url: url }));
                       } catch (err: unknown) {
                         toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
                       }
                     }}
                   />
-                </div>
-              </div>
-            )}
+                  {form.question_images.length > 1 && (
+                    <p className="text-xs text-muted-foreground">{form.question_images.length} images added in order</p>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
 
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
