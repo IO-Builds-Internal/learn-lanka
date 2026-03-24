@@ -201,6 +201,10 @@ const AdminQuestionBank = () => {
         question_no: form.category === 'PAST_PAPER' ? form.question_no : null,
         question_part: form.category === 'PAST_PAPER' ? (form.question_part || null) : null,
         linked_group_id: form.question_type === 'MCQ' && form.linked_group_id ? form.linked_group_id.trim() || null : null,
+        // Multiple images for essay/short-essay
+        question_images: (form.question_type === 'ESSAY' || form.question_type === 'SHORT_ESSAY')
+          ? form.question_images
+          : [],
       };
 
       let questionId = editing?.id;
