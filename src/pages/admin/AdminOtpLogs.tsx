@@ -153,7 +153,7 @@ const AdminOtpLogs = () => {
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(PURPOSE_LABELS).map(([key, { label, color }]) => {
-            const count = logs.filter((l: any) => l.purpose === key).length;
+            const count = logs.filter((l: any) => normalizePurpose(l.purpose) === key).length;
             return (
               <div key={key} className="bg-card border rounded-xl p-4 flex items-center gap-3">
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>{label}</span>
