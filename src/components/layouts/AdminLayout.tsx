@@ -109,6 +109,7 @@ const navGroups: NavGroup[] = [
         ],
       },
       { type: 'leaf', path: '/admin/papers', label: 'Past Papers', icon: FileText },
+      { type: 'leaf', path: '/admin/paper-crop', label: 'Paper Crop Tool', icon: Layers },
       { type: 'leaf', path: '/admin/syllabus', label: 'Syllabus', icon: BookMarked },
       { type: 'leaf', path: '/admin/question-bank', label: 'Question Bank', icon: HelpCircle },
     ],
