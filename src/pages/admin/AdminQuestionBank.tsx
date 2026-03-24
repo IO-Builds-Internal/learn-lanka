@@ -116,7 +116,8 @@ const defaultForm = () => ({
   question_text: '',
   question_image_url: null as string | null,
   category: 'OTHER',
-  past_paper_ref: '',
+  past_paper_ref: CURRENT_YEAR.toString(),
+  past_paper_ref_custom: '',   // if user types a custom value
   medium: '',
   grade: '',
   lesson_id: '',
@@ -129,11 +130,9 @@ const defaultForm = () => ({
   // 'single_image'       = one image for all options (legacy)
   optionsMode: 'image_with_answers' as 'image_with_answers' | 'individual' | 'single_image',
   options_image_url: null as string | null,
-  // New fields
   question_no: null as number | null,
   question_part: null as string | null,
   linked_group_id: '',
-  // Multiple images for question content (all types)
   question_images: [] as string[],
 });
 
