@@ -699,8 +699,8 @@ const AdminQuestionBank = () => {
 
             {/* Linked MCQ Group — MCQ only */}
             {form.question_type === 'MCQ' && (
-              <div className="rounded-lg border border-dashed p-4 space-y-2 bg-blue-50/30 dark:bg-blue-950/10 border-blue-200 dark:border-blue-800">
-                <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
+              <div className="rounded-lg border border-dashed p-4 space-y-2 bg-primary/5 border-primary/30">
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
                   <Link2 className="w-4 h-4" />
                   Linked Questions Group
                   <span className="text-xs text-muted-foreground font-normal ml-1">(optional)</span>
