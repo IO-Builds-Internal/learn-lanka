@@ -68,6 +68,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 
 import NotFound from "./pages/NotFound";
 import Playground from "./pages/Playground";
+import MainPortal from "./pages/MainPortal";
 
 const queryClient = new QueryClient();
 
@@ -82,7 +83,7 @@ const App = () => (
               <Sonner />
               <Routes>
               {/* Public Routes - redirect to dashboard/admin if logged in */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="/" element={<MainPortal />} />
               <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
               <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
               <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
