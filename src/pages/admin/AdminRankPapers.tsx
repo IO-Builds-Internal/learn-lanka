@@ -448,6 +448,7 @@ const AdminRankPapers = () => {
     setEditingPaper(paper);
     setTitle(paper.title);
     setGrade(paper.grade.toString());
+    setMedium(paper.medium || 'sinhala');
     setTimeLimit(paper.time_limit_minutes.toString());
     setHasMcq(paper.has_mcq);
     setHasShortEssay(paper.has_short_essay);
