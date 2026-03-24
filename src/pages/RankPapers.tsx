@@ -32,6 +32,7 @@ const RankPapers = () => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
+  const [mediumFilter, setMediumFilter] = useState<string>('all');
 
   // Fetch published rank papers
   const { data: rankPapers = [], isLoading: loadingPapers } = useQuery({
@@ -120,7 +121,8 @@ const RankPapers = () => {
   const applyFilters = (papers: any[]) => papers.filter((paper) => {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGrade = gradeFilter === 'all' || paper.grade.toString() === gradeFilter;
-    return matchesSearch && matchesGrade;
+    const matchesMedium = mediumFilter === 'all' || (paper.medium || 'sinhala') === mediumFilter;
+    return matchesSearch && matchesGrade && matchesMedium;
   });
 
   // Split: history = submitted attempts; available = not attempted at all
@@ -174,6 +176,17 @@ const RankPapers = () => {
               {[10, 11, 12, 13].map((g) => (
                 <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={mediumFilter} onValueChange={setMediumFilter}>
+            <SelectTrigger className="w-full sm:w-[130px] h-10">
+              <SelectValue placeholder="Medium" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Mediums</SelectItem>
+              <SelectItem value="sinhala">Sinhala</SelectItem>
+              <SelectItem value="english">English</SelectItem>
+              <SelectItem value="tamil">Tamil</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -230,7 +243,7 @@ const RankPapers = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <CardTitle className="text-sm sm:text-base line-clamp-1">{paper.title}</CardTitle>
-                          <CardDescription className="text-xs">Grade {paper.grade}</CardDescription>
+                      <CardDescription className="text-xs">Grade {paper.grade} · <span className="capitalize">{paper.medium || 'Sinhala'}</span></CardDescription>
                         </div>
                         {isInProgress ? (
                           <Badge className="bg-warning/10 text-warning border-warning/20 text-xs shrink-0">
@@ -302,7 +315,7 @@ const RankPapers = () => {
                         <div className="min-w-0">
                           <CardTitle className="text-sm sm:text-base line-clamp-1">{paper.title}</CardTitle>
                           <CardDescription className="text-xs">
-                            Grade {paper.grade}
+                            Grade {paper.grade} · <span className="capitalize">{paper.medium || 'Sinhala'}</span>
                             {attempt?.submitted_at && (
                               <span className="ml-2">· {format(new Date(attempt.submitted_at), 'MMM d, yyyy')}</span>
                             )}

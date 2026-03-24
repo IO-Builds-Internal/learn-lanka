@@ -78,6 +78,7 @@ interface RankPaper {
   id: string;
   title: string;
   grade: number;
+  medium: string | null;
   time_limit_minutes: number;
   has_mcq: boolean;
   has_short_essay: boolean;
@@ -114,6 +115,7 @@ const AdminRankPapers = () => {
   // Form state
   const [title, setTitle] = useState('');
   const [grade, setGrade] = useState('');
+  const [medium, setMedium] = useState('sinhala');
   const [timeLimit, setTimeLimit] = useState('180');
   const [hasMcq, setHasMcq] = useState(true);
   const [hasShortEssay, setHasShortEssay] = useState(false);
@@ -172,6 +174,7 @@ const AdminRankPapers = () => {
       const paperData = {
         title,
         grade: parseInt(grade),
+        medium: medium || 'sinhala',
         time_limit_minutes: parseInt(timeLimit),
         has_mcq: hasMcq,
         has_short_essay: hasShortEssay,
@@ -342,6 +345,7 @@ const AdminRankPapers = () => {
           has_essay: paper.has_essay,
           fee_amount: paper.fee_amount,
           class_id: paper.class_id,
+          medium: paper.medium || 'sinhala',
           essay_pdf_url: paper.essay_pdf_url,
           publish_status: 'DRAFT',
         })
@@ -422,6 +426,7 @@ const AdminRankPapers = () => {
   const resetForm = () => {
     setTitle('');
     setGrade('');
+    setMedium('sinhala');
     setTimeLimit('180');
     setHasMcq(true);
     setHasShortEssay(false);
@@ -444,6 +449,7 @@ const AdminRankPapers = () => {
     setEditingPaper(paper);
     setTitle(paper.title);
     setGrade(paper.grade.toString());
+    setMedium(paper.medium || 'sinhala');
     setTimeLimit(paper.time_limit_minutes.toString());
     setHasMcq(paper.has_mcq);
     setHasShortEssay(paper.has_short_essay);
@@ -567,6 +573,19 @@ const AdminRankPapers = () => {
                       onChange={(e) => setTimeLimit(e.target.value)}
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Medium</Label>
+                  <Select value={medium} onValueChange={setMedium}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select medium" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sinhala">Sinhala</SelectItem>
+                      <SelectItem value="english">English</SelectItem>
+                      <SelectItem value="tamil">Tamil</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {/* Class Assignment */}
                 <div className="space-y-2">
@@ -705,9 +724,10 @@ const AdminRankPapers = () => {
                     />
                   </TableHead>
                   <TableHead>Paper</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Sections</TableHead>
+                   <TableHead>Grade</TableHead>
+                   <TableHead>Medium</TableHead>
+                   <TableHead>Time</TableHead>
+                   <TableHead>Sections</TableHead>
                   <TableHead>Fee</TableHead>
                   <TableHead>Attempts</TableHead>
                   <TableHead>Status</TableHead>
@@ -758,6 +778,9 @@ const AdminRankPapers = () => {
                       </div>
                     </TableCell>
                     <TableCell>Grade {paper.grade}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs capitalize">{paper.medium || 'Sinhala'}</Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-muted-foreground" />

@@ -1,0 +1,1 @@
+ALTER TABLE public.rank_papers ADD COLUMN IF NOT EXISTS medium text DEFAULT 'sinhala';
