@@ -1372,6 +1372,7 @@ export type Database = {
           has_short_essay: boolean
           id: string
           lock_at: string | null
+          medium: string | null
           publish_status: string
           review_video_url: string | null
           short_essay_pdf_url: string | null
@@ -1391,6 +1392,7 @@ export type Database = {
           has_short_essay?: boolean
           id?: string
           lock_at?: string | null
+          medium?: string | null
           publish_status?: string
           review_video_url?: string | null
           short_essay_pdf_url?: string | null
@@ -1410,6 +1412,7 @@ export type Database = {
           has_short_essay?: boolean
           id?: string
           lock_at?: string | null
+          medium?: string | null
           publish_status?: string
           review_video_url?: string | null
           short_essay_pdf_url?: string | null
