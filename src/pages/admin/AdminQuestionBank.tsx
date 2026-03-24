@@ -718,7 +718,7 @@ const AdminQuestionBank = () => {
                   />
                 </div>
                 {form.linked_group_id.trim() && (
-                  <p className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded inline-flex items-center gap-1">
+                  <p className="text-xs text-primary bg-primary/10 px-2 py-1 rounded inline-flex items-center gap-1">
                     <Link2 className="w-3 h-3" /> Group: {form.linked_group_id.trim()}
                   </p>
                 )}
