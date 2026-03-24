@@ -519,6 +519,21 @@ const AdminQuestionBank = () => {
                         <p className="text-sm whitespace-pre-wrap">{q.question_text}</p>
                       )}
 
+                      {/* Question images for essay types */}
+                      {(q.question_type === 'ESSAY' || q.question_type === 'SHORT_ESSAY') && q.question_images && q.question_images.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">Question Images ({q.question_images.length})</p>
+                          <div className="flex flex-wrap gap-2">
+                            {q.question_images.map((url, idx) => (
+                              <div key={idx} className="relative">
+                                <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] rounded px-1 font-mono">{idx + 1}</span>
+                                <img src={url} alt={`Image ${idx + 1}`} className="max-h-40 rounded-lg border object-contain" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Metadata */}
                       <div className="flex flex-wrap gap-2 text-xs">
                         {q.category === 'PAST_PAPER' && q.past_paper_ref && (
