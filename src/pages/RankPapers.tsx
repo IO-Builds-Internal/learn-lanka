@@ -121,7 +121,8 @@ const RankPapers = () => {
   const applyFilters = (papers: any[]) => papers.filter((paper) => {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGrade = gradeFilter === 'all' || paper.grade.toString() === gradeFilter;
-    return matchesSearch && matchesGrade;
+    const matchesMedium = mediumFilter === 'all' || (paper.medium || 'sinhala') === mediumFilter;
+    return matchesSearch && matchesGrade && matchesMedium;
   });
 
   // Split: history = submitted attempts; available = not attempted at all
