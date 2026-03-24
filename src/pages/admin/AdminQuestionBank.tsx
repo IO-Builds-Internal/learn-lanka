@@ -201,7 +201,9 @@ const AdminQuestionBank = () => {
         // options_image_url: only used in 'single_image' mode
         options_image_url: (form.question_type === 'MCQ' && form.optionsMode === 'single_image') ? form.options_image_url : null,
         category: form.category,
-        past_paper_ref: form.category === 'PAST_PAPER' ? form.past_paper_ref || null : null,
+        past_paper_ref: form.category === 'PAST_PAPER'
+          ? (form.past_paper_ref === 'custom' ? form.past_paper_ref_custom.trim() || null : form.past_paper_ref || null)
+          : null,
         medium: form.medium || null,
         grade: form.grade ? Number(form.grade) : null,
         subject: 'ICT',
