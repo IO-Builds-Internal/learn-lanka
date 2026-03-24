@@ -266,6 +266,7 @@ const AdminQuestionBank = () => {
   const openAdd = () => {
     setEditing(null);
     setForm(defaultForm());
+    setLinkedGroupEnabled(false);
     setDialogOpen(true);
   };
 
@@ -277,10 +278,13 @@ const AdminQuestionBank = () => {
       if (idx !== -1) opts[idx] = { ...o, option_text: o.option_text || '' };
     });
     const optImgUrl = (q as any).options_image_url || null;
+    const imgs = Array.isArray(q.question_images) ? q.question_images : 
+                 q.question_image_url ? [q.question_image_url] : [];
+    setLinkedGroupEnabled(!!q.linked_group_id);
     setForm({
       question_type: q.question_type,
       question_text: q.question_text || '',
-      question_image_url: q.question_image_url,
+      question_image_url: imgs[0] || null,
       category: q.category,
       past_paper_ref: q.past_paper_ref || '',
       medium: q.medium || '',
@@ -289,13 +293,13 @@ const AdminQuestionBank = () => {
       explain_video_url: q.explain_video_url || '',
       options: opts,
       correct_option_no: q.correct_option_no,
-      questionInputMode: q.question_image_url ? 'image' : 'text',
+      questionInputMode: (q.question_image_url || imgs.length > 0) ? 'image' : 'text',
       optionsMode: optImgUrl ? 'single_image' : 'individual',
       options_image_url: optImgUrl,
       question_no: q.question_no,
       question_part: q.question_part,
       linked_group_id: q.linked_group_id || '',
-      question_images: Array.isArray(q.question_images) ? q.question_images : [],
+      question_images: imgs,
     });
     setDialogOpen(true);
   };
