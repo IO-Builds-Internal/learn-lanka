@@ -847,30 +847,40 @@ const AdminQuestionBank = () => {
 
             {/* Question content - Text or multiple images (all types) */}
             <div className="space-y-2">
-              <Label>
-                Question Content *
-                {form.question_type === 'MCQ' && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">(image recommended — include all options)</span>
-                )}
-              </Label>
-              <Tabs value={form.questionInputMode} onValueChange={v => setForm(f => ({ ...f, questionInputMode: v as 'text' | 'image' }))}>
-                <TabsList className="h-8 w-40">
-                  <TabsTrigger value="text" className="text-xs flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <Label>
+                  Question Content *
+                  {form.question_type === 'MCQ' && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">(image recommended — include all options)</span>
+                  )}
+                </Label>
+                <div className="flex rounded-md border overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, questionInputMode: 'text' }))}
+                    className={`flex items-center gap-1 px-3 py-1.5 font-medium transition-colors ${form.questionInputMode === 'text' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
                     <Type className="w-3 h-3" /> Text
-                  </TabsTrigger>
-                  <TabsTrigger value="image" className="text-xs flex items-center gap-1">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, questionInputMode: 'image' }))}
+                    className={`flex items-center gap-1 px-3 py-1.5 font-medium transition-colors border-l ${form.questionInputMode === 'image' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
                     <ImageIcon className="w-3 h-3" /> Image
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="text" className="mt-2">
-                  <Textarea
-                    placeholder="Enter question text..."
-                    value={form.question_text}
-                    onChange={e => setForm(f => ({ ...f, question_text: e.target.value }))}
-                    rows={3}
-                  />
-                </TabsContent>
-                <TabsContent value="image" className="mt-2 space-y-2">
+                  </button>
+                </div>
+              </div>
+
+              {form.questionInputMode === 'text' ? (
+                <Textarea
+                  placeholder="Enter question text..."
+                  value={form.question_text}
+                  onChange={e => setForm(f => ({ ...f, question_text: e.target.value }))}
+                  rows={3}
+                />
+              ) : (
+                <div className="space-y-2">
                   {/* Existing images in order */}
                   {form.question_images.map((url, idx) => (
                     <div key={idx} className="flex items-start gap-2 p-2 border rounded-lg bg-muted/20">
@@ -904,9 +914,10 @@ const AdminQuestionBank = () => {
                   {form.question_images.length > 1 && (
                     <p className="text-xs text-muted-foreground">{form.question_images.length} images added in order</p>
                   )}
-                </TabsContent>
-              </Tabs>
+                </div>
+              )}
             </div>
+
 
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
