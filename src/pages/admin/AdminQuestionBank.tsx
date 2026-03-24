@@ -814,9 +814,14 @@ const AdminQuestionBank = () => {
               </Select>
             </div>
 
-            {/* Question content — Text or multiple images (all types) */}
+            {/* Question content - Text or multiple images (all types) */}
             <div className="space-y-2">
-              <Label>Question Content *</Label>
+              <Label>
+                Question Content *
+                {form.question_type === 'MCQ' && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">(image recommended — include all options)</span>
+                )}
+              </Label>
               <Tabs value={form.questionInputMode} onValueChange={v => setForm(f => ({ ...f, questionInputMode: v as 'text' | 'image' }))}>
                 <TabsList className="h-8 w-40">
                   <TabsTrigger value="text" className="text-xs flex items-center gap-1">
