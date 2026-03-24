@@ -1014,10 +1014,13 @@ export type Database = {
           grade: number | null
           id: string
           lesson_id: string | null
+          linked_group_id: string | null
           medium: string | null
           options_image_url: string | null
           past_paper_ref: string | null
           question_image_url: string | null
+          question_no: number | null
+          question_part: string | null
           question_text: string | null
           question_type: string
           subject: string
@@ -1031,10 +1034,13 @@ export type Database = {
           grade?: number | null
           id?: string
           lesson_id?: string | null
+          linked_group_id?: string | null
           medium?: string | null
           options_image_url?: string | null
           past_paper_ref?: string | null
           question_image_url?: string | null
+          question_no?: number | null
+          question_part?: string | null
           question_text?: string | null
           question_type?: string
           subject?: string
@@ -1048,10 +1054,13 @@ export type Database = {
           grade?: number | null
           id?: string
           lesson_id?: string | null
+          linked_group_id?: string | null
           medium?: string | null
           options_image_url?: string | null
           past_paper_ref?: string | null
           question_image_url?: string | null
+          question_no?: number | null
+          question_part?: string | null
           question_text?: string | null
           question_type?: string
           subject?: string
