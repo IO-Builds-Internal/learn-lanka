@@ -345,6 +345,7 @@ const AdminRankPapers = () => {
           has_essay: paper.has_essay,
           fee_amount: paper.fee_amount,
           class_id: paper.class_id,
+          medium: paper.medium || 'sinhala',
           essay_pdf_url: paper.essay_pdf_url,
           publish_status: 'DRAFT',
         })
