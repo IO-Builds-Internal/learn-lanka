@@ -9,74 +9,17 @@ import { Label } from '@/components/ui/label';
 import { RefreshCw, Search, Clock, Phone, AlertTriangle, FlaskConical } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { invokeFunction } from '@/lib/functions';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-const PURPOSE_LABELS: Record<string, { label: string; color: string }> = {
-  REGISTER:       { label: 'Register',       color: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
-  LOGIN:          { label: 'Login',          color: 'bg-green-500/15 text-green-600 dark:text-green-400' },
-  RECOVERY:       { label: 'Password Reset', color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400' },
-  PRIVATE_ENROLL: { label: 'Private Enroll', color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
-};
-
-const AdminOtpLogs = () => {
-  const [search, setSearch] = useState('');
-  const [testOpen, setTestOpen] = useState(false);
-  const [testPhone, setTestPhone] = useState('');
-  const [testPurpose, setTestPurpose] = useState<'LOGIN' | 'REGISTER' | 'RECOVERY'>('LOGIN');
-  const [sending, setSending] = useState(false);
-
-  const { data: logs = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['admin-otp-logs'],
-    queryFn: async () => {
-      // Use direct project URL (same as invokeFunction) to bypass custom domain routing issues on self-hosted
-      const SUPABASE_PROJECT_URL = 'https://nckmcsbjwopunctljakr.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ja21jc2Jqd29wdW5jdGxqYWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQ3NjgsImV4cCI6MjA4NjA1MDc2OH0.OAVOQgiQvRQ8L_CQuIugIaZ5SEYQd1I6CxUk6LRa_fs';
-      let authHeader = `Bearer ${SUPABASE_ANON_KEY}`;
-      try {
-        const raw = localStorage.getItem('sb-nckmcsbjwopunctljakr-auth-token');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.access_token) authHeader = `Bearer ${parsed.access_token}`;
-        }
-      } catch { /* fallback to anon */ }
-
-      const res = await fetch(
-        `${SUPABASE_PROJECT_URL}/rest/v1/otp_requests?select=*&order=created_at.desc&limit=200`,
-        {
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: authHeader,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      if (!res.ok) throw new Error(`Failed to load OTP logs: ${res.status}`);
-      return res.json();
-    },
-    refetchInterval: 15000,
-  });
+import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY } from '@/lib/functions';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RefreshCw, Search, Clock, Phone, AlertTriangle, FlaskConical } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
+import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY } from '@/lib/functions';
 
   const filtered = logs.filter(log =>
     !search ||
