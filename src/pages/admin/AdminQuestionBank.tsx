@@ -458,7 +458,7 @@ const AdminQuestionBank = () => {
                           )}
                           {/* Linked group badge */}
                           {q.linked_group_id && (
-                            <Badge variant="outline" className="text-xs shrink-0 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-xs shrink-0 text-primary border-primary/40 flex items-center gap-0.5">
                               <Link2 className="w-2.5 h-2.5" />
                               {q.linked_group_id}
                             </Badge>
