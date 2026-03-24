@@ -174,6 +174,7 @@ const AdminRankPapers = () => {
       const paperData = {
         title,
         grade: parseInt(grade),
+        medium: medium || 'sinhala',
         time_limit_minutes: parseInt(timeLimit),
         has_mcq: hasMcq,
         has_short_essay: hasShortEssay,
