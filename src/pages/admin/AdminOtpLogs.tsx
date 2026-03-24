@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RefreshCw, Search, Clock, Phone, AlertTriangle, FlaskConical } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { invokeFunction } from '@/lib/functions';
+import { invokeFunction, getAuthHeader, SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY } from '@/lib/functions';
 import {
   Dialog,
   DialogContent,
@@ -50,17 +50,9 @@ const AdminOtpLogs = () => {
   const { data: logs = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin-otp-logs'],
     queryFn: async () => {
-      // Use direct project URL (same as invokeFunction) to bypass custom domain routing issues on self-hosted
-      const SUPABASE_PROJECT_URL = 'https://nckmcsbjwopunctljakr.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ja21jc2Jqd29wdW5jdGxqYWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQ3NjgsImV4cCI6MjA4NjA1MDc2OH0.OAVOQgiQvRQ8L_CQuIugIaZ5SEYQd1I6CxUk6LRa_fs';
-      let authHeader = `Bearer ${SUPABASE_ANON_KEY}`;
-      try {
-        const raw = localStorage.getItem('sb-nckmcsbjwopunctljakr-auth-token');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.access_token) authHeader = `Bearer ${parsed.access_token}`;
-        }
-      } catch { /* fallback to anon */ }
+      // Use getAuthHeader() which calls supabase.auth.getSession() — works on self-hosted
+      // custom domains where the localStorage key differs from the hardcoded project ID key.
+      const authHeader = await getAuthHeader();
 
       const res = await fetch(
         `${SUPABASE_PROJECT_URL}/rest/v1/otp_requests?select=*&order=created_at.desc&limit=200`,
@@ -78,7 +70,7 @@ const AdminOtpLogs = () => {
     refetchInterval: 15000,
   });
 
-  const filtered = logs.filter(log =>
+  const filtered = logs.filter((log: any) =>
     !search ||
     log.phone.includes(search) ||
     log.purpose.toLowerCase().includes(search.toLowerCase())
@@ -154,7 +146,7 @@ const AdminOtpLogs = () => {
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(PURPOSE_LABELS).map(([key, { label, color }]) => {
-            const count = logs.filter(l => l.purpose === key).length;
+            const count = logs.filter((l: any) => l.purpose === key).length;
             return (
               <div key={key} className="bg-card border rounded-xl p-4 flex items-center gap-3">
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${color}`}>{label}</span>
@@ -193,7 +185,7 @@ const AdminOtpLogs = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map(log => {
+                filtered.map((log: any) => {
                   const expired = isExpired(log.expires_at);
                   const purposeMeta = PURPOSE_LABELS[log.purpose] ?? { label: log.purpose, color: 'bg-muted text-muted-foreground' };
                   return (
