@@ -116,14 +116,17 @@ const defaultForm = () => ({
   explain_video_url: '',
   options: emptyOptions(),
   correct_option_no: null as number | null,
-  questionInputMode: 'text' as 'text' | 'image',
-  optionsMode: 'individual' as 'individual' | 'single_image',
+  questionInputMode: 'image' as 'text' | 'image',
+  // 'image_with_answers' = question image includes all options, just pick correct
+  // 'individual'         = separate text/image per option
+  // 'single_image'       = one image for all options (legacy)
+  optionsMode: 'image_with_answers' as 'image_with_answers' | 'individual' | 'single_image',
   options_image_url: null as string | null,
   // New fields
   question_no: null as number | null,
   question_part: null as string | null,
   linked_group_id: '',
-  // Multiple images for essay/short-essay
+  // Multiple images for question content (all types)
   question_images: [] as string[],
 });
 
@@ -188,9 +191,9 @@ const AdminQuestionBank = () => {
       const payload = {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
-        // Store first image in legacy field for backward compat; full array in question_images
         question_image_url: form.questionInputMode === 'image' ? (form.question_images[0] || null) : null,
-        options_image_url: form.question_type === 'MCQ' ? form.options_image_url : null,
+        // options_image_url: only used in 'single_image' mode
+        options_image_url: (form.question_type === 'MCQ' && form.optionsMode === 'single_image') ? form.options_image_url : null,
         category: form.category,
         past_paper_ref: form.category === 'PAST_PAPER' ? form.past_paper_ref || null : null,
         medium: form.medium || null,
@@ -203,7 +206,6 @@ const AdminQuestionBank = () => {
         question_part: form.category === 'PAST_PAPER' ? (form.question_part || null) : null,
         linked_group_id: form.question_type === 'MCQ' && linkedGroupEnabled && form.linked_group_id
           ? form.linked_group_id.trim() || null : null,
-        // All images in order (used for all question types in image mode)
         question_images: form.questionInputMode === 'image' ? form.question_images : [],
       };
 
@@ -222,18 +224,23 @@ const AdminQuestionBank = () => {
         if (editing) {
           await supabase.from('question_bank_options').delete().eq('question_id', questionId);
         }
-        const filledOptions = form.options.filter(o => o.option_text.trim() || o.option_image_url);
-        if (filledOptions.length > 0) {
-          const { error } = await supabase.from('question_bank_options').insert(
-            filledOptions.map(o => ({
-              question_id: questionId!,
-              option_no: o.option_no,
-              option_text: o.option_text || null,
-              option_image_url: o.option_image_url,
-              is_correct: o.option_no === form.correct_option_no,
-            }))
-          );
-          if (error) throw error;
+        // 'image_with_answers': question image has everything, only store correct_option_no (no option rows needed)
+        // 'single_image': same — only correct_option_no
+        // 'individual': store each option text/image
+        if (form.optionsMode === 'individual') {
+          const filledOptions = form.options.filter(o => o.option_text.trim() || o.option_image_url);
+          if (filledOptions.length > 0) {
+            const { error } = await supabase.from('question_bank_options').insert(
+              filledOptions.map(o => ({
+                question_id: questionId!,
+                option_no: o.option_no,
+                option_text: o.option_text || null,
+                option_image_url: o.option_image_url,
+                is_correct: o.option_no === form.correct_option_no,
+              }))
+            );
+            if (error) throw error;
+          }
         }
       }
     },
@@ -279,6 +286,13 @@ const AdminQuestionBank = () => {
     const optImgUrl = (q as any).options_image_url || null;
     const imgs = Array.isArray(q.question_images) ? q.question_images : 
                  q.question_image_url ? [q.question_image_url] : [];
+    const hasIndividualOptions = (q.question_bank_options || []).some(o => o.option_text || o.option_image_url);
+
+    // Determine options mode from saved data
+    let optionsMode: 'image_with_answers' | 'individual' | 'single_image' = 'image_with_answers';
+    if (optImgUrl) optionsMode = 'single_image';
+    else if (hasIndividualOptions) optionsMode = 'individual';
+
     setLinkedGroupEnabled(!!q.linked_group_id);
     setForm({
       question_type: q.question_type,
@@ -293,7 +307,7 @@ const AdminQuestionBank = () => {
       options: opts,
       correct_option_no: q.correct_option_no,
       questionInputMode: (q.question_image_url || imgs.length > 0) ? 'image' : 'text',
-      optionsMode: optImgUrl ? 'single_image' : 'individual',
+      optionsMode,
       options_image_url: optImgUrl,
       question_no: q.question_no,
       question_part: q.question_part,
@@ -620,7 +634,18 @@ const AdminQuestionBank = () => {
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Question Type *</Label>
-                <Select value={form.question_type} onValueChange={v => setForm(f => ({ ...f, question_type: v, question_no: null, question_part: null }))}>
+                <Select
+                  value={form.question_type}
+                  onValueChange={v => setForm(f => ({
+                    ...f,
+                    question_type: v,
+                    question_no: null,
+                    question_part: null,
+                    // MCQ defaults to image+answers mode; non-MCQ to text
+                    questionInputMode: v === 'MCQ' ? 'image' : 'text',
+                    optionsMode: v === 'MCQ' ? 'image_with_answers' : f.optionsMode,
+                  }))}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {QUESTION_TYPES.map(t => <SelectItem key={t} value={t}>{t.replace('_', ' ')}</SelectItem>)}
@@ -789,9 +814,14 @@ const AdminQuestionBank = () => {
               </Select>
             </div>
 
-            {/* Question content — Text or multiple images (all types) */}
+            {/* Question content - Text or multiple images (all types) */}
             <div className="space-y-2">
-              <Label>Question Content *</Label>
+              <Label>
+                Question Content *
+                {form.question_type === 'MCQ' && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">(image recommended — include all options)</span>
+                )}
+              </Label>
               <Tabs value={form.questionInputMode} onValueChange={v => setForm(f => ({ ...f, questionInputMode: v as 'text' | 'image' }))}>
                 <TabsList className="h-8 w-40">
                   <TabsTrigger value="text" className="text-xs flex items-center gap-1">
@@ -850,35 +880,78 @@ const AdminQuestionBank = () => {
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
               <div className="space-y-3">
-                {/* Mode toggle */}
                 <div className="flex items-center justify-between">
-                  <Label>Options</Label>
-                  <div className="flex rounded-lg border overflow-hidden text-xs">
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, optionsMode: 'individual' }))}
-                      className={`px-3 py-1.5 font-medium transition-colors ${form.optionsMode === 'individual' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
-                    >
-                      Separate (A–E)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, optionsMode: 'single_image' }))}
-                      className={`px-3 py-1.5 font-medium transition-colors ${form.optionsMode === 'single_image' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
-                    >
-                      One Image (all options)
-                    </button>
-                  </div>
+                  <Label>Answer Options</Label>
+                </div>
+
+                {/* Mode selector — 3 tabs */}
+                <div className="flex rounded-lg border overflow-hidden text-xs w-full">
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, optionsMode: 'image_with_answers' }))}
+                    className={`flex-1 px-2 py-2 font-medium transition-colors text-center ${form.optionsMode === 'image_with_answers' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
+                    <ImageIcon className="w-3 h-3 inline mr-1" />
+                    Image + Correct Answer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, optionsMode: 'individual' }))}
+                    className={`flex-1 px-2 py-2 font-medium transition-colors text-center border-l ${form.optionsMode === 'individual' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
+                    Separate A–E
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, optionsMode: 'single_image' }))}
+                    className={`flex-1 px-2 py-2 font-medium transition-colors text-center border-l ${form.optionsMode === 'single_image' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}
+                  >
+                    Options Image
+                  </button>
                 </div>
 
                 {/* Correct answer warning */}
                 {!form.correct_option_no && (
                   <p className="text-xs text-destructive bg-destructive/10 px-3 py-1.5 rounded-md border border-destructive/30">
-                    ⚠️ No correct answer selected — click a circle to mark one.
+                    ⚠️ No correct answer selected — click a letter to mark one.
                   </p>
                 )}
 
-                {/* SINGLE IMAGE MODE */}
+                {/* IMAGE WITH ANSWERS MODE (default) — question image includes the options, just pick correct */}
+                {form.optionsMode === 'image_with_answers' && (
+                  <div className="rounded-lg border border-dashed bg-muted/20 p-4 space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      The question image above already contains the options (A–E). Just select the correct answer below.
+                    </p>
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium">Correct Answer:</p>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map(n => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, correct_option_no: n }))}
+                            className={`w-11 h-11 rounded-full border-2 font-bold text-sm transition-all ${
+                              form.correct_option_no === n
+                                ? 'border-primary bg-primary text-primary-foreground scale-110 shadow-md'
+                                : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
+                            }`}
+                          >
+                            {String.fromCharCode(64 + n)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {form.correct_option_no && (
+                      <p className="text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5">
+                        <Check className="w-3 h-3" />
+                        Correct answer: <span className="font-bold">{String.fromCharCode(64 + form.correct_option_no)}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* SINGLE IMAGE OPTIONS MODE — separate options image */}
                 {form.optionsMode === 'single_image' && (
                   <div className="space-y-3">
                     {form.options_image_url ? (
@@ -892,7 +965,7 @@ const AdminQuestionBank = () => {
                     ) : (
                       <ImageDropZone
                         uploading={uploadingField === 'options_img'}
-                        label="One image with all options (A–E)"
+                        label="Upload image showing all options (A–E)"
                         listenPaste={form.optionsMode === 'single_image'}
                         onFile={async file => {
                           try {
@@ -904,12 +977,12 @@ const AdminQuestionBank = () => {
                         }}
                       />
                     )}
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground font-medium">Select the correct answer:</p>
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium">Correct Answer:</p>
                       <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map(n => (
                           <button key={n} type="button" onClick={() => setForm(f => ({ ...f, correct_option_no: n }))}
-                            className={`w-10 h-10 rounded-full border-2 font-bold text-sm transition-all ${form.correct_option_no === n ? 'border-primary bg-primary text-primary-foreground scale-110' : 'border-border text-muted-foreground hover:border-primary'}`}>
+                            className={`w-11 h-11 rounded-full border-2 font-bold text-sm transition-all ${form.correct_option_no === n ? 'border-primary bg-primary text-primary-foreground scale-110' : 'border-border text-muted-foreground hover:border-primary'}`}>
                             {String.fromCharCode(64 + n)}
                           </button>
                         ))}
@@ -918,7 +991,7 @@ const AdminQuestionBank = () => {
                   </div>
                 )}
 
-                {/* INDIVIDUAL MODE */}
+                {/* INDIVIDUAL MODE — separate text/image per option */}
                 {form.optionsMode === 'individual' && (
                   <div className="space-y-2">
                     {form.options.map((opt) => (
