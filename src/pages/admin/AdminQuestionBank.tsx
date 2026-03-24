@@ -300,12 +300,16 @@ const AdminQuestionBank = () => {
     else if (hasIndividualOptions) optionsMode = 'individual';
 
     setLinkedGroupEnabled(!!q.linked_group_id);
+    // Detect if saved past_paper_ref is a year or custom
+    const savedRef = q.past_paper_ref || CURRENT_YEAR.toString();
+    const isYearRef = PAST_PAPER_YEARS.map(String).includes(savedRef);
     setForm({
       question_type: q.question_type,
       question_text: q.question_text || '',
       question_image_url: imgs[0] || null,
       category: q.category,
-      past_paper_ref: q.past_paper_ref || '',
+      past_paper_ref: isYearRef ? savedRef : 'custom',
+      past_paper_ref_custom: isYearRef ? '' : savedRef,
       medium: q.medium || '',
       grade: q.grade?.toString() || '',
       lesson_id: q.lesson_id || '',
