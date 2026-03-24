@@ -61,6 +61,7 @@ import AdminContactMessages from "./pages/admin/AdminContactMessages";
 import AdminSyllabus from "./pages/admin/AdminSyllabus";
 import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
 import AdminOtpLogs from "./pages/admin/AdminOtpLogs";
+import AdminPaperCrop from "./pages/admin/AdminPaperCrop";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -142,6 +143,7 @@ const App = () => (
               <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
               <Route path="/admin/prices" element={<ProtectedRoute requireModerator><AdminPrices /></ProtectedRoute>} />
               <Route path="/admin/otp-logs" element={<ProtectedRoute requireAdmin><AdminOtpLogs /></ProtectedRoute>} />
+              <Route path="/admin/paper-crop" element={<ProtectedRoute requireModerator><AdminPaperCrop /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />

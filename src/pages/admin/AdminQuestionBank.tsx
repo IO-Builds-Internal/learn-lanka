@@ -81,6 +81,7 @@ type QuestionBankRow = {
   question_no: number | null;
   question_part: string | null;
   linked_group_id: string | null;
+  question_images: string[] | null;
   question_bank_options: QBOption[];
 };
 
@@ -122,6 +123,8 @@ const defaultForm = () => ({
   question_no: null as number | null,
   question_part: null as string | null,
   linked_group_id: '',
+  // Multiple images for essay/short-essay
+  question_images: [] as string[],
 });
 
 // ──────────────── Component ────────────────
@@ -150,7 +153,7 @@ const AdminQuestionBank = () => {
   });
 
   // Questions
-  const { data: questions = [], isLoading } = useQuery<QuestionBankRow[]>({
+  const { data: questions = [] as QuestionBankRow[], isLoading } = useQuery<QuestionBankRow[]>({
     queryKey: ['question_bank'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -158,10 +161,11 @@ const AdminQuestionBank = () => {
         .select('*, question_bank_options(*)')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(q => ({
+      return ((data || []) as any[]).map(q => ({
         ...q,
+        question_images: Array.isArray(q.question_images) ? q.question_images : [],
         question_bank_options: (q.question_bank_options || []).sort((a: QBOption, b: QBOption) => a.option_no - b.option_no),
-      }));
+      })) as QuestionBankRow[];
     },
   });
 
@@ -197,6 +201,10 @@ const AdminQuestionBank = () => {
         question_no: form.category === 'PAST_PAPER' ? form.question_no : null,
         question_part: form.category === 'PAST_PAPER' ? (form.question_part || null) : null,
         linked_group_id: form.question_type === 'MCQ' && form.linked_group_id ? form.linked_group_id.trim() || null : null,
+        // Multiple images for essay/short-essay
+        question_images: (form.question_type === 'ESSAY' || form.question_type === 'SHORT_ESSAY')
+          ? form.question_images
+          : [],
       };
 
       let questionId = editing?.id;
@@ -286,6 +294,7 @@ const AdminQuestionBank = () => {
       question_no: q.question_no,
       question_part: q.question_part,
       linked_group_id: q.linked_group_id || '',
+      question_images: Array.isArray(q.question_images) ? q.question_images : [],
     });
     setDialogOpen(true);
   };
@@ -508,6 +517,21 @@ const AdminQuestionBank = () => {
                         <img src={q.question_image_url} alt="Question" className="max-h-48 rounded-lg border" />
                       ) : (
                         <p className="text-sm whitespace-pre-wrap">{q.question_text}</p>
+                      )}
+
+                      {/* Question images for essay types */}
+                      {(q.question_type === 'ESSAY' || q.question_type === 'SHORT_ESSAY') && q.question_images && q.question_images.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">Question Images ({q.question_images.length})</p>
+                          <div className="flex flex-wrap gap-2">
+                            {q.question_images.map((url, idx) => (
+                              <div key={idx} className="relative">
+                                <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] rounded px-1 font-mono">{idx + 1}</span>
+                                <img src={url} alt={`Image ${idx + 1}`} className="max-h-40 rounded-lg border object-contain" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
                       {/* Metadata */}
@@ -791,6 +815,46 @@ const AdminQuestionBank = () => {
                 </TabsContent>
               </Tabs>
             </div>
+
+            {/* Multiple images for Essay / Short Essay */}
+            {(form.question_type === 'ESSAY' || form.question_type === 'SHORT_ESSAY') && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4" />
+                  Question Images
+                  <span className="text-xs text-muted-foreground font-normal">(optional, added in order)</span>
+                </Label>
+                <div className="space-y-2">
+                  {form.question_images.map((url, idx) => (
+                    <div key={idx} className="flex items-start gap-2 p-2 border rounded-lg">
+                      <span className="text-xs text-muted-foreground font-mono mt-1 w-5 shrink-0">{idx + 1}.</span>
+                      <img src={url} alt={`Image ${idx + 1}`} className="max-h-32 rounded border object-contain flex-1" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive shrink-0"
+                        onClick={() => setForm(f => ({ ...f, question_images: f.question_images.filter((_, i) => i !== idx) }))}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  <ImageDropZone
+                    uploading={uploadingField === 'q_extra_img'}
+                    label={`Add image ${form.question_images.length + 1} (drag & drop or paste)`}
+                    className="h-24"
+                    onFile={async file => {
+                      try {
+                        const url = await uploadImage(file, 'q_extra_img');
+                        setForm(f => ({ ...f, question_images: [...f.question_images, url] }));
+                      } catch (err: unknown) {
+                        toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* MCQ Options */}
             {form.question_type === 'MCQ' && (
