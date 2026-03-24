@@ -290,6 +290,7 @@ const AdminQuestionBank = () => {
       question_no: q.question_no,
       question_part: q.question_part,
       linked_group_id: q.linked_group_id || '',
+      question_images: Array.isArray(q.question_images) ? q.question_images : [],
     });
     setDialogOpen(true);
   };
