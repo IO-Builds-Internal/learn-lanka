@@ -634,7 +634,18 @@ const AdminQuestionBank = () => {
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Question Type *</Label>
-                <Select value={form.question_type} onValueChange={v => setForm(f => ({ ...f, question_type: v, question_no: null, question_part: null }))}>
+                <Select
+                  value={form.question_type}
+                  onValueChange={v => setForm(f => ({
+                    ...f,
+                    question_type: v,
+                    question_no: null,
+                    question_part: null,
+                    // MCQ defaults to image+answers mode; non-MCQ to text
+                    questionInputMode: v === 'MCQ' ? 'image' : 'text',
+                    optionsMode: v === 'MCQ' ? 'image_with_answers' : f.optionsMode,
+                  }))}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {QUESTION_TYPES.map(t => <SelectItem key={t} value={t}>{t.replace('_', ' ')}</SelectItem>)}
