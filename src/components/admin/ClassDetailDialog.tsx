@@ -61,44 +61,34 @@ const ClassDetailDialog = ({ classData, enrollmentCount, open, onOpenChange }: C
             {classData.title}
           </DialogTitle>
           <DialogDescription>
-            Class details and settings
+            Class details and enrollment management
           </DialogDescription>
         </DialogHeader>
         
-        {classData.is_private ? (
-          <Tabs defaultValue="details" className="mt-2">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="enrollments">
-                <Users className="w-4 h-4 mr-2" />
-                Enrollments
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="details" className="space-y-4 mt-4">
-              <ClassDetailsContent 
-                classData={classData} 
-                enrollmentCount={enrollmentCount}
-                copyCode={copyCode}
-              />
-            </TabsContent>
-            
-            <TabsContent value="enrollments" className="mt-4">
-              <PrivateClassEnrollmentsManager 
-                classId={classData.id} 
-                className={classData.title}
-              />
-            </TabsContent>
-          </Tabs>
-        ) : (
-          <div className="space-y-4 mt-2">
+        <Tabs defaultValue="details" className="mt-2">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="enrollments">
+              <Users className="w-4 h-4 mr-2" />
+              Enrollments
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details" className="space-y-4 mt-4">
             <ClassDetailsContent 
               classData={classData} 
               enrollmentCount={enrollmentCount}
               copyCode={copyCode}
             />
-          </div>
-        )}
+          </TabsContent>
+          
+          <TabsContent value="enrollments" className="mt-4">
+            <ClassEnrollmentsManager 
+              classId={classData.id} 
+              className={classData.title}
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
