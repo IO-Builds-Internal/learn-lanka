@@ -573,6 +573,19 @@ const AdminRankPapers = () => {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label>Medium</Label>
+                  <Select value={medium} onValueChange={setMedium}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select medium" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sinhala">Sinhala</SelectItem>
+                      <SelectItem value="english">English</SelectItem>
+                      <SelectItem value="tamil">Tamil</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 {/* Class Assignment */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
