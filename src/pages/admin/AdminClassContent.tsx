@@ -66,6 +66,25 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { invokeFunction } from '@/lib/functions';
 
+// Day-of-week options
+const DAYS_OF_WEEK = [
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
+];
+
+interface TemplateRow {
+  dayOfWeek: number;
+  titlePrefix: string; // e.g. "Theory Session" → will become "Theory Session 1", "Theory Session 2"...
+  startTime: string;
+  endTime: string;
+  isExtra: boolean;
+}
+
 const AdminClassContent = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -84,6 +103,12 @@ const AdminClassContent = () => {
   const [notifyMeetingLink, setNotifyMeetingLink] = useState(false);
   const [createZoomMeeting, setCreateZoomMeeting] = useState(false);
   const [creatingZoomMeeting, setCreatingZoomMeeting] = useState(false);
+  
+  // Template generator state
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateRows, setTemplateRows] = useState<TemplateRow[]>([
+    { dayOfWeek: 5, titlePrefix: 'Theory Session', startTime: '09:00', endTime: '11:30', isExtra: false },
+  ]);
   
   // Lesson dialog state
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
