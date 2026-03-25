@@ -673,10 +673,10 @@ const ClassDetail = () => {
           </TabsContent>
 
           {/* Lessons Tab */}
-          <TabsContent value="lessons" className="space-y-4">
-            <h2 className="text-lg font-semibold">Lessons & Materials</h2>
+          <TabsContent value="lessons" className="space-y-3">
+            <h2 className="text-lg font-semibold">All Lessons & Materials</h2>
 
-            {lessons.length === 0 ? (
+            {allClassMonths.length === 0 ? (
               <Card className="card-elevated">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
@@ -685,78 +685,99 @@ const ClassDetail = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {lessons.map((lesson, index) => (
-                  <Card key={lesson.id} className="card-elevated relative overflow-hidden">
-                    {!isPaid && (
-                      <div className="locked-overlay">
-                        <div className="text-center p-4">
-                          <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                          <p className="text-sm font-medium">Pay monthly fee to unlock</p>
-                        </div>
-                      </div>
-                    )}
-                    <CardContent className={cn("p-4", !isPaid && "blur-sm")}>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                            <span className="font-semibold text-secondary-foreground">{index + 1}</span>
+              <div className="space-y-2">
+                {allClassMonths.map((month) => {
+                  const ymStatus = getMonthPaymentStatus(month.year_month, isPrivateClass);
+                  const isMonthPaid = ymStatus === 'PAID';
+                  const isMonthPending = ymStatus === 'PENDING';
+                  const isCurrentMonth = month.year_month === currentYearMonth;
+                  const isExpanded = expandedMonths.has(month.year_month);
+                  const monthLabel = new Date(month.year_month + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                  return (
+                    <Card
+                      key={month.id}
+                      className={cn(
+                        "card-elevated overflow-hidden transition-all",
+                        isCurrentMonth && "ring-2 ring-primary/30",
+                        isMonthPaid && "border-success/30",
+                      )}
+                    >
+                      {/* Month Header */}
+                      <button
+                        className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/40 transition-colors"
+                        onClick={() => toggleMonthExpand(month.year_month)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+                            isMonthPaid ? "bg-success/15" : isMonthPending ? "bg-warning/15" : "bg-muted"
+                          )}>
+                            {isMonthPaid ? (
+                              <CheckCircle className="w-5 h-5 text-success" />
+                            ) : isMonthPending ? (
+                              <Clock className="w-5 h-5 text-warning" />
+                            ) : (
+                              <Lock className="w-5 h-5 text-muted-foreground" />
+                            )}
                           </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-foreground">{lesson.title}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">{lesson.description}</p>
-                            
-                            {/* Legacy Materials (single pdf/youtube) */}
-                            <div className="flex items-center gap-2 mt-3 flex-wrap">
-                              {lesson.pdf_url && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-1"
-                                  onClick={() => handleDownloadPdf(lesson.id, lesson.pdf_url)}
-                                  disabled={downloadingPdf === lesson.id}
-                                >
-                                  {downloadingPdf === lesson.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <FileText className="w-4 h-4" />
-                                  )}
-                                  PDF
-                                  <Download className="w-3 h-3" />
-                                </Button>
-                              )}
-                              {lesson.youtube_url && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-1"
-                                  onClick={() => window.open(lesson.youtube_url, '_blank')}
-                                >
-                                  <Youtube className="w-4 h-4 text-destructive" />
-                                  Watch Video
-                                </Button>
-                              )}
-                              {lesson.notes_text && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-1"
-                                  onClick={() => setViewingNotes({ title: lesson.title, notes: lesson.notes_text })}
-                                >
-                                  <BookOpen className="w-4 h-4" />
-                                  Notes
-                                </Button>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-sm">{monthLabel}</span>
+                              {isCurrentMonth && (
+                                <Badge className="text-xs px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/20">
+                                  Current
+                                </Badge>
                               )}
                             </div>
-                            
-                            {/* New Multi-Attachments */}
-                            <LessonAttachmentsList lessonId={lesson.id} isPaid={isPaid} />
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {isMonthPaid ? 'Unlocked — tap to view lessons' : isMonthPending ? 'Payment pending verification' : 'Pay to unlock lessons'}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!isMonthPaid && !isPrivateClass && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMonth(month.year_month);
+                                // Switch to payments tab programmatically via DOM
+                                const paymentsTab = document.querySelector('[data-radix-collection-item][value="payments"]') as HTMLButtonElement;
+                                paymentsTab?.click();
+                              }}
+                            >
+                              <CreditCard className="w-3 h-3" />
+                              {isMonthPending ? 'Check payment' : 'Pay now'}
+                            </Button>
+                          )}
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Expanded Lessons Content */}
+                      {isExpanded && (
+                        <MonthLessonsContent
+                          classId={id!}
+                          classMonthId={month.id}
+                          yearMonth={month.year_month}
+                          isPaid={isMonthPaid}
+                          isPrivate={isPrivateClass}
+                          onViewNotes={(title, notes) => setViewingNotes({ title, notes })}
+                          onDownloadPdf={handleDownloadPdf}
+                          downloadingPdf={downloadingPdf}
+                          session={session}
+                        />
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
@@ -766,6 +787,7 @@ const ClassDetail = () => {
             <h2 className="text-lg font-semibold">Practice Papers</h2>
             <ClassPapersList classId={id!} isPaid={isPaid} />
           </TabsContent>
+
 
           {/* Payments Tab */}
           <TabsContent value="payments" className="space-y-6">
