@@ -20,7 +20,9 @@ import {
   Circle,
   Users,
   Link2,
-  Video
+  Video,
+  Wand2,
+  Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
