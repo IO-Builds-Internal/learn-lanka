@@ -787,12 +787,10 @@ const AdminClassContent = () => {
                 <ClipboardList className="w-4 h-4" />
                 Papers
               </TabsTrigger>
-              {classData.is_private && (
-                <TabsTrigger value="enrollments" className="gap-2">
-                  <Users className="w-4 h-4" />
-                  Enrollments
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="enrollments" className="gap-2">
+                <Users className="w-4 h-4" />
+                Enrollments
+              </TabsTrigger>
             </TabsList>
 
             {/* Schedule Tab */}
@@ -817,6 +815,10 @@ const AdminClassContent = () => {
                       {classMonth?.schedule_notified_at ? 'Notified' : 'Notify Students'}
                     </Button>
                   )}
+                  <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    Generate
+                  </Button>
                   <Button onClick={() => { resetDayForm(); setDayDialogOpen(true); }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Day
@@ -829,7 +831,7 @@ const AdminClassContent = () => {
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
                     <h3 className="font-medium text-foreground mb-2">No class days yet</h3>
-                    <p className="text-sm text-muted-foreground">Add your first class day to get started</p>
+                    <p className="text-sm text-muted-foreground mb-4">Add days manually or use "Generate" to create from a weekly template</p>
                   </CardContent>
                 </Card>
               ) : (
