@@ -109,12 +109,11 @@ const ClassDetail = () => {
     enabled: !!enrollment?.id,
   });
 
-  // Fetch current month payment status
+  // Fetch current month payment status (for payments tab)
   const { data: currentPayment } = useQuery({
     queryKey: ['class-payment', user?.id, id, selectedMonth],
     queryFn: async () => {
       if (!user || !id) return null;
-      // ref_id format: classId-yearMonth
       const refId = `${id}-${selectedMonth}`;
       const { data, error } = await supabase
         .from('payments')
@@ -129,7 +128,40 @@ const ClassDetail = () => {
     enabled: !!user && !!id && !!enrollment,
   });
 
-  // Fetch class days for the month
+  // Fetch ALL class months (for lessons tab)
+  const { data: allClassMonths = [] } = useQuery({
+    queryKey: ['all-class-months', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('class_months')
+        .select('*')
+        .eq('class_id', id)
+        .order('year_month', { ascending: false });
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: !!id && !!enrollment,
+  });
+
+  // Fetch ALL payments for this class by user (for lessons tab)
+  const { data: allClassPayments = [] } = useQuery({
+    queryKey: ['all-class-payments', user?.id, id],
+    queryFn: async () => {
+      if (!user || !id) return [];
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('payment_type', 'CLASS_MONTH')
+        .ilike('ref_id', `${id}-%`);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: !!user && !!id && !!enrollment,
+  });
+
+  // Fetch class days for the selected month (schedule tab)
   const { data: classDays = [] } = useQuery({
     queryKey: ['class-days', id, selectedMonth],
     queryFn: async () => {
@@ -154,7 +186,7 @@ const ClassDetail = () => {
     enabled: !!id && !!enrollment,
   });
 
-  // Fetch lessons
+  // Fetch lessons for schedule tab
   const { data: lessons = [] } = useQuery({
     queryKey: ['lessons', id, selectedMonth],
     queryFn: async () => {
@@ -183,6 +215,25 @@ const ClassDetail = () => {
       return data || [];
     },
   });
+
+  // Helper: get payment status for a given yearMonth
+  const getMonthPaymentStatus = (yearMonth: string) => {
+    if (isPrivateClass_check) return 'PAID';
+    const refId = `${id}-${yearMonth}`;
+    const payment = allClassPayments.find(p => p.ref_id === refId);
+    if (payment?.status === 'APPROVED') return 'PAID';
+    if (payment?.status === 'PENDING') return 'PENDING';
+    return 'UNPAID';
+  };
+
+  const toggleMonthExpand = (yearMonth: string) => {
+    setExpandedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(yearMonth)) next.delete(yearMonth);
+      else next.add(yearMonth);
+      return next;
+    });
+  };
 
   // Enroll mutation
   const enrollMutation = useMutation({
