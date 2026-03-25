@@ -16,7 +16,10 @@ import {
   Youtube,
   Loader2,
   ClipboardList,
-  Video
+  Video,
+  ChevronDown,
+  ChevronRight,
+  CreditCard as PayIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,16 +45,19 @@ import PaymentUploadForm from '@/components/payments/PaymentUploadForm';
 import BankAccountsList from '@/components/payments/BankAccountsList';
 import { invokeFunction } from '@/lib/functions';
 
+const currentYearMonth = new Date().toISOString().slice(0, 7);
+
 const ClassDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState(currentYearMonth);
   const [enrollCode, setEnrollCode] = useState('');
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [viewingNotes, setViewingNotes] = useState<{ title: string; notes: string } | null>(null);
   const [joiningMeeting, setJoiningMeeting] = useState<string | null>(null);
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set([currentYearMonth]));
 
   // Fetch class details
   const { data: classData, isLoading: classLoading } = useQuery({
