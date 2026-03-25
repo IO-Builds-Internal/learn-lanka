@@ -1028,18 +1028,125 @@ const AdminClassContent = () => {
               <ClassPapersManager classId={id!} classTitle={classData.title} />
             </TabsContent>
 
-            {/* Enrollments Tab - only for private classes */}
-            {classData.is_private && (
-              <TabsContent value="enrollments" className="space-y-4">
-                <PrivateClassEnrollmentsManager 
-                  classId={id!} 
-                  className={classData.title}
-                />
-              </TabsContent>
-            )}
+            {/* Enrollments Tab - available for all classes */}
+            <TabsContent value="enrollments" className="space-y-4">
+              <ClassEnrollmentsManager 
+                classId={id!} 
+                className={classData.title}
+              />
+            </TabsContent>
           </Tabs>
         )}
       </div>
+
+      {/* Template Generator Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="w-5 h-5 text-primary" />
+              Generate Monthly Schedule
+            </DialogTitle>
+            <DialogDescription>
+              Define a weekly class pattern and auto-generate all class days for {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-3">
+              {templateRows.map((row, idx) => (
+                <div key={idx} className="p-3 border rounded-lg bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Pattern {idx + 1}</span>
+                    {templateRows.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => setTemplateRows(rows => rows.filter((_, i) => i !== idx))}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Day of Week</Label>
+                      <select
+                        value={row.dayOfWeek}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, dayOfWeek: Number(e.target.value) } : r))}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        {DAYS_OF_WEEK.map(d => (
+                          <option key={d.value} value={d.value}>{d.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Title Prefix</Label>
+                      <Input
+                        placeholder="e.g. Theory Session"
+                        value={row.titlePrefix}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, titlePrefix: e.target.value } : r))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Start Time</Label>
+                      <Input
+                        type="time"
+                        value={row.startTime}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, startTime: e.target.value } : r))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">End Time</Label>
+                      <Input
+                        type="time"
+                        value={row.endTime}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, endTime: e.target.value } : r))}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={row.isExtra}
+                      onCheckedChange={v => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, isExtra: v } : r))}
+                    />
+                    <Label className="text-xs">Mark as Extra Session</Label>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setTemplateRows(rows => [...rows, { dayOfWeek: 5, titlePrefix: 'Session', startTime: '09:00', endTime: '11:00', isExtra: false }])}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Another Pattern
+            </Button>
+            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-xs text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">Preview</p>
+              <p>Each matching {DAYS_OF_WEEK.filter(d => templateRows.some(r => r.dayOfWeek === d.value)).map(d => d.label).join(', ')} in {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} will become a class day, numbered sequentially (e.g. "Theory Session 1", "Theory Session 2"…).</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => generateFromTemplateMutation.mutate()}
+              disabled={generateFromTemplateMutation.isPending || templateRows.every(r => !r.titlePrefix.trim())}
+            >
+              {generateFromTemplateMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
+              ) : (
+                <><Wand2 className="w-4 h-4 mr-2" />Generate Days</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add/Edit Day Dialog */}
       <Dialog open={dayDialogOpen} onOpenChange={setDayDialogOpen}>
