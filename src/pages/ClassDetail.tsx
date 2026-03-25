@@ -16,7 +16,10 @@ import {
   Youtube,
   Loader2,
   ClipboardList,
-  Video
+  Video,
+  ChevronDown,
+  ChevronRight,
+  CreditCard as PayIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,16 +45,208 @@ import PaymentUploadForm from '@/components/payments/PaymentUploadForm';
 import BankAccountsList from '@/components/payments/BankAccountsList';
 import { invokeFunction } from '@/lib/functions';
 
+const currentYearMonth = new Date().toISOString().slice(0, 7);
+
+// ---- MonthLessonsContent: fetches and renders lessons for one month ----
+interface MonthLessonsContentProps {
+  classId: string;
+  classMonthId: string;
+  yearMonth: string;
+  isPaid: boolean;
+  isPrivate: boolean;
+  onViewNotes: (title: string, notes: string) => void;
+  onDownloadPdf: (lessonId: string, pdfUrl: string) => void;
+  downloadingPdf: string | null;
+  session: any;
+}
+
+const MonthLessonsContent = ({
+  classId, classMonthId, yearMonth, isPaid, isPrivate,
+  onViewNotes, onDownloadPdf, downloadingPdf, session,
+}: MonthLessonsContentProps) => {
+  const { data: classDays = [], isLoading: daysLoading } = useQuery({
+    queryKey: ['class-days-month', classMonthId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('class_days')
+        .select('*')
+        .eq('class_month_id', classMonthId)
+        .order('date', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const dayIds = classDays.map((d: any) => d.id);
+
+  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
+    queryKey: ['lessons-month', classMonthId],
+    queryFn: async () => {
+      if (dayIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .in('class_day_id', dayIds)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: dayIds.length > 0,
+  });
+
+  if (daysLoading || lessonsLoading) {
+    return (
+      <div className="flex items-center justify-center py-8 border-t">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isPaid) {
+    return (
+      <div className="border-t px-4 py-6 flex flex-col items-center gap-3 bg-muted/30">
+        <Lock className="w-8 h-8 text-muted-foreground" />
+        <p className="text-sm font-medium text-center">
+          Pay the {new Date(yearMonth + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} fee to access these lessons
+        </p>
+      </div>
+    );
+  }
+
+  if (lessons.length === 0 && classDays.length === 0) {
+    return (
+      <div className="border-t px-4 py-6 text-center">
+        <p className="text-sm text-muted-foreground">No lessons scheduled for this month yet</p>
+      </div>
+    );
+  }
+
+  // Group lessons by class day
+  const dayMap = new Map(classDays.map((d: any) => [d.id, d]));
+  const groupedLessons: { day: any; lessons: any[] }[] = [];
+  for (const day of classDays) {
+    const dayLessons = lessons.filter((l: any) => l.class_day_id === day.id);
+    if (dayLessons.length > 0) {
+      groupedLessons.push({ day, lessons: dayLessons });
+    }
+  }
+  const ungrouped = lessons.filter((l: any) => !dayMap.has(l.class_day_id));
+
+  return (
+    <div className="border-t divide-y">
+      {groupedLessons.map(({ day, lessons: dayLessons }) => (
+        <div key={day.id} className="p-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            {' — '}{day.title}
+          </p>
+          <div className="space-y-3">
+            {dayLessons.map((lesson: any, idx: number) => (
+              <LessonCard
+                key={lesson.id}
+                lesson={lesson}
+                index={idx}
+                onViewNotes={onViewNotes}
+                onDownloadPdf={onDownloadPdf}
+                downloadingPdf={downloadingPdf}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+      {ungrouped.length > 0 && (
+        <div className="p-4 space-y-3">
+          {ungrouped.map((lesson: any, idx: number) => (
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              index={idx}
+              onViewNotes={onViewNotes}
+              onDownloadPdf={onDownloadPdf}
+              downloadingPdf={downloadingPdf}
+            />
+          ))}
+        </div>
+      )}
+      {lessons.length === 0 && (
+        <div className="px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground">No lesson materials added yet</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ---- LessonCard: single lesson row ----
+interface LessonCardProps {
+  lesson: any;
+  index: number;
+  onViewNotes: (title: string, notes: string) => void;
+  onDownloadPdf: (lessonId: string, pdfUrl: string) => void;
+  downloadingPdf: string | null;
+}
+
+const LessonCard = ({ lesson, index, onViewNotes, onDownloadPdf, downloadingPdf }: LessonCardProps) => (
+  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+      <span className="text-xs font-bold text-primary">{index + 1}</span>
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="font-medium text-sm leading-snug">{lesson.title}</p>
+      {lesson.description && (
+        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{lesson.description}</p>
+      )}
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {lesson.pdf_url && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 px-2"
+            onClick={() => onDownloadPdf(lesson.id, lesson.pdf_url)}
+            disabled={downloadingPdf === lesson.id}
+          >
+            {downloadingPdf === lesson.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+            PDF
+            <Download className="w-3 h-3" />
+          </Button>
+        )}
+        {lesson.youtube_url && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 px-2"
+            onClick={() => window.open(lesson.youtube_url, '_blank')}
+          >
+            <Youtube className="w-3 h-3 text-destructive" />
+            Video
+          </Button>
+        )}
+        {lesson.notes_text && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 px-2"
+            onClick={() => onViewNotes(lesson.title, lesson.notes_text)}
+          >
+            <BookOpen className="w-3 h-3" />
+            Notes
+          </Button>
+        )}
+      </div>
+      <LessonAttachmentsList lessonId={lesson.id} isPaid={true} />
+    </div>
+  </div>
+);
+
 const ClassDetail = () => {
+
   const { id } = useParams<{ id: string }>();
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState(currentYearMonth);
   const [enrollCode, setEnrollCode] = useState('');
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [viewingNotes, setViewingNotes] = useState<{ title: string; notes: string } | null>(null);
   const [joiningMeeting, setJoiningMeeting] = useState<string | null>(null);
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set([currentYearMonth]));
 
   // Fetch class details
   const { data: classData, isLoading: classLoading } = useQuery({
@@ -103,12 +298,11 @@ const ClassDetail = () => {
     enabled: !!enrollment?.id,
   });
 
-  // Fetch current month payment status
+  // Fetch current month payment status (for payments tab)
   const { data: currentPayment } = useQuery({
     queryKey: ['class-payment', user?.id, id, selectedMonth],
     queryFn: async () => {
       if (!user || !id) return null;
-      // ref_id format: classId-yearMonth
       const refId = `${id}-${selectedMonth}`;
       const { data, error } = await supabase
         .from('payments')
@@ -123,7 +317,40 @@ const ClassDetail = () => {
     enabled: !!user && !!id && !!enrollment,
   });
 
-  // Fetch class days for the month
+  // Fetch ALL class months (for lessons tab)
+  const { data: allClassMonths = [] } = useQuery({
+    queryKey: ['all-class-months', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('class_months')
+        .select('*')
+        .eq('class_id', id)
+        .order('year_month', { ascending: false });
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: !!id && !!enrollment,
+  });
+
+  // Fetch ALL payments for this class by user (for lessons tab)
+  const { data: allClassPayments = [] } = useQuery({
+    queryKey: ['all-class-payments', user?.id, id],
+    queryFn: async () => {
+      if (!user || !id) return [];
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('payment_type', 'CLASS_MONTH')
+        .ilike('ref_id', `${id}-%`);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: !!user && !!id && !!enrollment,
+  });
+
+  // Fetch class days for the selected month (schedule tab)
   const { data: classDays = [] } = useQuery({
     queryKey: ['class-days', id, selectedMonth],
     queryFn: async () => {
@@ -148,7 +375,7 @@ const ClassDetail = () => {
     enabled: !!id && !!enrollment,
   });
 
-  // Fetch lessons
+  // Fetch lessons for schedule tab
   const { data: lessons = [] } = useQuery({
     queryKey: ['lessons', id, selectedMonth],
     queryFn: async () => {
@@ -177,6 +404,25 @@ const ClassDetail = () => {
       return data || [];
     },
   });
+
+  // Helper: get payment status for a given yearMonth
+  const getMonthPaymentStatus = (yearMonth: string, isPrivate: boolean) => {
+    if (isPrivate) return 'PAID';
+    const refId = `${id}-${yearMonth}`;
+    const payment = allClassPayments.find(p => p.ref_id === refId);
+    if (payment?.status === 'APPROVED') return 'PAID';
+    if (payment?.status === 'PENDING') return 'PENDING';
+    return 'UNPAID';
+  };
+
+  const toggleMonthExpand = (yearMonth: string) => {
+    setExpandedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(yearMonth)) next.delete(yearMonth);
+      else next.add(yearMonth);
+      return next;
+    });
+  };
 
   // Enroll mutation
   const enrollMutation = useMutation({
@@ -616,10 +862,10 @@ const ClassDetail = () => {
           </TabsContent>
 
           {/* Lessons Tab */}
-          <TabsContent value="lessons" className="space-y-4">
-            <h2 className="text-lg font-semibold">Lessons & Materials</h2>
+          <TabsContent value="lessons" className="space-y-3">
+            <h2 className="text-lg font-semibold">All Lessons & Materials</h2>
 
-            {lessons.length === 0 ? (
+            {allClassMonths.length === 0 ? (
               <Card className="card-elevated">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
@@ -628,78 +874,99 @@ const ClassDetail = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {lessons.map((lesson, index) => (
-                  <Card key={lesson.id} className="card-elevated relative overflow-hidden">
-                    {!isPaid && (
-                      <div className="locked-overlay">
-                        <div className="text-center p-4">
-                          <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                          <p className="text-sm font-medium">Pay monthly fee to unlock</p>
-                        </div>
-                      </div>
-                    )}
-                    <CardContent className={cn("p-4", !isPaid && "blur-sm")}>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                            <span className="font-semibold text-secondary-foreground">{index + 1}</span>
+              <div className="space-y-2">
+                {allClassMonths.map((month) => {
+                  const ymStatus = getMonthPaymentStatus(month.year_month, isPrivateClass);
+                  const isMonthPaid = ymStatus === 'PAID';
+                  const isMonthPending = ymStatus === 'PENDING';
+                  const isCurrentMonth = month.year_month === currentYearMonth;
+                  const isExpanded = expandedMonths.has(month.year_month);
+                  const monthLabel = new Date(month.year_month + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                  return (
+                    <Card
+                      key={month.id}
+                      className={cn(
+                        "card-elevated overflow-hidden transition-all",
+                        isCurrentMonth && "ring-2 ring-primary/30",
+                        isMonthPaid && "border-success/30",
+                      )}
+                    >
+                      {/* Month Header */}
+                      <button
+                        className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/40 transition-colors"
+                        onClick={() => toggleMonthExpand(month.year_month)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+                            isMonthPaid ? "bg-success/15" : isMonthPending ? "bg-warning/15" : "bg-muted"
+                          )}>
+                            {isMonthPaid ? (
+                              <CheckCircle className="w-5 h-5 text-success" />
+                            ) : isMonthPending ? (
+                              <Clock className="w-5 h-5 text-warning" />
+                            ) : (
+                              <Lock className="w-5 h-5 text-muted-foreground" />
+                            )}
                           </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-foreground">{lesson.title}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">{lesson.description}</p>
-                            
-                            {/* Legacy Materials (single pdf/youtube) */}
-                            <div className="flex items-center gap-2 mt-3 flex-wrap">
-                              {lesson.pdf_url && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-1"
-                                  onClick={() => handleDownloadPdf(lesson.id, lesson.pdf_url)}
-                                  disabled={downloadingPdf === lesson.id}
-                                >
-                                  {downloadingPdf === lesson.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <FileText className="w-4 h-4" />
-                                  )}
-                                  PDF
-                                  <Download className="w-3 h-3" />
-                                </Button>
-                              )}
-                              {lesson.youtube_url && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-1"
-                                  onClick={() => window.open(lesson.youtube_url, '_blank')}
-                                >
-                                  <Youtube className="w-4 h-4 text-destructive" />
-                                  Watch Video
-                                </Button>
-                              )}
-                              {lesson.notes_text && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="gap-1"
-                                  onClick={() => setViewingNotes({ title: lesson.title, notes: lesson.notes_text })}
-                                >
-                                  <BookOpen className="w-4 h-4" />
-                                  Notes
-                                </Button>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-sm">{monthLabel}</span>
+                              {isCurrentMonth && (
+                                <Badge className="text-xs px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/20">
+                                  Current
+                                </Badge>
                               )}
                             </div>
-                            
-                            {/* New Multi-Attachments */}
-                            <LessonAttachmentsList lessonId={lesson.id} isPaid={isPaid} />
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {isMonthPaid ? 'Unlocked — tap to view lessons' : isMonthPending ? 'Payment pending verification' : 'Pay to unlock lessons'}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!isMonthPaid && !isPrivateClass && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMonth(month.year_month);
+                                // Switch to payments tab programmatically via DOM
+                                const paymentsTab = document.querySelector('[data-radix-collection-item][value="payments"]') as HTMLButtonElement;
+                                paymentsTab?.click();
+                              }}
+                            >
+                              <CreditCard className="w-3 h-3" />
+                              {isMonthPending ? 'Check payment' : 'Pay now'}
+                            </Button>
+                          )}
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Expanded Lessons Content */}
+                      {isExpanded && (
+                        <MonthLessonsContent
+                          classId={id!}
+                          classMonthId={month.id}
+                          yearMonth={month.year_month}
+                          isPaid={isMonthPaid}
+                          isPrivate={isPrivateClass}
+                          onViewNotes={(title, notes) => setViewingNotes({ title, notes })}
+                          onDownloadPdf={handleDownloadPdf}
+                          downloadingPdf={downloadingPdf}
+                          session={session}
+                        />
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
@@ -709,6 +976,7 @@ const ClassDetail = () => {
             <h2 className="text-lg font-semibold">Practice Papers</h2>
             <ClassPapersList classId={id!} isPaid={isPaid} />
           </TabsContent>
+
 
           {/* Payments Tab */}
           <TabsContent value="payments" className="space-y-6">
