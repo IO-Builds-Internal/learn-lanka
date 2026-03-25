@@ -59,6 +59,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import ClassPapersManager from '@/components/admin/ClassPapersManager';
 import LessonAttachmentsManager from '@/components/admin/LessonAttachmentsManager';
+import ClassEnrollmentsManager from '@/components/admin/ClassEnrollmentsManager';
 import PrivateClassEnrollmentsManager from '@/components/admin/PrivateClassEnrollmentsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
