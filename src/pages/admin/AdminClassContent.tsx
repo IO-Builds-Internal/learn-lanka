@@ -212,6 +212,56 @@ const AdminClassContent = () => {
     },
   });
 
+  // Template generator mutation - creates class days from a weekly pattern
+  const generateFromTemplateMutation = useMutation({
+    mutationFn: async () => {
+      if (!classMonth) throw new Error('No class month');
+      
+      // Get all dates in the selected month
+      const [year, month] = selectedMonth.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      
+      // Build list of dates to create, grouped by titlePrefix for numbering
+      const toInsert: any[] = [];
+      const counters: Record<string, number> = {};
+      
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month - 1, d);
+        const dow = date.getDay(); // 0=Sun, 6=Sat
+        
+        const matchingRows = templateRows.filter(r => r.dayOfWeek === dow);
+        for (const row of matchingRows) {
+          const prefix = row.titlePrefix.trim() || 'Class';
+          counters[prefix] = (counters[prefix] || 0) + 1;
+          const title = `${prefix} ${counters[prefix]}`;
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          toInsert.push({
+            class_month_id: classMonth.id,
+            title,
+            date: dateStr,
+            start_time: row.startTime || null,
+            end_time: row.endTime || null,
+            is_extra: row.isExtra,
+          });
+        }
+      }
+      
+      if (toInsert.length === 0) throw new Error('No matching dates found for the selected pattern');
+      
+      const { error } = await supabase.from('class_days').insert(toInsert as any);
+      if (error) throw error;
+      return toInsert.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['class-days'] });
+      setTemplateDialogOpen(false);
+      toast.success(`Generated ${count} class days!`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to generate schedule');
+    },
+  });
+
   // Day mutations
   const saveDayMutation = useMutation({
     mutationFn: async () => {
