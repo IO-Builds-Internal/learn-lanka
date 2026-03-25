@@ -20,7 +20,9 @@ import {
   Circle,
   Users,
   Link2,
-  Video
+  Video,
+  Wand2,
+  Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,12 +59,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import ClassPapersManager from '@/components/admin/ClassPapersManager';
 import LessonAttachmentsManager from '@/components/admin/LessonAttachmentsManager';
+import ClassEnrollmentsManager from '@/components/admin/ClassEnrollmentsManager';
 import PrivateClassEnrollmentsManager from '@/components/admin/PrivateClassEnrollmentsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { invokeFunction } from '@/lib/functions';
+
+// Day-of-week options
+const DAYS_OF_WEEK = [
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
+];
+
+interface TemplateRow {
+  dayOfWeek: number;
+  titlePrefix: string; // e.g. "Theory Session" → will become "Theory Session 1", "Theory Session 2"...
+  startTime: string;
+  endTime: string;
+  isExtra: boolean;
+}
 
 const AdminClassContent = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,6 +104,12 @@ const AdminClassContent = () => {
   const [notifyMeetingLink, setNotifyMeetingLink] = useState(false);
   const [createZoomMeeting, setCreateZoomMeeting] = useState(false);
   const [creatingZoomMeeting, setCreatingZoomMeeting] = useState(false);
+  
+  // Template generator state
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateRows, setTemplateRows] = useState<TemplateRow[]>([
+    { dayOfWeek: 5, titlePrefix: 'Theory Session', startTime: '09:00', endTime: '11:30', isExtra: false },
+  ]);
   
   // Lesson dialog state
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
@@ -182,6 +210,56 @@ const AdminClassContent = () => {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create month');
+    },
+  });
+
+  // Template generator mutation - creates class days from a weekly pattern
+  const generateFromTemplateMutation = useMutation({
+    mutationFn: async () => {
+      if (!classMonth) throw new Error('No class month');
+      
+      // Get all dates in the selected month
+      const [year, month] = selectedMonth.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      
+      // Build list of dates to create, grouped by titlePrefix for numbering
+      const toInsert: any[] = [];
+      const counters: Record<string, number> = {};
+      
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month - 1, d);
+        const dow = date.getDay(); // 0=Sun, 6=Sat
+        
+        const matchingRows = templateRows.filter(r => r.dayOfWeek === dow);
+        for (const row of matchingRows) {
+          const prefix = row.titlePrefix.trim() || 'Class';
+          counters[prefix] = (counters[prefix] || 0) + 1;
+          const title = `${prefix} ${counters[prefix]}`;
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          toInsert.push({
+            class_month_id: classMonth.id,
+            title,
+            date: dateStr,
+            start_time: row.startTime || null,
+            end_time: row.endTime || null,
+            is_extra: row.isExtra,
+          });
+        }
+      }
+      
+      if (toInsert.length === 0) throw new Error('No matching dates found for the selected pattern');
+      
+      const { error } = await supabase.from('class_days').insert(toInsert as any);
+      if (error) throw error;
+      return toInsert.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['class-days'] });
+      setTemplateDialogOpen(false);
+      toast.success(`Generated ${count} class days!`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to generate schedule');
     },
   });
 
@@ -710,12 +788,10 @@ const AdminClassContent = () => {
                 <ClipboardList className="w-4 h-4" />
                 Papers
               </TabsTrigger>
-              {classData.is_private && (
-                <TabsTrigger value="enrollments" className="gap-2">
-                  <Users className="w-4 h-4" />
-                  Enrollments
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="enrollments" className="gap-2">
+                <Users className="w-4 h-4" />
+                Enrollments
+              </TabsTrigger>
             </TabsList>
 
             {/* Schedule Tab */}
@@ -740,6 +816,10 @@ const AdminClassContent = () => {
                       {classMonth?.schedule_notified_at ? 'Notified' : 'Notify Students'}
                     </Button>
                   )}
+                  <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    Generate
+                  </Button>
                   <Button onClick={() => { resetDayForm(); setDayDialogOpen(true); }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Day
@@ -752,7 +832,7 @@ const AdminClassContent = () => {
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
                     <h3 className="font-medium text-foreground mb-2">No class days yet</h3>
-                    <p className="text-sm text-muted-foreground">Add your first class day to get started</p>
+                    <p className="text-sm text-muted-foreground mb-4">Add days manually or use "Generate" to create from a weekly template</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -949,18 +1029,125 @@ const AdminClassContent = () => {
               <ClassPapersManager classId={id!} classTitle={classData.title} />
             </TabsContent>
 
-            {/* Enrollments Tab - only for private classes */}
-            {classData.is_private && (
-              <TabsContent value="enrollments" className="space-y-4">
-                <PrivateClassEnrollmentsManager 
-                  classId={id!} 
-                  className={classData.title}
-                />
-              </TabsContent>
-            )}
+            {/* Enrollments Tab - available for all classes */}
+            <TabsContent value="enrollments" className="space-y-4">
+              <ClassEnrollmentsManager 
+                classId={id!} 
+                className={classData.title}
+              />
+            </TabsContent>
           </Tabs>
         )}
       </div>
+
+      {/* Template Generator Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="w-5 h-5 text-primary" />
+              Generate Monthly Schedule
+            </DialogTitle>
+            <DialogDescription>
+              Define a weekly class pattern and auto-generate all class days for {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-3">
+              {templateRows.map((row, idx) => (
+                <div key={idx} className="p-3 border rounded-lg bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Pattern {idx + 1}</span>
+                    {templateRows.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => setTemplateRows(rows => rows.filter((_, i) => i !== idx))}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Day of Week</Label>
+                      <select
+                        value={row.dayOfWeek}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, dayOfWeek: Number(e.target.value) } : r))}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        {DAYS_OF_WEEK.map(d => (
+                          <option key={d.value} value={d.value}>{d.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Title Prefix</Label>
+                      <Input
+                        placeholder="e.g. Theory Session"
+                        value={row.titlePrefix}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, titlePrefix: e.target.value } : r))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Start Time</Label>
+                      <Input
+                        type="time"
+                        value={row.startTime}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, startTime: e.target.value } : r))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">End Time</Label>
+                      <Input
+                        type="time"
+                        value={row.endTime}
+                        onChange={e => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, endTime: e.target.value } : r))}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={row.isExtra}
+                      onCheckedChange={v => setTemplateRows(rows => rows.map((r, i) => i === idx ? { ...r, isExtra: v } : r))}
+                    />
+                    <Label className="text-xs">Mark as Extra Session</Label>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setTemplateRows(rows => [...rows, { dayOfWeek: 5, titlePrefix: 'Session', startTime: '09:00', endTime: '11:00', isExtra: false }])}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Another Pattern
+            </Button>
+            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-xs text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">Preview</p>
+              <p>Each matching {DAYS_OF_WEEK.filter(d => templateRows.some(r => r.dayOfWeek === d.value)).map(d => d.label).join(', ')} in {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} will become a class day, numbered sequentially (e.g. "Theory Session 1", "Theory Session 2"…).</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => generateFromTemplateMutation.mutate()}
+              disabled={generateFromTemplateMutation.isPending || templateRows.every(r => !r.titlePrefix.trim())}
+            >
+              {generateFromTemplateMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
+              ) : (
+                <><Wand2 className="w-4 h-4 mr-2" />Generate Days</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add/Edit Day Dialog */}
       <Dialog open={dayDialogOpen} onOpenChange={setDayDialogOpen}>
