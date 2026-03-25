@@ -217,8 +217,8 @@ const ClassDetail = () => {
   });
 
   // Helper: get payment status for a given yearMonth
-  const getMonthPaymentStatus = (yearMonth: string) => {
-    if (isPrivateClass_check) return 'PAID';
+  const getMonthPaymentStatus = (yearMonth: string, isPrivate: boolean) => {
+    if (isPrivate) return 'PAID';
     const refId = `${id}-${yearMonth}`;
     const payment = allClassPayments.find(p => p.ref_id === refId);
     if (payment?.status === 'APPROVED') return 'PAID';
