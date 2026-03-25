@@ -47,7 +47,196 @@ import { invokeFunction } from '@/lib/functions';
 
 const currentYearMonth = new Date().toISOString().slice(0, 7);
 
+// ---- MonthLessonsContent: fetches and renders lessons for one month ----
+interface MonthLessonsContentProps {
+  classId: string;
+  classMonthId: string;
+  yearMonth: string;
+  isPaid: boolean;
+  isPrivate: boolean;
+  onViewNotes: (title: string, notes: string) => void;
+  onDownloadPdf: (lessonId: string, pdfUrl: string) => void;
+  downloadingPdf: string | null;
+  session: any;
+}
+
+const MonthLessonsContent = ({
+  classId, classMonthId, yearMonth, isPaid, isPrivate,
+  onViewNotes, onDownloadPdf, downloadingPdf, session,
+}: MonthLessonsContentProps) => {
+  const { data: classDays = [], isLoading: daysLoading } = useQuery({
+    queryKey: ['class-days-month', classMonthId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('class_days')
+        .select('*')
+        .eq('class_month_id', classMonthId)
+        .order('date', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const dayIds = classDays.map((d: any) => d.id);
+
+  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
+    queryKey: ['lessons-month', classMonthId],
+    queryFn: async () => {
+      if (dayIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .in('class_day_id', dayIds)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: dayIds.length > 0,
+  });
+
+  if (daysLoading || lessonsLoading) {
+    return (
+      <div className="flex items-center justify-center py-8 border-t">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isPaid) {
+    return (
+      <div className="border-t px-4 py-6 flex flex-col items-center gap-3 bg-muted/30">
+        <Lock className="w-8 h-8 text-muted-foreground" />
+        <p className="text-sm font-medium text-center">
+          Pay the {new Date(yearMonth + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} fee to access these lessons
+        </p>
+      </div>
+    );
+  }
+
+  if (lessons.length === 0 && classDays.length === 0) {
+    return (
+      <div className="border-t px-4 py-6 text-center">
+        <p className="text-sm text-muted-foreground">No lessons scheduled for this month yet</p>
+      </div>
+    );
+  }
+
+  // Group lessons by class day
+  const dayMap = new Map(classDays.map((d: any) => [d.id, d]));
+  const groupedLessons: { day: any; lessons: any[] }[] = [];
+  for (const day of classDays) {
+    const dayLessons = lessons.filter((l: any) => l.class_day_id === day.id);
+    if (dayLessons.length > 0) {
+      groupedLessons.push({ day, lessons: dayLessons });
+    }
+  }
+  const ungrouped = lessons.filter((l: any) => !dayMap.has(l.class_day_id));
+
+  return (
+    <div className="border-t divide-y">
+      {groupedLessons.map(({ day, lessons: dayLessons }) => (
+        <div key={day.id} className="p-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            {' — '}{day.title}
+          </p>
+          <div className="space-y-3">
+            {dayLessons.map((lesson: any, idx: number) => (
+              <LessonCard
+                key={lesson.id}
+                lesson={lesson}
+                index={idx}
+                onViewNotes={onViewNotes}
+                onDownloadPdf={onDownloadPdf}
+                downloadingPdf={downloadingPdf}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+      {ungrouped.length > 0 && (
+        <div className="p-4 space-y-3">
+          {ungrouped.map((lesson: any, idx: number) => (
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              index={idx}
+              onViewNotes={onViewNotes}
+              onDownloadPdf={onDownloadPdf}
+              downloadingPdf={downloadingPdf}
+            />
+          ))}
+        </div>
+      )}
+      {lessons.length === 0 && (
+        <div className="px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground">No lesson materials added yet</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ---- LessonCard: single lesson row ----
+interface LessonCardProps {
+  lesson: any;
+  index: number;
+  onViewNotes: (title: string, notes: string) => void;
+  onDownloadPdf: (lessonId: string, pdfUrl: string) => void;
+  downloadingPdf: string | null;
+}
+
+const LessonCard = ({ lesson, index, onViewNotes, onDownloadPdf, downloadingPdf }: LessonCardProps) => (
+  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+      <span className="text-xs font-bold text-primary">{index + 1}</span>
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="font-medium text-sm leading-snug">{lesson.title}</p>
+      {lesson.description && (
+        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{lesson.description}</p>
+      )}
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {lesson.pdf_url && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 px-2"
+            onClick={() => onDownloadPdf(lesson.id, lesson.pdf_url)}
+            disabled={downloadingPdf === lesson.id}
+          >
+            {downloadingPdf === lesson.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+            PDF
+            <Download className="w-3 h-3" />
+          </Button>
+        )}
+        {lesson.youtube_url && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 px-2"
+            onClick={() => window.open(lesson.youtube_url, '_blank')}
+          >
+            <Youtube className="w-3 h-3 text-destructive" />
+            Video
+          </Button>
+        )}
+        {lesson.notes_text && (
+          <Button
+            variant="outline" size="sm"
+            className="h-7 text-xs gap-1 px-2"
+            onClick={() => onViewNotes(lesson.title, lesson.notes_text)}
+          >
+            <BookOpen className="w-3 h-3" />
+            Notes
+          </Button>
+        )}
+      </div>
+      <LessonAttachmentsList lessonId={lesson.id} isPaid={true} />
+    </div>
+  </div>
+);
+
 const ClassDetail = () => {
+
   const { id } = useParams<{ id: string }>();
   const { user, session } = useAuth();
   const navigate = useNavigate();
