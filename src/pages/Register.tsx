@@ -248,14 +248,14 @@ const Register = () => {
         <div className="text-center lg:text-left lg:flex-1 lg:max-w-lg">
           <div className="mb-6">
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">
-              A/L ICT
+              AL Student
             </h1>
             <p className="text-lg md:text-xl text-slate-300">
-              Advanced Level ICT Education
+              Sri Lanka's #1 A/L Learning Platform
             </p>
           </div>
           <p className="text-slate-400 text-sm md:text-base max-w-md">
-            Join thousands of students mastering Information & Communication Technology with expert guidance.
+            Access past papers, expert classes, and study materials for every Advanced Level subject.
           </p>
         </div>
 

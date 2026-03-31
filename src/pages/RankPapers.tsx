@@ -33,6 +33,16 @@ const RankPapers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
   const [mediumFilter, setMediumFilter] = useState<string>('all');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
+
+  // Fetch enabled subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
 
   // Fetch published rank papers
   const { data: rankPapers = [], isLoading: loadingPapers } = useQuery({
@@ -122,7 +132,8 @@ const RankPapers = () => {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGrade = gradeFilter === 'all' || paper.grade.toString() === gradeFilter;
     const matchesMedium = mediumFilter === 'all' || (paper.medium || 'sinhala') === mediumFilter;
-    return matchesSearch && matchesGrade && matchesMedium;
+    const matchesSubject = subjectFilter === 'all' || paper.subject_id === subjectFilter;
+    return matchesSearch && matchesGrade && matchesMedium && matchesSubject;
   });
 
   // Split: history = submitted attempts; available = not attempted at all
@@ -166,9 +177,20 @@ const RankPapers = () => {
               className="pl-9 h-10"
             />
           </div>
+          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+            <SelectTrigger className="w-full sm:w-[160px] h-10">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Subject" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              {subjects.map((s: any) => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={gradeFilter} onValueChange={setGradeFilter}>
             <SelectTrigger className="w-full sm:w-[140px] h-10">
-              <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Grade" />
             </SelectTrigger>
             <SelectContent>

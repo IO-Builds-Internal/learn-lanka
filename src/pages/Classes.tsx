@@ -27,8 +27,18 @@ const Classes = () => {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [privateCodeDialogOpen, setPrivateCodeDialogOpen] = useState(false);
   const [privateCode, setPrivateCode] = useState('');
+
+  // Fetch enabled subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
 
   // Fetch only PUBLIC classes (exclude private ones)
   const { data: classes = [], isLoading: classesLoading } = useQuery({
@@ -130,14 +140,16 @@ const Classes = () => {
 
   const enrolledClassIds = enrollments.map(e => e.class_id);
 
-  const filteredClasses = classes.filter((cls) => {
+  const filteredClasses = classes.filter((cls: any) => {
     const matchesSearch = cls.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (cls.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     
     const matchesGrade = gradeFilter === 'all' || 
       (parseInt(gradeFilter) >= cls.grade_min && parseInt(gradeFilter) <= cls.grade_max);
+
+    const matchesSubject = subjectFilter === 'all' || cls.subject_id === subjectFilter;
     
-    return matchesSearch && matchesGrade;
+    return matchesSearch && matchesGrade && matchesSubject;
   });
 
   if (classesLoading) {
@@ -158,7 +170,7 @@ const Classes = () => {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Classes</h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Browse and enroll in ICT classes
+              Browse and enroll in classes
             </p>
           </div>
           <Button 
@@ -183,9 +195,20 @@ const Classes = () => {
               className="pl-9 h-10"
             />
           </div>
+          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+            <SelectTrigger className="w-full sm:w-[160px] h-10">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Subject" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              {subjects.map((s: any) => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={gradeFilter} onValueChange={setGradeFilter}>
             <SelectTrigger className="w-full sm:w-[140px] h-10">
-              <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Grade" />
             </SelectTrigger>
             <SelectContent>

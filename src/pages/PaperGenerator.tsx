@@ -102,6 +102,7 @@ const PaperGenerator = () => {
   // Config state
   const [selectedGrade, setSelectedGrade] = useState<string>('12');
   const [selectedMedium, setSelectedMedium] = useState<string>('English');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [paperType, setPaperType] = useState<'DAILY' | 'FULL'>('DAILY');
   const [selectedLessons, setSelectedLessons] = useState<WeightedLesson[]>([]);
   const [pickerLessonId, setPickerLessonId] = useState<string>('');
@@ -111,20 +112,39 @@ const PaperGenerator = () => {
   const [generatedPaper, setGeneratedPaper] = useState<{ id: string; questions: GeneratedQuestion[] } | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
+  // Fetch enabled subjects
+  const { data: pgSubjects = [] } = useQuery({
+    queryKey: ['pg-subjects'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
+
+  // Auto-select first subject
+  useEffect(() => {
+    if (pgSubjects.length > 0 && !selectedSubjectId) {
+      setSelectedSubjectId(pgSubjects[0].id);
+    }
+  }, [pgSubjects, selectedSubjectId]);
+
   // Fetch lessons for grade + medium
   const gradeParam = selectedGrade === '12' ? [12, 13] : [parseInt(selectedGrade)];
   const { data: allLessons = [] } = useQuery({
-    queryKey: ['syllabus-lessons-for-gen', selectedGrade, selectedMedium],
+    queryKey: ['syllabus-lessons-for-gen', selectedGrade, selectedMedium, selectedSubjectId],
     queryFn: async () => {
+      if (!selectedSubjectId) return [];
       const { data, error } = await supabase
         .from('syllabus_lessons')
         .select('id, title, parent_id')
+        .eq('subject_id', selectedSubjectId)
         .in('grade', gradeParam)
         .or(`medium.eq.${selectedMedium},medium.is.null`)
         .order('sort_order');
       if (error) throw error;
       return data as LessonItem[];
     },
+    enabled: !!selectedSubjectId,
   });
 
   // Available (not yet added) lessons
@@ -323,9 +343,22 @@ const PaperGenerator = () => {
                 {/* Step 1: Grade & Type */}
                 <Card className="card-elevated">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Step 1 — Grade, Medium & Paper Type</CardTitle>
+                    <CardTitle className="text-base">Step 1 — Subject, Grade, Medium & Paper Type</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Subject</Label>
+                      <Select value={selectedSubjectId} onValueChange={v => { setSelectedSubjectId(v); setSelectedLessons([]); }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select subject" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {pgSubjects.map((s: any) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Grade</Label>
