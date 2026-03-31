@@ -42,6 +42,11 @@ import Playground from "./pages/Playground";
 // Teacher Pages
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherClasses from "./pages/teacher/TeacherClasses";
+import TeacherEnrollments from "./pages/teacher/TeacherEnrollments";
+import TeacherPayments from "./pages/teacher/TeacherPayments";
+import TeacherPapers from "./pages/teacher/TeacherPapers";
+import TeacherSyllabus from "./pages/teacher/TeacherSyllabus";
+import TeacherQuestionBank from "./pages/teacher/TeacherQuestionBank";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
