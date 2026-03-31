@@ -49,7 +49,7 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut, isAdmin, isModerator } = useAuth();
   const { data: settings } = useSiteSettings();
-  const siteName = settings?.site_name || 'ICT Academy';
+  const siteName = settings?.site_name || 'AL Student';
 
   const navItems = (() => {
     const dashboard = ALL_NAV_ITEMS.find(i => i.key === 'dashboard')!;

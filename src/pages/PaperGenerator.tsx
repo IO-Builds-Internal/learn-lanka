@@ -343,9 +343,22 @@ const PaperGenerator = () => {
                 {/* Step 1: Grade & Type */}
                 <Card className="card-elevated">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Step 1 — Grade, Medium & Paper Type</CardTitle>
+                    <CardTitle className="text-base">Step 1 — Subject, Grade, Medium & Paper Type</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Subject</Label>
+                      <Select value={selectedSubjectId} onValueChange={v => { setSelectedSubjectId(v); setSelectedLessons([]); }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select subject" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {pgSubjects.map((s: any) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Grade</Label>

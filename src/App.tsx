@@ -83,7 +83,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider defaultTheme="system" storageKey="ict-academy-theme">
+  <ThemeProvider defaultTheme="system" storageKey="al-student-theme">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>

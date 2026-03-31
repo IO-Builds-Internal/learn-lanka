@@ -116,7 +116,7 @@ const TeacherClasses = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Class Title</label>
-                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., ICT Theory - 2026 Batch" />
+                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., Combined Maths - 2026 Batch" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Description</label>
