@@ -13,6 +13,26 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
+import ictImg from '@/assets/subjects/ict.jpg';
+import mathsImg from '@/assets/subjects/combined-maths.jpg';
+import physicsImg from '@/assets/subjects/physics.jpg';
+import chemistryImg from '@/assets/subjects/chemistry.jpg';
+import biologyImg from '@/assets/subjects/biology.jpg';
+import accountingImg from '@/assets/subjects/accounting.jpg';
+import economicsImg from '@/assets/subjects/economics.jpg';
+import businessImg from '@/assets/subjects/business-studies.jpg';
+
+const FALLBACK_IMAGES: Record<string, string> = {
+  ict: ictImg,
+  'combined-maths': mathsImg,
+  physics: physicsImg,
+  chemistry: chemistryImg,
+  biology: biologyImg,
+  accounting: accountingImg,
+  economics: economicsImg,
+  'business-studies': businessImg,
+};
+
 const ICON_MAP: Record<string, React.ElementType> = {
   Monitor, Calculator, Atom, FlaskConical, Leaf, Receipt, TrendingUp, Briefcase,
   Scale, Languages, BookText, Globe, Landmark, Palette, Music, Brain, Sprout, Home,
@@ -193,6 +213,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {filteredSubjects.map((subject: any) => {
             const Icon = ICON_MAP[subject.icon_name] || BookOpen;
+            const imgSrc = subject.image_url || FALLBACK_IMAGES[subject.slug];
             return (
               <Link
                 key={subject.id}
@@ -200,10 +221,11 @@ const HomePage = () => {
                 className="group relative rounded-2xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-200"
               >
                 <div className="aspect-[4/3] bg-muted overflow-hidden relative">
-                  {subject.image_url ? (
+                  {imgSrc ? (
                     <img
-                      src={subject.image_url}
+                      src={imgSrc}
                       alt={subject.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
