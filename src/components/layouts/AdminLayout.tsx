@@ -366,7 +366,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAdmin, isModerator, loading, signOut } = useAuth();
+  const { isAdmin, isModerator, isTeacher, loading, signOut } = useAuth();
   const { data: settings } = useSiteSettings();
   const siteName = settings?.site_name || 'Admin';
 
