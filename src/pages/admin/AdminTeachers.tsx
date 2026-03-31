@@ -115,7 +115,7 @@ const AdminTeachers = () => {
       if (!selectedUser || !imageFile || !selectedSubjectId) throw new Error('Please select a user, subject, and upload an image');
       setUploading(true);
       const imageUrl = await uploadImage(imageFile, selectedUser.id);
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl, subject_id: selectedSubjectId } as any).eq('id', selectedUser.id);
+      await supabase.from('profiles').update({ teacher_image_url: imageUrl, subject_id: selectedSubjectId }).eq('id', selectedUser.id);
       const { error } = await supabase.from('user_roles').insert({ user_id: selectedUser.id, role: 'teacher' as any });
       if (error) throw error;
     },
