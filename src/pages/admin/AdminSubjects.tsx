@@ -172,6 +172,11 @@ const AdminSubjects = () => {
                 </div>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label>Image URL</Label>
+              <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
+              {imageUrl && <img src={imageUrl} alt="Preview" className="w-full h-24 object-cover rounded-lg border" />}
+            </div>
             <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div>
                 <Label>Active</Label>
