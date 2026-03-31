@@ -88,8 +88,8 @@ const TeacherDashboard = () => {
     { label: 'Approved', value: stats?.approved || 0, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', link: '/teacher/classes' },
     { label: 'Pending', value: stats?.pending || 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20', link: '/teacher/classes', alert: (stats?.pending || 0) > 0 },
     { label: 'Total Students', value: stats?.students || 0, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10', border: 'border-violet-500/20', link: '/teacher/enrollments' },
-    { label: 'Past Papers', value: stats?.papers || 0, icon: FileText, color: 'text-cyan-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', link: '/admin/papers' },
-    { label: 'Rank Papers', value: stats?.rankPapers || 0, icon: Award, color: 'text-pink-500', bg: 'bg-pink-500/10', border: 'border-pink-500/20', link: '/admin/rank-papers' },
+    { label: 'Past Papers', value: stats?.papers || 0, icon: FileText, color: 'text-cyan-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', link: '/teacher/papers' },
+    { label: 'Rank Papers', value: stats?.rankPapers || 0, icon: Award, color: 'text-pink-500', bg: 'bg-pink-500/10', border: 'border-pink-500/20', link: '/teacher/rank-papers' },
   ];
 
   return (

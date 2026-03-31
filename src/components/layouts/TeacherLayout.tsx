@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import {
   GraduationCap, LayoutDashboard, BookOpen, Users, CreditCard,
-  ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle, Scissors, MessageSquare,
+  ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle, Scissors, MessageSquare, Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -19,11 +19,12 @@ const navItems = [
   { path: '/teacher/classes', label: 'My Classes', icon: BookOpen },
   { path: '/teacher/enrollments', label: 'Enrollments', icon: Users },
   { path: '/teacher/payments', label: 'Payments', icon: CreditCard },
-  { path: '/admin/papers', label: 'Past Papers', icon: FileText },
-  { path: '/admin/syllabus', label: 'Syllabus', icon: Layers },
-  { path: '/admin/question-bank', label: 'Question Bank', icon: HelpCircle },
-  { path: '/admin/paper-crop', label: 'Paper Crop', icon: Scissors },
-  { path: '/admin/bulk-sms', label: 'Bulk SMS', icon: MessageSquare },
+  { path: '/teacher/papers', label: 'Past Papers', icon: FileText },
+  { path: '/teacher/rank-papers', label: 'Rank Papers', icon: Award },
+  { path: '/teacher/syllabus', label: 'Syllabus', icon: Layers },
+  { path: '/teacher/question-bank', label: 'Question Bank', icon: HelpCircle },
+  { path: '/teacher/paper-crop', label: 'Paper Crop', icon: Scissors },
+  { path: '/teacher/bulk-sms', label: 'Bulk SMS', icon: MessageSquare },
 ];
 
 const TeacherLayout = ({ children }: TeacherLayoutProps) => {

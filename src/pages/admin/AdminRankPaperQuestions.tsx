@@ -526,7 +526,7 @@ const AdminRankPaperQuestions = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/rank-papers')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(window.location.pathname.startsWith('/teacher') ? '/teacher/rank-papers' : '/admin/rank-papers')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">

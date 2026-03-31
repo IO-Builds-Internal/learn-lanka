@@ -840,11 +840,11 @@ const AdminRankPapers = () => {
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => navigate(`/admin/rank-papers/${paper.id}/attempts`)}>
+                          <DropdownMenuItem onClick={() => navigate(`${window.location.pathname.startsWith('/teacher') ? '/teacher/rank-papers' : '/admin/rank-papers'}/${paper.id}/attempts`)}>
                             <Eye className="w-4 h-4 mr-2" />
                             View Attempts & Marks
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/rank-papers/${paper.id}/questions`)}>
+                          <DropdownMenuItem onClick={() => navigate(`${window.location.pathname.startsWith('/teacher') ? '/teacher/rank-papers' : '/admin/rank-papers'}/${paper.id}/questions`)}>
                             <ListOrdered className="w-4 h-4 mr-2" />
                             Manage Questions/Content
                           </DropdownMenuItem>

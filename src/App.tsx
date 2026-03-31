@@ -129,8 +129,17 @@ const App = () => (
                 {/* Teacher Routes */}
                 <Route path="/teacher" element={<ProtectedRoute requireTeacher><TeacherDashboard /></ProtectedRoute>} />
                 <Route path="/teacher/classes" element={<ProtectedRoute requireTeacher><TeacherClasses /></ProtectedRoute>} />
+                <Route path="/teacher/classes/:id/content" element={<ProtectedRoute requireTeacher><AdminClassContent /></ProtectedRoute>} />
                 <Route path="/teacher/enrollments" element={<ProtectedRoute requireTeacher><TeacherEnrollments /></ProtectedRoute>} />
                 <Route path="/teacher/payments" element={<ProtectedRoute requireTeacher><TeacherPayments /></ProtectedRoute>} />
+                <Route path="/teacher/papers" element={<ProtectedRoute requireTeacher><AdminPapers /></ProtectedRoute>} />
+                <Route path="/teacher/rank-papers" element={<ProtectedRoute requireTeacher><AdminRankPapers /></ProtectedRoute>} />
+                <Route path="/teacher/rank-papers/:paperId/questions" element={<ProtectedRoute requireTeacher><AdminRankPaperQuestions /></ProtectedRoute>} />
+                <Route path="/teacher/rank-papers/:paperId/attempts" element={<ProtectedRoute requireTeacher><AdminRankPaperAttempts /></ProtectedRoute>} />
+                <Route path="/teacher/bulk-sms" element={<ProtectedRoute requireTeacher><AdminBulkSms /></ProtectedRoute>} />
+                <Route path="/teacher/syllabus" element={<ProtectedRoute requireTeacher><AdminSyllabus /></ProtectedRoute>} />
+                <Route path="/teacher/question-bank" element={<ProtectedRoute requireTeacher><AdminQuestionBank /></ProtectedRoute>} />
+                <Route path="/teacher/paper-crop" element={<ProtectedRoute requireTeacher><AdminPaperCrop /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />

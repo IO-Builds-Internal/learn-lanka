@@ -725,7 +725,7 @@ const AdminClassContent = () => {
       <AdminLayout>
         <div className="flex flex-col items-center justify-center py-12">
           <h2 className="text-xl font-semibold mb-4">Class not found</h2>
-          <Link to="/admin/classes">
+          <Link to={window.location.pathname.startsWith('/teacher') ? '/teacher/classes' : '/admin/classes'}>
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Classes
@@ -741,7 +741,7 @@ const AdminClassContent = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <Link to="/admin/classes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+          <Link to={window.location.pathname.startsWith('/teacher') ? '/teacher/classes' : '/admin/classes'} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Classes
           </Link>
