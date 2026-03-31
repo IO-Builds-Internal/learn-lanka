@@ -190,10 +190,7 @@ const HomePage = () => {
         <h2 className="text-2xl font-bold text-foreground mb-2">Browse by Subject</h2>
         <p className="text-muted-foreground mb-8">Select a subject to explore classes, papers, and resources</p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {filteredSubjects.map((subject: any) => {
-            const Icon = ICON_MAP[subject.icon_name] || BookOpen;
-            return (
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               <Link
                 key={subject.id}
                 to={`/${subject.slug}`}
