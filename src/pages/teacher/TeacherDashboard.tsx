@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import TeacherLayout from '@/components/layouts/TeacherLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Users, Clock, CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useQuery as useQuerySingle } from '@tanstack/react-query';
 
 const TeacherDashboard = () => {
   const { user, profile } = useAuth();
