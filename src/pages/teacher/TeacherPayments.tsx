@@ -78,10 +78,6 @@ const TeacherPayments = () => {
 
   // Calculate totals
   const totalRevenue = payments.reduce((sum: number, p: any) => sum + p.amount, 0);
-  const avgShare = classes.length > 0
-    ? classes.reduce((s: number, c: any) => s + (c.profit_share_percent || 0), 0) / classes.length
-    : 0;
-  const estimatedShare = Math.round(totalRevenue * avgShare / 100);
 
   return (
     <TeacherLayout>
