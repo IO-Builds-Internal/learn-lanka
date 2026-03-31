@@ -126,6 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isAdmin = roles.includes('admin');
   const isModerator = roles.includes('moderator') || isAdmin;
+  const isTeacher = roles.includes('teacher');
 
   return (
     <AuthContext.Provider value={{
