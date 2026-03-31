@@ -107,17 +107,17 @@ const TeacherClasses = () => {
                 <DialogTitle>Create New Class</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Subject</label>
-                  <Select value={subjectId} onValueChange={setSubjectId}>
-                    <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
-                    <SelectContent>
-                      {subjects.map((s: any) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {teacherSubject && (
+                  <div className="p-3 rounded-lg border bg-muted/50">
+                    <p className="text-xs text-muted-foreground">Subject (assigned by admin)</p>
+                    <p className="font-medium" style={{ color: teacherSubject.color }}>{teacherSubject.name}</p>
+                  </div>
+                )}
+                {!teacherSubjectId && (
+                  <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                    <p className="text-sm text-destructive">No subject assigned. Contact admin to assign your subject.</p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium">Class Title</label>
                   <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., Combined Maths - 2026 Batch" />

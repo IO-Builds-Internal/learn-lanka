@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { GraduationCap, Search, UserPlus, Trash2, BookOpen, Upload, Image } from 'lucide-react';
@@ -17,6 +18,7 @@ const AdminTeachers = () => {
   const [promoteOpen, setPromoteOpen] = useState(false);
   const [promoteSearch, setPromoteSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -28,6 +30,19 @@ const AdminTeachers = () => {
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
+
+  // Change subject dialog
+  const [changeSubjectOpen, setChangeSubjectOpen] = useState(false);
+  const [changeSubjectTeacher, setChangeSubjectTeacher] = useState<any>(null);
+  const [newSubjectId, setNewSubjectId] = useState('');
+
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('*').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
 
   const { data: teachers = [], isLoading } = useQuery({
     queryKey: ['admin-teachers'],
@@ -46,12 +61,18 @@ const AdminTeachers = () => {
         .from('classes')
         .select('id, teacher_id, approval_status')
         .in('teacher_id', ids);
-      return (profiles || []).map((p: any) => ({
-        ...p,
-        classCount: (classes || []).filter((c: any) => c.teacher_id === p.id).length,
-        pendingClasses: (classes || []).filter((c: any) => c.teacher_id === p.id && c.approval_status === 'PENDING').length,
-      }));
+      return (profiles || []).map((p: any) => {
+        const subj = subjects.find((s: any) => s.id === (p as any).subject_id);
+        return {
+          ...p,
+          subjectName: subj?.name || null,
+          subjectColor: subj?.color || null,
+          classCount: (classes || []).filter((c: any) => c.teacher_id === p.id).length,
+          pendingClasses: (classes || []).filter((c: any) => c.teacher_id === p.id && c.approval_status === 'PENDING').length,
+        };
+      });
     },
+    enabled: subjects.length > 0,
   });
 
   const { data: searchResults = [] } = useQuery({
@@ -91,12 +112,10 @@ const AdminTeachers = () => {
 
   const promoteMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedUser || !imageFile) throw new Error('Please select a user and upload an image');
+      if (!selectedUser || !imageFile || !selectedSubjectId) throw new Error('Please select a user, subject, and upload an image');
       setUploading(true);
       const imageUrl = await uploadImage(imageFile, selectedUser.id);
-      // Update profile with teacher image
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl } as any).eq('id', selectedUser.id);
-      // Add teacher role
+      await supabase.from('profiles').update({ teacher_image_url: imageUrl, subject_id: selectedSubjectId } as any).eq('id', selectedUser.id);
       const { error } = await supabase.from('user_roles').insert({ user_id: selectedUser.id, role: 'teacher' as any });
       if (error) throw error;
     },
@@ -106,6 +125,7 @@ const AdminTeachers = () => {
       setPromoteOpen(false);
       setPromoteSearch('');
       setSelectedUser(null);
+      setSelectedSubjectId('');
       setImageFile(null);
       setImagePreview(null);
       setUploading(false);
@@ -133,6 +153,22 @@ const AdminTeachers = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const changeSubjectMutation = useMutation({
+    mutationFn: async () => {
+      if (!changeSubjectTeacher || !newSubjectId) throw new Error('Select a subject');
+      const { error } = await supabase.from('profiles').update({ subject_id: newSubjectId } as any).eq('id', changeSubjectTeacher.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Teacher subject updated');
+      queryClient.invalidateQueries({ queryKey: ['admin-teachers'] });
+      setChangeSubjectOpen(false);
+      setChangeSubjectTeacher(null);
+      setNewSubjectId('');
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const removeMutation = useMutation({
     mutationFn: async (userId: string) => {
       const { error } = await supabase
@@ -141,6 +177,8 @@ const AdminTeachers = () => {
         .eq('user_id', userId)
         .eq('role', 'teacher' as any);
       if (error) throw error;
+      // Clear subject assignment
+      await supabase.from('profiles').update({ subject_id: null } as any).eq('id', userId);
     },
     onSuccess: () => {
       toast.success('Teacher role removed');
@@ -155,7 +193,7 @@ const AdminTeachers = () => {
 
   return (
     <AdminLayout>
-      <AdminPageHeader title="Teachers" description="Manage teacher accounts and class permissions" />
+      <AdminPageHeader title="Teachers" description="Manage teacher accounts, subjects, and class permissions" />
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div className="relative flex-1 max-w-sm">
@@ -194,10 +232,15 @@ const AdminTeachers = () => {
                   <div>
                     <p className="font-medium text-foreground">{teacher.first_name} {teacher.last_name}</p>
                     <p className="text-sm text-muted-foreground">{teacher.phone}</p>
+                    {teacher.subjectName && (
+                      <Badge className="mt-1 text-xs" style={{ backgroundColor: `${teacher.subjectColor}20`, color: teacher.subjectColor, borderColor: `${teacher.subjectColor}30` }}>
+                        {teacher.subjectName}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="text-right text-sm mr-2">
                     <div className="flex items-center gap-1">
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>{teacher.classCount} classes</span>
@@ -208,6 +251,16 @@ const AdminTeachers = () => {
                       </Badge>
                     )}
                   </div>
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => {
+                      setChangeSubjectTeacher(teacher);
+                      setNewSubjectId((teacher as any).subject_id || '');
+                      setChangeSubjectOpen(true);
+                    }}
+                  >
+                    Subject
+                  </Button>
                   <Button
                     variant="ghost" size="icon"
                     onClick={() => {
@@ -238,7 +291,7 @@ const AdminTeachers = () => {
       )}
 
       {/* Promote Dialog */}
-      <Dialog open={promoteOpen} onOpenChange={(o) => { setPromoteOpen(o); if (!o) { setSelectedUser(null); setImageFile(null); setImagePreview(null); } }}>
+      <Dialog open={promoteOpen} onOpenChange={(o) => { setPromoteOpen(o); if (!o) { setSelectedUser(null); setSelectedSubjectId(''); setImageFile(null); setImagePreview(null); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Promote User to Teacher</DialogTitle>
@@ -281,6 +334,18 @@ const AdminTeachers = () => {
                 </div>
 
                 <div>
+                  <label className="text-sm font-medium mb-1.5 block">Assign Subject *</label>
+                  <Select value={selectedSubjectId} onValueChange={setSelectedSubjectId}>
+                    <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
+                    <SelectContent>
+                      {subjects.map((s: any) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <p className="text-sm font-medium mb-2">Teacher Image (Required, 9:16 ratio recommended)</p>
                   <input
                     ref={fileRef}
@@ -319,7 +384,7 @@ const AdminTeachers = () => {
                 <Button
                   className="w-full"
                   onClick={() => promoteMutation.mutate()}
-                  disabled={!imageFile || uploading}
+                  disabled={!imageFile || !selectedSubjectId || uploading}
                 >
                   {uploading ? 'Uploading...' : 'Promote to Teacher'}
                 </Button>
@@ -374,6 +439,41 @@ const AdminTeachers = () => {
               disabled={!editImageFile || updateImageMutation.isPending}
             >
               {updateImageMutation.isPending ? 'Uploading...' : 'Save Image'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Subject Dialog */}
+      <Dialog open={changeSubjectOpen} onOpenChange={(o) => { setChangeSubjectOpen(o); if (!o) { setChangeSubjectTeacher(null); setNewSubjectId(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Teacher Subject</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {changeSubjectTeacher && (
+              <div className="p-3 rounded-lg border bg-muted/50">
+                <p className="font-medium">{changeSubjectTeacher.first_name} {changeSubjectTeacher.last_name}</p>
+                <p className="text-sm text-muted-foreground">Current: {changeSubjectTeacher.subjectName || 'None'}</p>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">New Subject</label>
+              <Select value={newSubjectId} onValueChange={setNewSubjectId}>
+                <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
+                <SelectContent>
+                  {subjects.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              className="w-full"
+              onClick={() => changeSubjectMutation.mutate()}
+              disabled={!newSubjectId || changeSubjectMutation.isPending}
+            >
+              {changeSubjectMutation.isPending ? 'Updating...' : 'Update Subject'}
             </Button>
           </div>
         </DialogContent>
