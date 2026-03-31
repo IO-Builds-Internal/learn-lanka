@@ -147,6 +147,8 @@ const App = () => (
                 <Route path="/admin/bulk-sms" element={<ProtectedRoute requireModerator><AdminBulkSms /></ProtectedRoute>} />
                 <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
                 <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
+                <Route path="/admin/subjects" element={<ProtectedRoute requireAdmin><AdminSubjects /></ProtectedRoute>} />
+                <Route path="/admin/class-approvals" element={<ProtectedRoute requireAdmin><AdminClassApprovals /></ProtectedRoute>} />
                 <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
                 <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />

@@ -91,6 +91,8 @@ const navGroups: NavGroup[] = [
   {
     label: 'Academics',
     entries: [
+      { type: 'leaf', path: '/admin/subjects', label: 'Subjects', icon: Globe },
+      { type: 'leaf', path: '/admin/class-approvals', label: 'Class Approvals', icon: CheckSquare },
       {
         type: 'subgroup',
         label: 'Classes',
