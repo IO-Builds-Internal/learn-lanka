@@ -419,6 +419,23 @@ const AdminClasses = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Profit Share */}
+                <div className="space-y-2">
+                  <Label htmlFor="profitShare">Teacher Profit Share (%)</Label>
+                  <Input 
+                    id="profitShare" 
+                    type="number" 
+                    placeholder="e.g. 70"
+                    min="0"
+                    max="100"
+                    value={profitSharePercent}
+                    onChange={(e) => setProfitSharePercent(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Percentage of class revenue shared with the teacher
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog}>Cancel</Button>
