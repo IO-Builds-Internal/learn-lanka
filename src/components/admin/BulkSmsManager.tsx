@@ -84,14 +84,15 @@ const BulkSmsManager = () => {
     },
   });
 
-  // Fetch classes
+  // Fetch classes (scoped by teacher subject if teacher)
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes-for-sms'],
+    queryKey: ['classes-for-sms', teacherSubjectId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('id, title')
-        .order('title');
+      let query = supabase.from('classes').select('id, title, subject_id').order('title');
+      if (teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
