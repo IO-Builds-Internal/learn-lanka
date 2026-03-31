@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       // ── 5. NOTIFICATIONS ──────────────────────────────────────────
       await supabase.from('notifications').insert([
         { title: 'Welcome to AL Student!', message: 'Explore classes, rank papers, and resources for all A/L subjects.', target_type: 'ALL' },
-        { title: 'New Rank Paper Available', message: 'A new ICT ranking test has been published. Compete on the leaderboard!', target_type: 'ALL' },
+        { title: 'New Rank Paper Available', message: 'A new ranking test has been published. Compete on the leaderboard!', target_type: 'ALL' },
         { title: 'Monthly Fee Reminder', message: 'Please pay your monthly class fee before the 10th.', target_type: 'ALL' },
       ]);
 
