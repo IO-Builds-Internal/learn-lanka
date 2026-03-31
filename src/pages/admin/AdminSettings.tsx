@@ -112,7 +112,7 @@ const AdminSettings = () => {
         setSectionPlayground(flag('section_playground'));
         setSectionNotifications(flag('section_notifications'));
         // Paper template settings
-        setPaperSchoolName(settings['paper_template_school_name'] || 'ICT Academy');
+        setPaperSchoolName(settings['paper_template_school_name'] || 'A/L Student Academy');
         setPaperInstructionsDaily(settings['paper_template_instructions_daily'] || '');
         setPaperInstructionsFull(settings['paper_template_instructions_full'] || '');
         setPaperFooter(settings['paper_template_footer'] || '');
