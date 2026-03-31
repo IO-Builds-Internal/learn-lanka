@@ -1,10 +1,11 @@
 import { forwardRef, useEffect, useState } from 'react';
-import { FileText, Download, Lock, Loader2, LogIn, Video, ExternalLink, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { FileText, Download, Lock, Loader2, LogIn, Video, ExternalLink, X, GraduationCap } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
