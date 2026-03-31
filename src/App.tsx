@@ -42,6 +42,11 @@ import Playground from "./pages/Playground";
 // Teacher Pages
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherClasses from "./pages/teacher/TeacherClasses";
+import TeacherEnrollments from "./pages/teacher/TeacherEnrollments";
+import TeacherPayments from "./pages/teacher/TeacherPayments";
+import TeacherPapers from "./pages/teacher/TeacherPapers";
+import TeacherSyllabus from "./pages/teacher/TeacherSyllabus";
+import TeacherQuestionBank from "./pages/teacher/TeacherQuestionBank";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -127,6 +132,11 @@ const App = () => (
                 {/* Teacher Routes */}
                 <Route path="/teacher" element={<ProtectedRoute requireTeacher><TeacherDashboard /></ProtectedRoute>} />
                 <Route path="/teacher/classes" element={<ProtectedRoute requireTeacher><TeacherClasses /></ProtectedRoute>} />
+                <Route path="/teacher/enrollments" element={<ProtectedRoute requireTeacher><TeacherEnrollments /></ProtectedRoute>} />
+                <Route path="/teacher/payments" element={<ProtectedRoute requireTeacher><TeacherPayments /></ProtectedRoute>} />
+                <Route path="/teacher/papers" element={<ProtectedRoute requireTeacher><TeacherPapers /></ProtectedRoute>} />
+                <Route path="/teacher/syllabus" element={<ProtectedRoute requireTeacher><TeacherSyllabus /></ProtectedRoute>} />
+                <Route path="/teacher/question-bank" element={<ProtectedRoute requireTeacher><TeacherQuestionBank /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
@@ -134,7 +144,7 @@ const App = () => (
                 <Route path="/admin/teachers" element={<ProtectedRoute requireAdmin><AdminTeachers /></ProtectedRoute>} />
                 <Route path="/admin/moderators" element={<ProtectedRoute requireAdmin><AdminModerators /></ProtectedRoute>} />
                 <Route path="/admin/classes" element={<ProtectedRoute requireModerator><AdminClasses /></ProtectedRoute>} />
-                <Route path="/admin/classes/:id/content" element={<ProtectedRoute requireModerator><AdminClassContent /></ProtectedRoute>} />
+                <Route path="/admin/classes/:id/content" element={<ProtectedRoute requireTeacher><AdminClassContent /></ProtectedRoute>} />
                 <Route path="/admin/payments" element={<ProtectedRoute requireModerator><AdminPayments /></ProtectedRoute>} />
                 <Route path="/admin/coupons" element={<ProtectedRoute requireModerator><AdminCoupons /></ProtectedRoute>} />
                 <Route path="/admin/rank-papers" element={<ProtectedRoute requireModerator><AdminRankPapers /></ProtectedRoute>} />

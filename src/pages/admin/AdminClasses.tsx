@@ -70,6 +70,7 @@ interface ClassData {
   max_students: number | null;
   image_url: string | null;
   created_at: string;
+  profit_share_percent: number | null;
 }
 
 const AdminClasses = () => {
@@ -89,6 +90,7 @@ const AdminClasses = () => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [maxStudents, setMaxStudents] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [profitSharePercent, setProfitSharePercent] = useState('');
 
   // Load form data when editing
   const openEditDialog = (cls: ClassData) => {
@@ -101,6 +103,7 @@ const AdminClasses = () => {
     setIsPrivate(cls.is_private);
     setMaxStudents(cls.max_students?.toString() || '');
     setImageUrl(cls.image_url || '');
+    setProfitSharePercent(cls.profit_share_percent?.toString() || '0');
     setIsDialogOpen(true);
   };
 
@@ -166,6 +169,7 @@ const AdminClasses = () => {
           private_code: isPrivate ? generatePrivateCode() : null,
           max_students: isPrivate && maxStudents ? parseInt(maxStudents) : null,
           image_url: imageUrl || null,
+          profit_share_percent: profitSharePercent ? parseInt(profitSharePercent) : 0,
         });
       if (error) throw error;
     },
@@ -195,6 +199,7 @@ const AdminClasses = () => {
           private_code: isPrivate ? (editingClass.private_code || generatePrivateCode()) : null,
           max_students: isPrivate && maxStudents ? parseInt(maxStudents) : null,
           image_url: imageUrl || null,
+          profit_share_percent: profitSharePercent ? parseInt(profitSharePercent) : 0,
         })
         .eq('id', editingClass.id);
       if (error) throw error;
@@ -245,6 +250,7 @@ const AdminClasses = () => {
     setIsPrivate(false);
     setMaxStudents('');
     setImageUrl('');
+    setProfitSharePercent('');
   };
 
   const filteredClasses = classes.filter((cls) => 
@@ -413,6 +419,23 @@ const AdminClasses = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Profit Share */}
+                <div className="space-y-2">
+                  <Label htmlFor="profitShare">Teacher Profit Share (%)</Label>
+                  <Input 
+                    id="profitShare" 
+                    type="number" 
+                    placeholder="e.g. 70"
+                    min="0"
+                    max="100"
+                    value={profitSharePercent}
+                    onChange={(e) => setProfitSharePercent(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Percentage of class revenue shared with the teacher
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog}>Cancel</Button>
