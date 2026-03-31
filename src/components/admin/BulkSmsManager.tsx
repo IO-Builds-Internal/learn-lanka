@@ -58,7 +58,9 @@ interface SmsLog {
 
 const BulkSmsManager = () => {
   const { user, isTeacher, isAdmin, profile } = useAuth();
-  const teacherSubjectId = isTeacher && !isAdmin ? (profile as any)?.subject_id : null;
+  const teacherScopeEnabled = isTeacher && !isAdmin;
+  const teacherSubjectId = teacherScopeEnabled ? (profile as any)?.subject_id : null;
+  const teacherMissingSubject = teacherScopeEnabled && !teacherSubjectId;
   const [recipients, setRecipients] = useState('');
   const [message, setMessage] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
@@ -86,12 +88,23 @@ const BulkSmsManager = () => {
 
   // Fetch classes (scoped by teacher subject if teacher)
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes-for-sms', teacherSubjectId],
+    queryKey: ['classes-for-sms', teacherScopeEnabled ? (user?.id || 'anon') : 'all', teacherSubjectId || 'unassigned'],
     queryFn: async () => {
-      let query = supabase.from('classes').select('id, title, subject_id').order('title');
-      if (teacherSubjectId) {
-        query = query.eq('subject_id', teacherSubjectId);
+      if (teacherScopeEnabled) {
+        if (!user || !teacherSubjectId) return [];
+
+        const { data, error } = await supabase
+          .from('classes')
+          .select('id, title, subject_id')
+          .eq('teacher_id', user.id)
+          .eq('subject_id', teacherSubjectId)
+          .order('title');
+
+        if (error) throw error;
+        return data;
       }
+
+      let query = supabase.from('classes').select('id, title, subject_id').order('title');
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -100,8 +113,15 @@ const BulkSmsManager = () => {
 
   // Fetch user counts for targeting
   const { data: userStats } = useQuery({
-    queryKey: ['user-stats-for-sms'],
+    queryKey: ['user-stats-for-sms', teacherScopeEnabled ? 'teacher' : 'admin'],
     queryFn: async () => {
+      if (teacherScopeEnabled) {
+        return {
+          total: 0,
+          enrolled: 0,
+        };
+      }
+
       const { count: totalUsers } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
@@ -122,8 +142,10 @@ const BulkSmsManager = () => {
 
   // Fetch SMS logs
   const { data: smsLogs = [], refetch: refetchLogs } = useQuery({
-    queryKey: ['sms-logs'],
+    queryKey: ['sms-logs', teacherScopeEnabled ? 'teacher' : 'admin'],
     queryFn: async () => {
+      if (teacherScopeEnabled) return [];
+
       const { data, error } = await (supabase as any)
         .from('sms_logs')
         .select('*')
@@ -310,6 +332,12 @@ const BulkSmsManager = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {teacherMissingSubject && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+              No subject assigned. Ask admin to assign your subject before sending SMS.
+            </div>
+          )}
+
           {/* Target Selection */}
           <div className="space-y-3">
             <Label>Recipients</Label>
@@ -474,7 +502,7 @@ const BulkSmsManager = () => {
             className="w-full" 
             variant="hero"
             onClick={handleSend}
-            disabled={isSending || recipientCount === 0 || !message.trim()}
+            disabled={teacherMissingSubject || isSending || recipientCount === 0 || !message.trim()}
           >
             {isSending ? (
               <>
