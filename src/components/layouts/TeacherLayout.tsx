@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import {
   GraduationCap, LayoutDashboard, BookOpen, Users, CreditCard,
-  ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle,
+  ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle, Scissors, MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
