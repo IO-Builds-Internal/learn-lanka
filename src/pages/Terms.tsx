@@ -71,7 +71,7 @@ const Terms = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">6. Intellectual Property</h2>
               <p className="text-muted-foreground">
-                All content provided on this platform, including but not limited to text, graphics, logos, images, video, and audio, is the property of ALICT and is protected by copyright laws. Users are not permitted to reproduce, distribute, or modify any content without prior written consent.
+                All content provided on this platform, including but not limited to text, graphics, logos, images, video, and audio, is the property of A/L Student Academy and is protected by copyright laws. Users are not permitted to reproduce, distribute, or modify any content without prior written consent.
               </p>
             </section>
 

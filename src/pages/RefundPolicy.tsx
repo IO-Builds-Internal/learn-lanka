@@ -137,7 +137,7 @@ const RefundPolicy = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">8. Final Decision</h2>
               <p className="text-muted-foreground">
-                All compensation requests are reviewed on a case-by-case basis. The decision of ALICT management regarding compensation requests is final and binding. We reserve the right to deny compensation requests that do not meet our eligibility criteria.
+                All compensation requests are reviewed on a case-by-case basis. The decision of A/L Student Academy management regarding compensation requests is final and binding. We reserve the right to deny compensation requests that do not meet our eligibility criteria.
               </p>
             </section>
 

@@ -43,7 +43,7 @@ const statusColors: Record<string, string> = {
 };
 
 const getCleanPhone = (phone: string | undefined) =>
-  phone?.replace(/@phone\.alict\.lk$/i, '') || '';
+  phone?.replace(/@phone\.alstudent\.com$/i, '') || '';
 
 // ─── Logged-in user conversation view ────────────────────────────────────────
 const ConversationView = () => {
