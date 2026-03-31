@@ -199,6 +199,7 @@ const AdminClasses = () => {
           private_code: isPrivate ? (editingClass.private_code || generatePrivateCode()) : null,
           max_students: isPrivate && maxStudents ? parseInt(maxStudents) : null,
           image_url: imageUrl || null,
+          profit_share_percent: profitSharePercent ? parseInt(profitSharePercent) : 0,
         })
         .eq('id', editingClass.id);
       if (error) throw error;
