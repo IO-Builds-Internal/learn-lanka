@@ -69,6 +69,7 @@ import {
 import AdminLayout from '@/components/layouts/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -99,6 +100,9 @@ interface ClassOption {
   id: string;
   title: string;
 }
+
+type RankPaperInsert = TablesInsert<'rank_papers'>;
+type RankPaperUpdate = TablesUpdate<'rank_papers'>;
 
 const AdminRankPapers = () => {
   const { user, profile, isTeacher } = useAuth();
@@ -201,7 +205,7 @@ const AdminRankPapers = () => {
     mutationFn: async () => {
       if (isTeacher && !teacherSubjectId) throw new Error('No subject assigned. Contact admin.');
 
-      const paperData: Record<string, unknown> = {
+      const paperData: RankPaperUpdate = {
         title,
         grade: parseInt(grade),
         medium: medium || 'sinhala',
@@ -223,9 +227,17 @@ const AdminRankPapers = () => {
           .eq('id', editingPaper.id);
         if (error) throw error;
       } else {
+        const insertData: RankPaperInsert = {
+          ...paperData,
+          grade: parseInt(grade),
+          title,
+          time_limit_minutes: parseInt(timeLimit),
+          publish_status: 'DRAFT',
+        };
+
         const { error } = await supabase
           .from('rank_papers')
-          .insert({ ...paperData, publish_status: 'DRAFT' });
+          .insert(insertData);
         if (error) throw error;
       }
     },
@@ -365,22 +377,24 @@ const AdminRankPapers = () => {
   const duplicateMutation = useMutation({
     mutationFn: async (paper: RankPaper) => {
       // Create new paper
+      const duplicateData: RankPaperInsert = {
+        title: `${paper.title} (Copy)`,
+        grade: paper.grade,
+        time_limit_minutes: paper.time_limit_minutes,
+        has_mcq: paper.has_mcq,
+        has_short_essay: paper.has_short_essay,
+        has_essay: paper.has_essay,
+        fee_amount: paper.fee_amount,
+        class_id: paper.class_id,
+        subject_id: paper.subject_id ?? (isTeacher ? teacherSubjectId : null),
+        medium: paper.medium || 'sinhala',
+        essay_pdf_url: paper.essay_pdf_url,
+        publish_status: 'DRAFT',
+      };
+
       const { data: newPaper, error: paperError } = await supabase
         .from('rank_papers')
-        .insert({
-          title: `${paper.title} (Copy)`,
-          grade: paper.grade,
-          time_limit_minutes: paper.time_limit_minutes,
-          has_mcq: paper.has_mcq,
-          has_short_essay: paper.has_short_essay,
-          has_essay: paper.has_essay,
-          fee_amount: paper.fee_amount,
-          class_id: paper.class_id,
-          subject_id: paper.subject_id ?? (isTeacher ? teacherSubjectId : null),
-          medium: paper.medium || 'sinhala',
-          essay_pdf_url: paper.essay_pdf_url,
-          publish_status: 'DRAFT',
-        })
+        .insert(duplicateData)
         .select()
         .single();
       if (paperError) throw paperError;
