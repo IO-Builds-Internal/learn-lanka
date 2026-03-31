@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Users, Clock, CheckCircle } from 'lucide-react';
 
 const TeacherDashboard = () => {
-  const { user } = useAuth();
-
+  const { user, profile } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const { data: stats } = useQuery({
     queryKey: ['teacher-stats', user?.id],
     queryFn: async () => {
