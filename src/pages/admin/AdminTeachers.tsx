@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { GraduationCap, Search, UserPlus, Trash2, BookOpen, Upload, Image } from 'lucide-react';
+import { invokeFunction } from '@/lib/functions';
 
 const AdminTeachers = () => {
   const queryClient = useQueryClient();
@@ -90,6 +91,15 @@ const AdminTeachers = () => {
     enabled: promoteSearch.length >= 2,
   });
 
+  const manageTeacherAssignment = async (body: Record<string, unknown>) => {
+    const { data, error } = await invokeFunction<{ success: boolean; error?: string }>('manage-teacher-assignment', {
+      body,
+    });
+
+    if (error) throw error;
+    if (!data?.success) throw new Error(data?.error || 'Failed to update teacher');
+  };
+
   const handleImageSelect = (file: File, setFile: (f: File | null) => void, setPreview: (s: string | null) => void) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
@@ -115,9 +125,12 @@ const AdminTeachers = () => {
       if (!selectedUser || !imageFile || !selectedSubjectId) throw new Error('Please select a user, subject, and upload an image');
       setUploading(true);
       const imageUrl = await uploadImage(imageFile, selectedUser.id);
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl, subject_id: selectedSubjectId }).eq('id', selectedUser.id);
-      const { error } = await supabase.from('user_roles').insert({ user_id: selectedUser.id, role: 'teacher' as any });
-      if (error) throw error;
+      await manageTeacherAssignment({
+        action: 'promote',
+        userId: selectedUser.id,
+        subjectId: selectedSubjectId,
+        teacherImageUrl: imageUrl,
+      });
     },
     onSuccess: () => {
       toast.success('User promoted to teacher');
@@ -140,7 +153,11 @@ const AdminTeachers = () => {
     mutationFn: async () => {
       if (!editTeacher || !editImageFile) throw new Error('Select an image');
       const imageUrl = await uploadImage(editImageFile, editTeacher.id);
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl }).eq('id', editTeacher.id);
+      await manageTeacherAssignment({
+        action: 'set_image',
+        userId: editTeacher.id,
+        teacherImageUrl: imageUrl,
+      });
     },
     onSuccess: () => {
       toast.success('Teacher image updated');
@@ -156,8 +173,11 @@ const AdminTeachers = () => {
   const changeSubjectMutation = useMutation({
     mutationFn: async () => {
       if (!changeSubjectTeacher || !newSubjectId) throw new Error('Select a subject');
-      const { error } = await supabase.from('profiles').update({ subject_id: newSubjectId }).eq('id', changeSubjectTeacher.id);
-      if (error) throw error;
+      await manageTeacherAssignment({
+        action: 'set_subject',
+        userId: changeSubjectTeacher.id,
+        subjectId: newSubjectId,
+      });
     },
     onSuccess: () => {
       toast.success('Teacher subject updated');
@@ -171,14 +191,10 @@ const AdminTeachers = () => {
 
   const removeMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId)
-        .eq('role', 'teacher' as any);
-      if (error) throw error;
-      // Clear subject assignment
-      await supabase.from('profiles').update({ subject_id: null }).eq('id', userId);
+      await manageTeacherAssignment({
+        action: 'remove',
+        userId,
+      });
     },
     onSuccess: () => {
       toast.success('Teacher role removed');

@@ -143,6 +143,7 @@ const AdminQuestionBank = () => {
   const { toast } = useToast();
   const { profile, isTeacher } = useAuth();
   const teacherSubjectId = (profile as any)?.subject_id;
+  const teacherMissingSubject = isTeacher && !teacherSubjectId;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<QuestionBankRow | null>(null);
@@ -158,10 +159,12 @@ const AdminQuestionBank = () => {
 
   // Lessons
   const { data: lessons = [] } = useQuery<SyllabusLesson[]>({
-    queryKey: ['syllabus_lessons', isTeacher ? teacherSubjectId : 'all'],
+    queryKey: ['syllabus_lessons', isTeacher ? (teacherSubjectId || 'unassigned') : 'all'],
     queryFn: async () => {
+      if (teacherMissingSubject) return [];
+
       let query = supabase.from('syllabus_lessons').select('*').order('sort_order');
-      if (isTeacher && teacherSubjectId) {
+      if (isTeacher) {
         query = query.eq('subject_id', teacherSubjectId);
       }
       const { data, error } = await query;
@@ -172,14 +175,16 @@ const AdminQuestionBank = () => {
 
   // Questions
   const { data: questions = [] as QuestionBankRow[], isLoading } = useQuery<QuestionBankRow[]>({
-    queryKey: ['question_bank', isTeacher ? teacherSubjectId : 'all'],
+    queryKey: ['question_bank', isTeacher ? (teacherSubjectId || 'unassigned') : 'all'],
     queryFn: async () => {
+      if (teacherMissingSubject) return [];
+
       let query = supabase
         .from('question_bank')
         .select('*, question_bank_options(*)')
         .order('created_at', { ascending: false });
       
-      if (isTeacher && teacherSubjectId) {
+      if (isTeacher) {
         query = query.eq('subject_id', teacherSubjectId);
       }
       
@@ -208,6 +213,8 @@ const AdminQuestionBank = () => {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (teacherMissingSubject) throw new Error('No subject assigned. Contact admin.');
+
       const payload: any = {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
@@ -410,6 +417,7 @@ const AdminQuestionBank = () => {
           <Button onClick={openAdd}>
             <Plus className="w-4 h-4 mr-2" /> Add Question
           </Button>
+          <Button onClick={openAdd} disabled={teacherMissingSubject} className="hidden" />
         </div>
 
         {/* Summary Stats */}
@@ -478,7 +486,7 @@ const AdminQuestionBank = () => {
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <FileQuestion className="w-10 h-10 mx-auto mb-3 opacity-40" />
-              <p>No questions found.</p>
+              <p>{teacherMissingSubject ? 'No subject assigned. Ask admin to assign your subject first.' : 'No questions found.'}</p>
             </CardContent>
           </Card>
         ) : (

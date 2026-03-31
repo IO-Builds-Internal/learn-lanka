@@ -66,6 +66,7 @@ const AdminSyllabus = () => {
   const { toast } = useToast();
   const { profile, isTeacher } = useAuth();
   const teacherSubjectId = (profile as any)?.subject_id;
+  const teacherMissingSubject = isTeacher && !teacherSubjectId;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<SyllabusLesson | null>(null);
@@ -74,15 +75,17 @@ const AdminSyllabus = () => {
   const [filterMedium, setFilterMedium] = useState<string>('all');
 
   const { data: lessons = [], isLoading } = useQuery({
-    queryKey: ['syllabus_lessons', isTeacher ? teacherSubjectId : 'all'],
+    queryKey: ['syllabus_lessons', isTeacher ? (teacherSubjectId || 'unassigned') : 'all'],
     queryFn: async () => {
+      if (teacherMissingSubject) return [];
+
       let query = supabase
         .from('syllabus_lessons')
         .select('*')
         .order('grade', { ascending: true })
         .order('sort_order', { ascending: true });
       
-      if (isTeacher && teacherSubjectId) {
+      if (isTeacher) {
         query = query.eq('subject_id', teacherSubjectId);
       }
       
@@ -94,6 +97,8 @@ const AdminSyllabus = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (values: typeof form & { id?: string }) => {
+      if (teacherMissingSubject) throw new Error('No subject assigned. Contact admin.');
+
       const payload: any = {
         title: values.title,
         grade: values.grade ? Number(values.grade) : null,
@@ -186,7 +191,7 @@ const AdminSyllabus = () => {
               Manage lessons and subtopics for the question bank
             </p>
           </div>
-          <Button onClick={() => openAdd()}>
+          <Button onClick={() => openAdd()} disabled={teacherMissingSubject}>
             <Plus className="w-4 h-4 mr-2" /> Add Lesson
           </Button>
         </div>
@@ -223,7 +228,7 @@ const AdminSyllabus = () => {
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-40" />
-              <p>No lessons yet. Add your first lesson.</p>
+              <p>{teacherMissingSubject ? 'No subject assigned. Ask admin to assign your subject first.' : 'No lessons yet. Add your first lesson.'}</p>
             </CardContent>
           </Card>
         ) : (

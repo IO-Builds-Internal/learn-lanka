@@ -80,8 +80,9 @@ interface Paper {
 }
 
 const AdminPapers = () => {
-  const { profile, isTeacher, isAdmin, isModerator } = useAuth();
+  const { profile, isTeacher } = useAuth();
   const teacherSubjectId = (profile as any)?.subject_id;
+  const teacherMissingSubject = isTeacher && !teacherSubjectId;
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
@@ -104,14 +105,16 @@ const AdminPapers = () => {
 
   // Fetch papers (teachers see only their subject)
   const { data: papers = [], isLoading } = useQuery({
-    queryKey: ['admin-papers', isTeacher ? teacherSubjectId : 'all'],
+    queryKey: ['admin-papers', isTeacher ? (teacherSubjectId || 'unassigned') : 'all'],
     queryFn: async () => {
+      if (isTeacher && !teacherSubjectId) return [];
+
       let query = supabase
         .from('papers')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (isTeacher && teacherSubjectId) {
+      if (isTeacher) {
         query = query.eq('subject_id', teacherSubjectId);
       }
       
@@ -125,6 +128,7 @@ const AdminPapers = () => {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!pdfFile && !editingPaper) throw new Error('Please upload a PDF file');
+      if (isTeacher && !teacherSubjectId) throw new Error('No subject assigned. Contact admin.');
 
       setIsUploading(true);
       
@@ -299,7 +303,7 @@ const AdminPapers = () => {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button onClick={() => resetForm()}>
+              <Button onClick={() => resetForm()} disabled={teacherMissingSubject}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Paper
               </Button>
@@ -564,7 +568,11 @@ const AdminPapers = () => {
               <div className="flex flex-col items-center justify-center py-12">
                 <FileText className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="font-medium text-foreground mb-2">No papers uploaded</h3>
-                <p className="text-sm text-muted-foreground">Upload past papers or exam resources</p>
+                <p className="text-sm text-muted-foreground">
+                  {teacherMissingSubject
+                    ? 'No subject assigned. Ask admin to assign your subject first.'
+                    : 'Upload past papers or exam resources'}
+                </p>
               </div>
             )}
           </CardContent>

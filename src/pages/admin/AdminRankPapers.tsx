@@ -91,6 +91,7 @@ interface RankPaper {
   unlock_at: string | null;
   lock_at: string | null;
   class_id: string | null;
+  subject_id: string | null;
   created_at: string;
 }
 
@@ -100,8 +101,9 @@ interface ClassOption {
 }
 
 const AdminRankPapers = () => {
-  const { profile, isTeacher } = useAuth();
+  const { user, profile, isTeacher } = useAuth();
   const teacherSubjectId = (profile as any)?.subject_id;
+  const teacherMissingSubject = isTeacher && !teacherSubjectId;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -130,14 +132,16 @@ const AdminRankPapers = () => {
 
   // Fetch rank papers (teachers see only their subject)
   const { data: papers = [], isLoading } = useQuery({
-    queryKey: ['admin-rank-papers', isTeacher ? teacherSubjectId : 'all'],
+    queryKey: ['admin-rank-papers', isTeacher ? (teacherSubjectId || 'unassigned') : 'all'],
     queryFn: async () => {
+      if (isTeacher && !teacherSubjectId) return [];
+
       let query = supabase
         .from('rank_papers')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (isTeacher && teacherSubjectId) {
+      if (isTeacher) {
         query = query.eq('subject_id', teacherSubjectId);
       }
       
@@ -149,12 +153,27 @@ const AdminRankPapers = () => {
 
   // Fetch classes for assignment dropdown
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes-for-rank-papers'],
+    queryKey: ['classes-for-rank-papers', isTeacher ? (user?.id || 'anon') : 'all', teacherSubjectId || 'unassigned'],
     queryFn: async () => {
+      if (isTeacher) {
+        if (!user || !teacherSubjectId) return [];
+
+        const { data, error } = await supabase
+          .from('classes')
+          .select('id, title')
+          .eq('teacher_id', user.id)
+          .eq('subject_id', teacherSubjectId)
+          .order('title', { ascending: true });
+
+        if (error) throw error;
+        return data as ClassOption[];
+      }
+
       const { data, error } = await supabase
         .from('classes')
         .select('id, title')
         .order('title', { ascending: true });
+
       if (error) throw error;
       return data as ClassOption[];
     },
@@ -180,7 +199,9 @@ const AdminRankPapers = () => {
   // Create/Update paper mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const paperData = {
+      if (isTeacher && !teacherSubjectId) throw new Error('No subject assigned. Contact admin.');
+
+      const paperData: Record<string, unknown> = {
         title,
         grade: parseInt(grade),
         medium: medium || 'sinhala',
@@ -192,6 +213,7 @@ const AdminRankPapers = () => {
         unlock_at: unlockAt ? new Date(unlockAt).toISOString() : null,
         lock_at: lockAt ? new Date(lockAt).toISOString() : null,
         class_id: classId || null,
+        ...(isTeacher ? { subject_id: teacherSubjectId } : {}),
       };
 
       if (editingPaper) {
@@ -354,6 +376,7 @@ const AdminRankPapers = () => {
           has_essay: paper.has_essay,
           fee_amount: paper.fee_amount,
           class_id: paper.class_id,
+          subject_id: paper.subject_id ?? (isTeacher ? teacherSubjectId : null),
           medium: paper.medium || 'sinhala',
           essay_pdf_url: paper.essay_pdf_url,
           publish_status: 'DRAFT',
@@ -507,7 +530,7 @@ const AdminRankPapers = () => {
         description="Manage timed exams and quizzes"
         breadcrumbs={[{ label: 'Academics' }, { label: 'Rank Papers' }]}
         actions={
-          <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+          <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} disabled={teacherMissingSubject}>
             <Plus className="w-4 h-4 mr-2" />
             Create Paper
           </Button>
