@@ -90,6 +90,7 @@ const AdminClasses = () => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [maxStudents, setMaxStudents] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [profitSharePercent, setProfitSharePercent] = useState('');
 
   // Load form data when editing
   const openEditDialog = (cls: ClassData) => {
@@ -102,6 +103,7 @@ const AdminClasses = () => {
     setIsPrivate(cls.is_private);
     setMaxStudents(cls.max_students?.toString() || '');
     setImageUrl(cls.image_url || '');
+    setProfitSharePercent(cls.profit_share_percent?.toString() || '0');
     setIsDialogOpen(true);
   };
 
