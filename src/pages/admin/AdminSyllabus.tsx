@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Pencil, Trash2, ChevronRight, BookOpen, Layers } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 type SyllabusLesson = {
   id: string;
