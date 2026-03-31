@@ -140,7 +140,7 @@ const AdminTeachers = () => {
     mutationFn: async () => {
       if (!editTeacher || !editImageFile) throw new Error('Select an image');
       const imageUrl = await uploadImage(editImageFile, editTeacher.id);
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl } as any).eq('id', editTeacher.id);
+      await supabase.from('profiles').update({ teacher_image_url: imageUrl }).eq('id', editTeacher.id);
     },
     onSuccess: () => {
       toast.success('Teacher image updated');
