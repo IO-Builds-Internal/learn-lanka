@@ -80,14 +80,14 @@ const Login = () => {
               </div>
             )}
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">
-              {siteName}
+              {siteName || 'AL Student'}
             </h1>
             <p className="text-lg md:text-xl text-slate-300">
-              Advanced Level ICT Education
+              Sri Lanka's #1 A/L Learning Platform
             </p>
           </div>
           <p className="text-slate-400 text-sm md:text-base max-w-md">
-            Master Information & Communication Technology with comprehensive lessons, practice papers, and expert guidance.
+            Access past papers, expert classes, and study materials for every Advanced Level subject.
           </p>
         </div>
 
