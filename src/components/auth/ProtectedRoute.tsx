@@ -53,7 +53,7 @@ const ProtectedRoute = ({ children, requireAdmin, requireModerator, requireTeach
     return <Navigate to="/admin" replace />;
   }
 
-  if (requireTeacher && !isTeacher && !isAdmin) {
+  if (requireTeacher && !isTeacher && !isAdmin && !isModerator) {
     return <Navigate to="/dashboard" replace />;
   }
 
