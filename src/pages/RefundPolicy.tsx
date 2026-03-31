@@ -67,7 +67,7 @@ const RefundPolicy = () => {
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                 <li>Technical issues that prevented access to paid content for an extended period</li>
                 <li>Duplicate payments made in error</li>
-                <li>Class cancellation by ALICT (not student withdrawal)</li>
+                <li>Class cancellation by A/L Student Academy (not student withdrawal)</li>
                 <li>Defective printed materials that cannot be replaced</li>
               </ul>
             </section>
