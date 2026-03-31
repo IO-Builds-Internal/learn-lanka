@@ -126,7 +126,7 @@ export const mockShopProducts: ShopProduct[] = [
   {
     id: '3',
     title: 'Past Papers Collection 2015-2024',
-    description: 'All A/L ICT past papers with detailed marking schemes.',
+    description: 'All A/L past papers with detailed marking schemes.',
     type: 'BOTH',
     priceSoft: 1200,
     pricePrinted: 2000,
