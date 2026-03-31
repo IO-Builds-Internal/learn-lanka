@@ -191,12 +191,14 @@ const HomePage = () => {
         <p className="text-muted-foreground mb-8">Select a subject to explore classes, papers, and resources</p>
 
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+          {filteredSubjects.map((subject: any) => {
+            const Icon = ICON_MAP[subject.icon_name] || BookOpen;
+            return (
               <Link
                 key={subject.id}
                 to={`/${subject.slug}`}
                 className="group relative rounded-2xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-200"
               >
-                {/* Image area */}
                 <div className="aspect-[4/3] bg-muted overflow-hidden relative">
                   {subject.image_url ? (
                     <img
@@ -219,7 +221,6 @@ const HomePage = () => {
                     </h3>
                   </div>
                 </div>
-                {/* Info */}
                 <div className="p-3">
                   <p className="text-xs text-muted-foreground line-clamp-2">
                     {subject.description}
