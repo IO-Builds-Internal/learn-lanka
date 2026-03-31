@@ -132,6 +132,11 @@ const App = () => (
                 {/* Teacher Routes */}
                 <Route path="/teacher" element={<ProtectedRoute requireTeacher><TeacherDashboard /></ProtectedRoute>} />
                 <Route path="/teacher/classes" element={<ProtectedRoute requireTeacher><TeacherClasses /></ProtectedRoute>} />
+                <Route path="/teacher/enrollments" element={<ProtectedRoute requireTeacher><TeacherEnrollments /></ProtectedRoute>} />
+                <Route path="/teacher/payments" element={<ProtectedRoute requireTeacher><TeacherPayments /></ProtectedRoute>} />
+                <Route path="/teacher/papers" element={<ProtectedRoute requireTeacher><TeacherPapers /></ProtectedRoute>} />
+                <Route path="/teacher/syllabus" element={<ProtectedRoute requireTeacher><TeacherSyllabus /></ProtectedRoute>} />
+                <Route path="/teacher/question-bank" element={<ProtectedRoute requireTeacher><TeacherQuestionBank /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
