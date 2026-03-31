@@ -19,6 +19,50 @@ const ICON_MAP: Record<string, React.ElementType> = {
   BookOpen, GraduationCap,
 };
 
+const TeachersSection = () => {
+  const { data: teachers = [] } = useQuery({
+    queryKey: ['public-teachers'],
+    queryFn: async () => {
+      const { data: teacherRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'teacher');
+      if (!teacherRoles?.length) return [];
+      const ids = teacherRoles.map(r => r.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, teacher_image_url')
+        .in('id', ids);
+      return (profiles || []).filter((p: any) => p.teacher_image_url);
+    },
+  });
+
+  if (teachers.length === 0) return null;
+
+  return (
+    <section className="page-container pb-16">
+      <h2 className="text-2xl font-bold text-foreground mb-2">Our Teachers</h2>
+      <p className="text-muted-foreground mb-8">Learn from experienced educators</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {teachers.map((t: any) => (
+          <div key={t.id} className="group rounded-2xl border bg-card overflow-hidden hover:shadow-lg transition-all">
+            <div className="aspect-[9/16] bg-muted overflow-hidden">
+              <img
+                src={t.teacher_image_url}
+                alt={`${t.first_name} ${t.last_name}`}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div className="p-3 text-center">
+              <p className="font-semibold text-sm text-foreground">{t.first_name} {t.last_name}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const HomePage = () => {
   const { user, isAdmin, isModerator, isTeacher } = useAuth();
   const { data: settings } = useSiteSettings();
