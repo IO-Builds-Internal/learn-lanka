@@ -266,9 +266,11 @@ const AdminClasses = () => {
     setProfitSharePercent('');
   };
 
-  const filteredClasses = classes.filter((cls) => 
-    cls.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredClasses = classes.filter((cls) => {
+    const matchesSearch = cls.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSubject = subjectFilter === 'all' || (cls as any).subject_id === subjectFilter;
+    return matchesSearch && matchesSubject;
+  });
 
   if (isLoading) {
     return (
