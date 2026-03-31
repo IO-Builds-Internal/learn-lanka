@@ -1,0 +1,1 @@
+ALTER TABLE public.classes ADD COLUMN profit_share_percent integer DEFAULT 0;

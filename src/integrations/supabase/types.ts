@@ -270,6 +270,7 @@ export type Database = {
           max_students: number | null
           monthly_fee_amount: number
           private_code: string | null
+          profit_share_percent: number | null
           subject_id: string | null
           teacher_id: string | null
           title: string
@@ -288,6 +289,7 @@ export type Database = {
           max_students?: number | null
           monthly_fee_amount?: number
           private_code?: string | null
+          profit_share_percent?: number | null
           subject_id?: string | null
           teacher_id?: string | null
           title: string
@@ -306,6 +308,7 @@ export type Database = {
           max_students?: number | null
           monthly_fee_amount?: number
           private_code?: string | null
+          profit_share_percent?: number | null
           subject_id?: string | null
           teacher_id?: string | null
           title?: string
