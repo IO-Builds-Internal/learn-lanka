@@ -47,24 +47,48 @@ interface PaperAttachment {
 
 const Papers = () => {
   const { user, loading: authLoading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('PAST_PAPER');
   const [tabInitialized, setTabInitialized] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [downloadingAttachment, setDownloadingAttachment] = useState<string | null>(null);
   const [selectedPaperForReview, setSelectedPaperForReview] = useState<Paper | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(searchParams.get('subject') || '');
   const isGuest = !user;
 
-  // Fetch papers with attachments count
-  const { data: papers = [], isLoading } = useQuery({
-    queryKey: ['papers'],
+  // Fetch enabled subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['papers-subjects'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('papers')
-        .select('*')
-        .order('year', { ascending: false });
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
+
+  // Auto-select first subject if none selected
+  useEffect(() => {
+    if (subjects.length > 0 && !selectedSubjectId) {
+      // Check if URL has a subject slug
+      const slugParam = searchParams.get('subject');
+      if (slugParam) {
+        const found = subjects.find((s: any) => s.slug === slugParam);
+        if (found) { setSelectedSubjectId(found.id); return; }
+      }
+      setSelectedSubjectId(subjects[0].id);
+    }
+  }, [subjects, selectedSubjectId, searchParams]);
+
+  // Fetch papers filtered by subject
+  const { data: papers = [], isLoading } = useQuery({
+    queryKey: ['papers', selectedSubjectId],
+    queryFn: async () => {
+      let query = supabase.from('papers').select('*').order('year', { ascending: false });
+      if (selectedSubjectId) query = query.eq('subject_id', selectedSubjectId);
+      const { data, error } = await query;
       if (error) throw error;
       return data as Paper[];
     },
+    enabled: !!selectedSubjectId,
   });
 
   // Fetch attachments for all papers
