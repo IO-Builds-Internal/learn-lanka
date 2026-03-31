@@ -99,6 +99,8 @@ interface ClassOption {
 }
 
 const AdminRankPapers = () => {
+  const { profile, isTeacher } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
