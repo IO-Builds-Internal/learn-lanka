@@ -4,10 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import TeacherLayout from '@/components/layouts/TeacherLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Users, Clock, CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useQuery as useQuerySingle } from '@tanstack/react-query';
 
 const TeacherDashboard = () => {
-  const { user } = useAuth();
-
+  const { user, profile } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const { data: stats } = useQuery({
     queryKey: ['teacher-stats', user?.id],
     queryFn: async () => {
@@ -28,13 +30,29 @@ const TeacherDashboard = () => {
     },
     enabled: !!user,
   });
+  const { data: teacherSubject } = useQuerySingle({
+    queryKey: ['teacher-subject', teacherSubjectId],
+    queryFn: async () => {
+      if (!teacherSubjectId) return null;
+      const { data } = await supabase.from('subjects').select('*').eq('id', teacherSubjectId).single();
+      return data;
+    },
+    enabled: !!teacherSubjectId,
+  });
 
   return (
     <TeacherLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Teacher Dashboard</h1>
-          <p className="text-muted-foreground">Manage your classes and content</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Teacher Dashboard</h1>
+            <p className="text-muted-foreground">Manage your classes and content</p>
+          </div>
+          {teacherSubject && (
+            <Badge className="text-sm" style={{ backgroundColor: `${teacherSubject.color}20`, color: teacherSubject.color, borderColor: `${teacherSubject.color}30` }}>
+              {teacherSubject.name}
+            </Badge>
+          )}
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1000,6 +1000,7 @@ export type Database = {
           phone: string
           school_name: string | null
           status: string
+          subject_id: string | null
           teacher_image_url: string | null
           updated_at: string
         }
@@ -1015,6 +1016,7 @@ export type Database = {
           phone: string
           school_name?: string | null
           status?: string
+          subject_id?: string | null
           teacher_image_url?: string | null
           updated_at?: string
         }
@@ -1030,10 +1032,19 @@ export type Database = {
           phone?: string
           school_name?: string | null
           status?: string
+          subject_id?: string | null
           teacher_image_url?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       question_bank: {
         Row: {

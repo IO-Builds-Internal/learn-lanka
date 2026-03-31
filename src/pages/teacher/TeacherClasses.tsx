@@ -7,29 +7,32 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, BookOpen, Clock, CheckCircle, XCircle, Users } from 'lucide-react';
+import { Plus, BookOpen, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const TeacherClasses = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [gradeMin, setGradeMin] = useState('12');
   const [gradeMax, setGradeMax] = useState('13');
-  const [subjectId, setSubjectId] = useState('');
 
-  const { data: subjects = [] } = useQuery({
-    queryKey: ['subjects'],
+  // Teacher's assigned subject
+  const teacherSubjectId = (profile as any)?.subject_id;
+
+  const { data: teacherSubject } = useQuery({
+    queryKey: ['teacher-subject', teacherSubjectId],
     queryFn: async () => {
-      const { data } = await supabase.from('subjects').select('*').eq('is_active', true).order('sort_order');
-      return data || [];
+      if (!teacherSubjectId) return null;
+      const { data } = await supabase.from('subjects').select('*').eq('id', teacherSubjectId).single();
+      return data;
     },
+    enabled: !!teacherSubjectId,
   });
 
   const { data: classes = [], isLoading } = useQuery({
@@ -49,12 +52,13 @@ const TeacherClasses = () => {
   const createClass = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
+      if (!teacherSubjectId) throw new Error('No subject assigned. Contact admin.');
       const { error } = await supabase.from('classes').insert({
         title,
         description,
         grade_min: parseInt(gradeMin),
         grade_max: parseInt(gradeMax),
-        subject_id: subjectId || null,
+        subject_id: teacherSubjectId,
         teacher_id: user.id,
         created_by: user.id,
         approval_status: 'PENDING',
@@ -68,7 +72,6 @@ const TeacherClasses = () => {
       setDialogOpen(false);
       setTitle('');
       setDescription('');
-      setSubjectId('');
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -103,17 +106,17 @@ const TeacherClasses = () => {
                 <DialogTitle>Create New Class</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Subject</label>
-                  <Select value={subjectId} onValueChange={setSubjectId}>
-                    <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
-                    <SelectContent>
-                      {subjects.map((s: any) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {teacherSubject && (
+                  <div className="p-3 rounded-lg border bg-muted/50">
+                    <p className="text-xs text-muted-foreground">Subject (assigned by admin)</p>
+                    <p className="font-medium" style={{ color: teacherSubject.color }}>{teacherSubject.name}</p>
+                  </div>
+                )}
+                {!teacherSubjectId && (
+                  <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                    <p className="text-sm text-destructive">No subject assigned. Contact admin to assign your subject.</p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium">Class Title</label>
                   <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., Combined Maths - 2026 Batch" />
@@ -137,7 +140,7 @@ const TeacherClasses = () => {
                 </p>
                 <Button
                   onClick={() => createClass.mutate()}
-                  disabled={!title || createClass.isPending}
+                  disabled={!title || !teacherSubjectId || createClass.isPending}
                   className="w-full"
                 >
                   {createClass.isPending ? 'Submitting...' : 'Submit for Approval'}
