@@ -508,9 +508,9 @@ const PageWrapper = ({ children, isGuest }: { children: React.ReactNode; isGuest
           <div className="container flex h-14 items-center justify-between px-4">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <FileText className="w-4 h-4 text-primary-foreground" />
+              <GraduationCap className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">AL ICT</span>
+              <span className="font-bold text-lg">AL Student</span>
             </Link>
             <Link to="/login">
               <Button variant="outline" size="sm">
