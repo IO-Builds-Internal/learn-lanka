@@ -102,6 +102,7 @@ const PaperGenerator = () => {
   // Config state
   const [selectedGrade, setSelectedGrade] = useState<string>('12');
   const [selectedMedium, setSelectedMedium] = useState<string>('English');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [paperType, setPaperType] = useState<'DAILY' | 'FULL'>('DAILY');
   const [selectedLessons, setSelectedLessons] = useState<WeightedLesson[]>([]);
   const [pickerLessonId, setPickerLessonId] = useState<string>('');
@@ -110,6 +111,22 @@ const PaperGenerator = () => {
   const [generating, setGenerating] = useState(false);
   const [generatedPaper, setGeneratedPaper] = useState<{ id: string; questions: GeneratedQuestion[] } | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  // Fetch enabled subjects
+  const { data: pgSubjects = [] } = useQuery({
+    queryKey: ['pg-subjects'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
+
+  // Auto-select first subject
+  useEffect(() => {
+    if (pgSubjects.length > 0 && !selectedSubjectId) {
+      setSelectedSubjectId(pgSubjects[0].id);
+    }
+  }, [pgSubjects, selectedSubjectId]);
 
   // Fetch lessons for grade + medium
   const gradeParam = selectedGrade === '12' ? [12, 13] : [parseInt(selectedGrade)];
