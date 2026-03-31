@@ -414,10 +414,9 @@ const AdminQuestionBank = () => {
             <h1 className="text-2xl font-bold">Question Bank</h1>
             <p className="text-muted-foreground text-sm mt-1">{questions.length} total questions</p>
           </div>
-          <Button onClick={openAdd}>
+          <Button onClick={openAdd} disabled={teacherMissingSubject}>
             <Plus className="w-4 h-4 mr-2" /> Add Question
           </Button>
-          <Button onClick={openAdd} disabled={teacherMissingSubject} className="hidden" />
         </div>
 
         {/* Summary Stats */}
