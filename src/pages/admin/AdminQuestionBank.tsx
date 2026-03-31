@@ -60,6 +60,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
+import { useAuth } from '@/hooks/useAuth';
 
 // ──────────────── Types ────────────────
 type SyllabusLesson = { id: string; title: string; grade: number | null; medium: string | null; parent_id: string | null; subject: string };
