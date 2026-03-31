@@ -20,7 +20,7 @@ const TeacherPayments = () => {
       if (!user) return [];
       const { data } = await supabase
         .from('classes')
-        .select('id, title, monthly_fee_amount, profit_share_percent')
+        .select('id, title, monthly_fee_amount')
         .eq('teacher_id', user.id)
         .eq('approval_status', 'APPROVED')
         .order('title');
