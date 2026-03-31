@@ -76,7 +76,10 @@ interface ClassData {
 
 const AdminClasses = () => {
   const queryClient = useQueryClient();
+  const { isTeacher, profile } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const [searchQuery, setSearchQuery] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [deleteClassId, setDeleteClassId] = useState<string | null>(null);
