@@ -164,18 +164,12 @@ const SubjectHome = () => {
         )}
         <div className="relative page-container py-10 sm:py-16">
           <div className="flex items-center gap-4 mb-4">
-            {(subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug]) ? (
-              <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 border">
-                <img src={subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug]} alt={subject.name} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${subject.color}20` }}
-              >
-                <Icon className="w-8 h-8" style={{ color: subject.color }} />
-              </div>
-            )}
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${subject.color}20` }}
+            >
+              <Icon className="w-8 h-8" style={{ color: subject.color }} />
+            </div>
             <div>
               <h1 className="text-2xl sm:text-4xl font-bold text-foreground">{subject.name}</h1>
               <p className="text-sm sm:text-base text-muted-foreground">{subject.description}</p>
