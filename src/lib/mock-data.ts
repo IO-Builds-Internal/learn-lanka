@@ -19,8 +19,8 @@ export const mockCurrentUser: User = {
 export const mockClasses: Class[] = [
   {
     id: '1',
-    title: 'A/L ICT 2026 Batch',
-    description: 'Comprehensive ICT course for A/L students preparing for the 2026 examination. Covers all units including programming, databases, and networking.',
+    title: 'A/L Combined Maths 2026 Batch',
+    description: 'Comprehensive Combined Maths course for A/L students preparing for the 2026 examination.',
     gradeMin: 12,
     gradeMax: 13,
     monthlyFeeAmount: 3500,
