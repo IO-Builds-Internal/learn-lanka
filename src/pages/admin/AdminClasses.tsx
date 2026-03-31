@@ -250,6 +250,7 @@ const AdminClasses = () => {
     setIsPrivate(false);
     setMaxStudents('');
     setImageUrl('');
+    setProfitSharePercent('');
   };
 
   const filteredClasses = classes.filter((cls) => 
