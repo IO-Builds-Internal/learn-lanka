@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -20,14 +20,16 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "ict-academy-theme",
-  ...props
-}: ThemeProviderProps) {
+export const ThemeProvider = React.forwardRef<unknown, ThemeProviderProps>(function ThemeProvider(
+  {
+    children,
+    defaultTheme = "system",
+    storageKey = "ict-academy-theme",
+  },
+  _ref,
+) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   );
 
   useEffect(() => {
@@ -36,8 +38,7 @@ export function ThemeProvider({
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
 
@@ -48,12 +49,11 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  // Listen for system theme changes when in system mode
   useEffect(() => {
     if (theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    
+
     const handleChange = () => {
       const root = window.document.documentElement;
       root.classList.remove("light", "dark");
@@ -72,12 +72,8 @@ export function ThemeProvider({
     },
   };
 
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  );
-}
+  return <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>;
+});
 
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
