@@ -30,7 +30,6 @@ const SubjectHome = () => {
         .from('subjects')
         .select('*')
         .eq('slug', slug)
-        .eq('is_active', true)
         .maybeSingle();
       return data;
     },
