@@ -161,8 +161,17 @@ const RankPapers = () => {
   const submittedIds = new Set(attempts.filter((a: any) => a.submitted_at).map((a: any) => a.rank_paper_id));
   const inProgressIds = new Set(attempts.filter((a: any) => !a.submitted_at).map((a: any) => a.rank_paper_id));
 
-  const availablePapers = applyFilters(rankPapers.filter(p => !submittedIds.has(p.id)));
-  const historyPapers = applyFilters(rankPapers.filter(p => submittedIds.has(p.id)));
+  // Sort: enrolled subjects first
+  const sortByEnrolled = (papers: any[]) => {
+    return [...papers].sort((a, b) => {
+      const aEnrolled = enrolledSubjectIds.includes(a.subject_id) ? 0 : 1;
+      const bEnrolled = enrolledSubjectIds.includes(b.subject_id) ? 0 : 1;
+      return aEnrolled - bEnrolled;
+    });
+  };
+
+  const availablePapers = sortByEnrolled(applyFilters(rankPapers.filter(p => !submittedIds.has(p.id))));
+  const historyPapers = sortByEnrolled(applyFilters(rankPapers.filter(p => submittedIds.has(p.id))));
 
   const isLoading = loadingPapers;
 
