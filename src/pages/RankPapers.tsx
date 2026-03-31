@@ -132,7 +132,8 @@ const RankPapers = () => {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGrade = gradeFilter === 'all' || paper.grade.toString() === gradeFilter;
     const matchesMedium = mediumFilter === 'all' || (paper.medium || 'sinhala') === mediumFilter;
-    return matchesSearch && matchesGrade && matchesMedium;
+    const matchesSubject = subjectFilter === 'all' || paper.subject_id === subjectFilter;
+    return matchesSearch && matchesGrade && matchesMedium && matchesSubject;
   });
 
   // Split: history = submitted attempts; available = not attempted at all
