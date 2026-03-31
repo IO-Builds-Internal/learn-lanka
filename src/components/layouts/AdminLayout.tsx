@@ -378,7 +378,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     );
   }
 
-  if (!isAdmin && !isModerator) {
+  if (!isAdmin && !isModerator && !isTeacher) {
     return <Navigate to="/dashboard" replace />;
   }
 
