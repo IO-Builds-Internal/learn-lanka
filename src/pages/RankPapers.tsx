@@ -44,6 +44,27 @@ const RankPapers = () => {
     },
   });
 
+  // Fetch user's enrolled class subject IDs for prioritization
+  const { data: enrolledSubjectIds = [] } = useQuery({
+    queryKey: ['enrolled-subject-ids', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data: enrollments } = await supabase
+        .from('class_enrollments')
+        .select('class_id')
+        .eq('user_id', user.id)
+        .eq('status', 'ACTIVE');
+      if (!enrollments?.length) return [];
+      const classIds = enrollments.map(e => e.class_id);
+      const { data: classes } = await supabase
+        .from('classes')
+        .select('subject_id')
+        .in('id', classIds);
+      return [...new Set((classes || []).map(c => c.subject_id).filter(Boolean))] as string[];
+    },
+    enabled: !!user,
+  });
+
   // Fetch published rank papers
   const { data: rankPapers = [], isLoading: loadingPapers } = useQuery({
     queryKey: ['rank-papers'],
