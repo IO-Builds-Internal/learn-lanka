@@ -195,7 +195,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {filteredSubjects.map((subject: any) => {
             const Icon = ICON_MAP[subject.icon_name] || BookOpen;
-            const imgSrc = subject.image_url || FALLBACK_IMAGES[subject.slug];
+            const imgSrc = subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug];
             return (
               <Link
                 key={subject.id}

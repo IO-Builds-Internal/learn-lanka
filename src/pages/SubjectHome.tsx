@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Loader2 } from 'lucide-react';
+import { SUBJECT_FALLBACK_IMAGES } from '@/lib/subjectImages';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Monitor, Calculator, Atom, FlaskConical, Leaf, Receipt, TrendingUp, Briefcase,
