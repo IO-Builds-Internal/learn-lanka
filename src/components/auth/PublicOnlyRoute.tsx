@@ -7,7 +7,7 @@ interface PublicOnlyRouteProps {
 }
 
 const PublicOnlyRoute = ({ children }: PublicOnlyRouteProps) => {
-  const { user, loading, isAdmin, isModerator } = useAuth();
+  const { user, loading, isAdmin, isModerator, isTeacher } = useAuth();
 
   if (loading) {
     return (
@@ -19,9 +19,8 @@ const PublicOnlyRoute = ({ children }: PublicOnlyRouteProps) => {
 
   // If logged in, redirect to appropriate dashboard
   if (user) {
-    if (isAdmin || isModerator) {
-      return <Navigate to="/admin" replace />;
-    }
+    if (isAdmin || isModerator) return <Navigate to="/admin" replace />;
+    if (isTeacher) return <Navigate to="/teacher" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
