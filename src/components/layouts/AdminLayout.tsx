@@ -82,6 +82,7 @@ const navGroups: NavGroup[] = [
     label: 'People',
     entries: [
       { type: 'leaf', path: '/admin/users', label: 'Students', icon: Users },
+      { type: 'leaf', path: '/admin/teachers', label: 'Teachers', icon: GraduationCap },
       { type: 'leaf', path: '/admin/moderators', label: 'Moderators', icon: Shield },
     ],
   },

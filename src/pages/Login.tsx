@@ -47,6 +47,7 @@ const Login = () => {
       if (error) throw error;
 
       toast.success('Login successful!');
+      // Redirect handled by PublicOnlyRoute on next render
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
