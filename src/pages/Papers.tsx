@@ -320,22 +320,34 @@ const Papers = () => {
   return (
     <PageWrapper isGuest={isGuest}>
       <div className="space-y-6">
-        {/* Header */}
+        {/* Subject Selector + Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Past Papers & Resources</h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
               {isGuest ? 'Free papers available - Log in for full access' : 'Download past papers and exam resources'}
             </p>
           </div>
-          {isGuest && (
-            <Link to="/login">
-              <Button>
-                <LogIn className="w-4 h-4 mr-2" />
-                Log In
-              </Button>
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            <Select value={selectedSubjectId} onValueChange={(v) => setSelectedSubjectId(v)}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select subject" />
+              </SelectTrigger>
+              <SelectContent>
+                {subjects.map((s: any) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isGuest && (
+              <Link to="/login">
+                <Button>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Log In
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
