@@ -19,9 +19,9 @@ const navItems = [
   { path: '/teacher/classes', label: 'My Classes', icon: BookOpen },
   { path: '/teacher/enrollments', label: 'Enrollments', icon: Users },
   { path: '/teacher/payments', label: 'Payments', icon: CreditCard },
-  { path: '/teacher/papers', label: 'Past Papers', icon: FileText },
-  { path: '/teacher/syllabus', label: 'Syllabus', icon: Layers },
-  { path: '/teacher/question-bank', label: 'Question Bank', icon: HelpCircle },
+  { path: '/admin/papers', label: 'Past Papers', icon: FileText },
+  { path: '/admin/syllabus', label: 'Syllabus', icon: Layers },
+  { path: '/admin/question-bank', label: 'Question Bank', icon: HelpCircle },
 ];
 
 const TeacherLayout = ({ children }: TeacherLayoutProps) => {

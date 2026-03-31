@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Pencil, Trash2, ChevronRight, BookOpen, Layers } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 type SyllabusLesson = {
   id: string;
@@ -63,6 +64,8 @@ const defaultForm = {
 
 const AdminSyllabus = () => {
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<SyllabusLesson | null>(null);
@@ -85,13 +88,14 @@ const AdminSyllabus = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (values: typeof form & { id?: string }) => {
-      const payload = {
+      const payload: any = {
         title: values.title,
         grade: values.grade ? Number(values.grade) : null,
         medium: values.medium || null,
         subject: values.subject,
         sort_order: Number(values.sort_order),
         parent_id: values.parent_id || null,
+        subject_id: teacherSubjectId || null,
       };
       if (values.id) {
         const { error } = await supabase

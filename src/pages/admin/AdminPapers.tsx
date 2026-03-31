@@ -60,6 +60,7 @@ import PaperAttachmentsManager from '@/components/admin/PaperAttachmentsManager'
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Paper {
   id: string;
@@ -79,6 +80,8 @@ interface Paper {
 }
 
 const AdminPapers = () => {
+  const { profile, isTeacher, isAdmin, isModerator } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
@@ -169,6 +172,7 @@ const AdminPapers = () => {
             medium: medium || null,
             pdf_url: pdfUrl,
             is_free: isFree,
+            subject_id: teacherSubjectId || null,
           });
         
         if (error) throw error;

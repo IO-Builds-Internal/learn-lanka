@@ -44,9 +44,6 @@ import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherClasses from "./pages/teacher/TeacherClasses";
 import TeacherEnrollments from "./pages/teacher/TeacherEnrollments";
 import TeacherPayments from "./pages/teacher/TeacherPayments";
-import TeacherPapers from "./pages/teacher/TeacherPapers";
-import TeacherSyllabus from "./pages/teacher/TeacherSyllabus";
-import TeacherQuestionBank from "./pages/teacher/TeacherQuestionBank";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -134,9 +131,6 @@ const App = () => (
                 <Route path="/teacher/classes" element={<ProtectedRoute requireTeacher><TeacherClasses /></ProtectedRoute>} />
                 <Route path="/teacher/enrollments" element={<ProtectedRoute requireTeacher><TeacherEnrollments /></ProtectedRoute>} />
                 <Route path="/teacher/payments" element={<ProtectedRoute requireTeacher><TeacherPayments /></ProtectedRoute>} />
-                <Route path="/teacher/papers" element={<ProtectedRoute requireTeacher><TeacherPapers /></ProtectedRoute>} />
-                <Route path="/teacher/syllabus" element={<ProtectedRoute requireTeacher><TeacherSyllabus /></ProtectedRoute>} />
-                <Route path="/teacher/question-bank" element={<ProtectedRoute requireTeacher><TeacherQuestionBank /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
@@ -152,14 +146,14 @@ const App = () => (
                 <Route path="/admin/rank-paper-attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttemptsIndex /></ProtectedRoute>} />
                 <Route path="/admin/rank-papers/:paperId/attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttempts /></ProtectedRoute>} />
                 <Route path="/admin/shop" element={<ProtectedRoute requireModerator><AdminShop /></ProtectedRoute>} />
-                <Route path="/admin/papers" element={<ProtectedRoute requireModerator><AdminPapers /></ProtectedRoute>} />
+                <Route path="/admin/papers" element={<ProtectedRoute requireTeacher><AdminPapers /></ProtectedRoute>} />
                 <Route path="/admin/notifications" element={<ProtectedRoute requireModerator><AdminNotifications /></ProtectedRoute>} />
                 <Route path="/admin/bulk-sms" element={<ProtectedRoute requireModerator><AdminBulkSms /></ProtectedRoute>} />
                 <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
-                <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
+                <Route path="/admin/syllabus" element={<ProtectedRoute requireTeacher><AdminSyllabus /></ProtectedRoute>} />
                 <Route path="/admin/subjects" element={<ProtectedRoute requireAdmin><AdminSubjects /></ProtectedRoute>} />
                 <Route path="/admin/class-approvals" element={<ProtectedRoute requireAdmin><AdminClassApprovals /></ProtectedRoute>} />
-                <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
+                <Route path="/admin/question-bank" element={<ProtectedRoute requireTeacher><AdminQuestionBank /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
                 <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />
                 <Route path="/admin/settings/features" element={<ProtectedRoute requireAdmin><AdminSettingsFeatures /></ProtectedRoute>} />

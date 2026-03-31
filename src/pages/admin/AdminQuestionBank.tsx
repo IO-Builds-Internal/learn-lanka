@@ -60,6 +60,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
+import { useAuth } from '@/hooks/useAuth';
 
 // ──────────────── Types ────────────────
 type SyllabusLesson = { id: string; title: string; grade: number | null; medium: string | null; parent_id: string | null; subject: string };
@@ -134,11 +135,14 @@ const defaultForm = () => ({
   question_part: null as string | null,
   linked_group_id: '',
   question_images: [] as string[],
+  subject: '' as string,
 });
 
 // ──────────────── Component ────────────────
 const AdminQuestionBank = () => {
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<QuestionBankRow | null>(null);
@@ -194,7 +198,7 @@ const AdminQuestionBank = () => {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const payload: any = {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
         question_image_url: form.questionInputMode === 'image' ? (form.question_images[0] || null) : null,
@@ -206,7 +210,8 @@ const AdminQuestionBank = () => {
           : null,
         medium: form.medium || null,
         grade: form.grade ? Number(form.grade) : null,
-        subject: 'ICT',
+        subject: form.subject || 'ICT',
+        subject_id: teacherSubjectId || null,
         lesson_id: form.lesson_id || null,
         correct_option_no: form.question_type === 'MCQ' ? form.correct_option_no : null,
         explain_video_url: form.explain_video_url || null,
@@ -325,6 +330,7 @@ const AdminQuestionBank = () => {
       question_part: q.question_part,
       linked_group_id: q.linked_group_id || '',
       question_images: imgs,
+      subject: q.subject || '',
     });
     setDialogOpen(true);
   };
