@@ -27,8 +27,18 @@ const Classes = () => {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [privateCodeDialogOpen, setPrivateCodeDialogOpen] = useState(false);
   const [privateCode, setPrivateCode] = useState('');
+
+  // Fetch enabled subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
 
   // Fetch only PUBLIC classes (exclude private ones)
   const { data: classes = [], isLoading: classesLoading } = useQuery({
