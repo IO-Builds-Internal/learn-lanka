@@ -82,7 +82,7 @@ const NotFound = () => {
             <ArrowLeft className="w-4 h-4" />
             Go Back
           </Button>
-          <Button onClick={() => navigate("/", { replace: true })} className="gap-2">
+    <Button onClick={() => navigate("/", { replace: true })} className="gap-2">
             <Home className="w-4 h-4" />
             Go Home Now
           </Button>

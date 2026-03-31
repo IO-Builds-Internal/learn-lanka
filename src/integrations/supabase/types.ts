@@ -1000,6 +1000,7 @@ export type Database = {
           phone: string
           school_name: string | null
           status: string
+          teacher_image_url: string | null
           updated_at: string
         }
         Insert: {
@@ -1014,6 +1015,7 @@ export type Database = {
           phone: string
           school_name?: string | null
           status?: string
+          teacher_image_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -1028,6 +1030,7 @@ export type Database = {
           phone?: string
           school_name?: string | null
           status?: string
+          teacher_image_url?: string | null
           updated_at?: string
         }
         Relationships: []
