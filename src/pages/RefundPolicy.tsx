@@ -40,7 +40,7 @@ const RefundPolicy = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">1. No Cash Refunds Policy</h2>
               <p className="text-muted-foreground">
-                ALICT maintains a strict no cash refund policy. Once a payment is made and verified, we are unable to process cash refunds or reverse bank transfers. This policy applies to all services and products including:
+                A/L Student Academy maintains a strict no cash refund policy. Once a payment is made and verified, we are unable to process cash refunds or reverse bank transfers. This policy applies to all services and products including:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                 <li>Monthly class fees</li>
