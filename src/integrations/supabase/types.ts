@@ -258,6 +258,7 @@ export type Database = {
       classes: {
         Row: {
           admin_otp_phone: string | null
+          approval_status: string
           created_at: string
           created_by: string | null
           description: string | null
@@ -269,10 +270,13 @@ export type Database = {
           max_students: number | null
           monthly_fee_amount: number
           private_code: string | null
+          subject_id: string | null
+          teacher_id: string | null
           title: string
         }
         Insert: {
           admin_otp_phone?: string | null
+          approval_status?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -284,10 +288,13 @@ export type Database = {
           max_students?: number | null
           monthly_fee_amount?: number
           private_code?: string | null
+          subject_id?: string | null
+          teacher_id?: string | null
           title: string
         }
         Update: {
           admin_otp_phone?: string | null
+          approval_status?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -299,9 +306,19 @@ export type Database = {
           max_students?: number | null
           monthly_fee_amount?: number
           private_code?: string | null
+          subject_id?: string | null
+          teacher_id?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "classes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_messages: {
         Row: {
@@ -847,6 +864,7 @@ export type Database = {
           pdf_url: string
           school_or_zone: string | null
           subject: string | null
+          subject_id: string | null
           term: number | null
           title: string
           year: number | null
@@ -864,6 +882,7 @@ export type Database = {
           pdf_url: string
           school_or_zone?: string | null
           subject?: string | null
+          subject_id?: string | null
           term?: number | null
           title: string
           year?: number | null
@@ -881,11 +900,20 @@ export type Database = {
           pdf_url?: string
           school_or_zone?: string | null
           subject?: string | null
+          subject_id?: string | null
           term?: number | null
           title?: string
           year?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "papers_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -1025,6 +1053,7 @@ export type Database = {
           question_text: string | null
           question_type: string
           subject: string
+          subject_id: string | null
         }
         Insert: {
           category?: string
@@ -1046,6 +1075,7 @@ export type Database = {
           question_text?: string | null
           question_type?: string
           subject?: string
+          subject_id?: string | null
         }
         Update: {
           category?: string
@@ -1067,6 +1097,7 @@ export type Database = {
           question_text?: string | null
           question_type?: string
           subject?: string
+          subject_id?: string | null
         }
         Relationships: [
           {
@@ -1074,6 +1105,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "syllabus_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_bank_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -1391,6 +1429,7 @@ export type Database = {
           publish_status: string
           review_video_url: string | null
           short_essay_pdf_url: string | null
+          subject_id: string | null
           time_limit_minutes: number
           title: string
           unlock_at: string | null
@@ -1411,6 +1450,7 @@ export type Database = {
           publish_status?: string
           review_video_url?: string | null
           short_essay_pdf_url?: string | null
+          subject_id?: string | null
           time_limit_minutes?: number
           title: string
           unlock_at?: string | null
@@ -1431,6 +1471,7 @@ export type Database = {
           publish_status?: string
           review_video_url?: string | null
           short_essay_pdf_url?: string | null
+          subject_id?: string | null
           time_limit_minutes?: number
           title?: string
           unlock_at?: string | null
@@ -1441,6 +1482,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rank_papers_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -1669,6 +1717,42 @@ export type Database = {
         }
         Relationships: []
       }
+      subjects: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon_name: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       syllabus_lessons: {
         Row: {
           created_at: string
@@ -1679,6 +1763,7 @@ export type Database = {
           parent_id: string | null
           sort_order: number
           subject: string
+          subject_id: string | null
           title: string
         }
         Insert: {
@@ -1690,6 +1775,7 @@ export type Database = {
           parent_id?: string | null
           sort_order?: number
           subject?: string
+          subject_id?: string | null
           title: string
         }
         Update: {
@@ -1701,6 +1787,7 @@ export type Database = {
           parent_id?: string | null
           sort_order?: number
           subject?: string
+          subject_id?: string | null
           title?: string
         }
         Relationships: [
@@ -1709,6 +1796,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "syllabus_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syllabus_lessons_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
