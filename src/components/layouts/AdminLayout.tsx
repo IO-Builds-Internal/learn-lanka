@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import TeacherLayout from '@/components/layouts/TeacherLayout';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
