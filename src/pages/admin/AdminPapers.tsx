@@ -80,6 +80,8 @@ interface Paper {
 }
 
 const AdminPapers = () => {
+  const { profile, isTeacher, isAdmin, isModerator } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
