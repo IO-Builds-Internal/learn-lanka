@@ -190,30 +190,43 @@ const HomePage = () => {
         <h2 className="text-2xl font-bold text-foreground mb-2">Browse by Subject</h2>
         <p className="text-muted-foreground mb-8">Select a subject to explore classes, papers, and resources</p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {filteredSubjects.map((subject: any) => {
             const Icon = ICON_MAP[subject.icon_name] || BookOpen;
             return (
               <Link
                 key={subject.id}
                 to={`/${subject.slug}`}
-                className="group relative flex flex-col items-center gap-3 p-5 rounded-2xl border bg-card hover:shadow-lg hover:border-primary/30 transition-all duration-200 text-center"
+                className="group relative rounded-2xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-200"
               >
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
-                  style={{ backgroundColor: `${subject.color}15` }}
-                >
-                  <Icon className="w-7 h-7" style={{ color: subject.color }} />
+                <div className="aspect-[4/3] bg-muted overflow-hidden relative">
+                  {subject.image_url ? (
+                    <img
+                      src={subject.image_url}
+                      alt={subject.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ backgroundColor: `${subject.color}15` }}
+                    >
+                      <Icon className="w-12 h-12" style={{ color: subject.color }} />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-2 left-3">
+                    <h3 className="font-bold text-sm text-white drop-shadow-sm">
+                      {subject.name}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                    {subject.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                <div className="p-3">
+                  <p className="text-xs text-muted-foreground line-clamp-2">
                     {subject.description}
                   </p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground/0 group-hover:text-primary transition-all absolute top-3 right-3 group-hover:opacity-100 opacity-0" />
+                <ArrowRight className="w-4 h-4 text-muted-foreground/0 group-hover:text-primary transition-all absolute top-2 right-2 group-hover:opacity-100 opacity-0" />
               </Link>
             );
           })}

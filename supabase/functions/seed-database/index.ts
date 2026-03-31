@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
         'syllabus_lessons',
         'contact_replies', 'contact_messages',
         'sms_logs', 'otp_requests',
+        'subjects',
       ];
 
       const errors: string[] = [];
@@ -68,6 +69,9 @@ Deno.serve(async (req) => {
           errors.push(`${table}: ${String(e)}`);
         }
       }
+
+      // Also remove teacher roles (keep admin roles)
+      await supabase.from('user_roles').delete().eq('role', 'teacher');
 
       return new Response(
         JSON.stringify({ success: true, message: `Database cleared (${errors.length} warning(s)). Users preserved.`, warnings: errors }),
@@ -89,144 +93,143 @@ Deno.serve(async (req) => {
         );
       }
 
-      // ── 1. BANK ACCOUNTS ──────────────────────────────────────────
+      // ── 0. SUBJECTS ────────────────────────────────────────────────
+      const subjectsData = [
+        { name: 'ICT', slug: 'ict', description: 'Advanced Level Information & Communication Technology', icon_name: 'Monitor', color: '#3b82f6', is_active: true, sort_order: 0, image_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80' },
+        { name: 'Combined Maths', slug: 'combined-maths', description: 'Advanced Level Combined Mathematics', icon_name: 'Calculator', color: '#8b5cf6', is_active: true, sort_order: 1, image_url: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80' },
+        { name: 'Physics', slug: 'physics', description: 'Advanced Level Physics', icon_name: 'Atom', color: '#06b6d4', is_active: true, sort_order: 2, image_url: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=80' },
+        { name: 'Chemistry', slug: 'chemistry', description: 'Advanced Level Chemistry', icon_name: 'FlaskConical', color: '#10b981', is_active: true, sort_order: 3, image_url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=600&q=80' },
+        { name: 'Biology', slug: 'biology', description: 'Advanced Level Biology', icon_name: 'Leaf', color: '#22c55e', is_active: true, sort_order: 4, image_url: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=600&q=80' },
+        { name: 'Accounting', slug: 'accounting', description: 'Advanced Level Accounting', icon_name: 'Receipt', color: '#f59e0b', is_active: false, sort_order: 5, image_url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80' },
+        { name: 'Economics', slug: 'economics', description: 'Advanced Level Economics', icon_name: 'TrendingUp', color: '#ef4444', is_active: false, sort_order: 6, image_url: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80' },
+        { name: 'Business Studies', slug: 'business-studies', description: 'Advanced Level Business Studies', icon_name: 'Briefcase', color: '#6366f1', is_active: false, sort_order: 7, image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80' },
+      ];
+
+      const { data: subjects } = await supabase.from('subjects').insert(subjectsData).select();
+      const subjectMap: Record<string, string> = {};
+      for (const s of subjects || []) { subjectMap[s.slug] = s.id; }
+
+      // ── 1. TEACHERS (create auth users + profiles + roles) ─────────
+      const teacherProfiles = [
+        { firstName: 'Kasun', lastName: 'Bandara', phone: '0771001001', image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80' },
+        { firstName: 'Nimal', lastName: 'Jayawardena', phone: '0771001002', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80' },
+        { firstName: 'Sanduni', lastName: 'Perera', phone: '0771001003', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80' },
+        { firstName: 'Chaminda', lastName: 'Silva', phone: '0771001004', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80' },
+      ];
+
+      const teacherIds: string[] = [];
+      for (const t of teacherProfiles) {
+        const email = `${t.phone}@phone.alstudent.lk`;
+        const { data: authUser, error: authErr } = await supabase.auth.admin.createUser({
+          email, password: 'Teacher@123', email_confirm: true,
+          user_metadata: { first_name: t.firstName, last_name: t.lastName, phone: t.phone },
+        });
+        if (authErr) { console.error('Teacher create error:', authErr); continue; }
+        const uid = authUser.user.id;
+        teacherIds.push(uid);
+
+        await supabase.from('profiles').upsert({
+          id: uid, phone: t.phone, first_name: t.firstName, last_name: t.lastName,
+          teacher_image_url: t.image, status: 'ACTIVE',
+        });
+        await supabase.from('user_roles').insert({ user_id: uid, role: 'teacher' });
+      }
+
+      // ── 2. BANK ACCOUNTS ──────────────────────────────────────────
       await supabase.from('bank_accounts').insert([
-        { bank_name: 'Bank of Ceylon', account_name: 'ICT Academy', account_number: '1234567890', branch: 'Colombo Main', is_active: true },
-        { bank_name: 'Commercial Bank', account_name: 'ICT Academy LTD', account_number: '9876543210', branch: 'Nugegoda', is_active: true },
-        { bank_name: 'Sampath Bank', account_name: 'ICT Academy', account_number: '5555666677', branch: 'Maharagama', is_active: false },
+        { bank_name: 'Bank of Ceylon', account_name: 'AL Student Academy', account_number: '1234567890', branch: 'Colombo Main', is_active: true },
+        { bank_name: 'Commercial Bank', account_name: 'AL Student LTD', account_number: '9876543210', branch: 'Nugegoda', is_active: true },
       ]);
 
-      // ── 2. COUPONS ────────────────────────────────────────────────
+      // ── 3. COUPONS ────────────────────────────────────────────────
       await supabase.from('coupons').insert([
         { code: 'WELCOME50', discount_type: 'PERCENT', discount_value: 50, is_active: true, max_uses: 100 },
         { code: 'FLAT500', discount_type: 'FIXED', discount_value: 500, is_active: true, max_uses: 50 },
-        { code: 'EXPIRED25', discount_type: 'PERCENT', discount_value: 25, is_active: false },
-        { code: 'NEWSTUDENT', discount_type: 'FIXED', discount_value: 1000, is_active: true, max_uses: 20 },
       ]);
 
-      // ── 3. SHOP PRODUCTS ──────────────────────────────────────────
+      // ── 4. SHOP PRODUCTS ──────────────────────────────────────────
       await supabase.from('shop_products').insert([
         { title: 'A/L ICT Theory Notes 2026', description: 'Complete theory notes covering the full A/L ICT syllabus', type: 'BOTH', price_soft: 500, price_printed: 1500, price_both: 1800, is_active: true },
-        { title: 'Past Paper Collection 2019–2024', description: 'All A/L ICT past papers with model answers', type: 'SOFT', price_soft: 350, is_active: true },
-        { title: 'Programming Exercises Workbook', description: 'Hands-on exercises for Python, Java, and web development', type: 'PRINTED', price_printed: 2000, is_active: true },
-        { title: 'Quick Revision Flash Cards', description: 'Key definitions and diagrams for last-minute revision', type: 'PRINTED', price_printed: 800, is_active: true },
-        { title: 'Structured Essay Answer Guide', description: 'Model structured essay answers for A/L ICT', type: 'BOTH', price_soft: 400, price_printed: 1200, price_both: 1400, is_active: true },
+        { title: 'Past Paper Collection 2019–2024', description: 'All A/L past papers with model answers', type: 'SOFT', price_soft: 350, is_active: true },
+        { title: 'Combined Maths Formula Book', description: 'Essential formulas for Pure & Applied maths', type: 'PRINTED', price_printed: 800, is_active: true },
+        { title: 'Physics Practical Guide', description: 'Lab experiments guide with diagrams', type: 'BOTH', price_soft: 400, price_printed: 1200, price_both: 1400, is_active: true },
       ]);
 
-      // ── 4. NOTIFICATIONS ──────────────────────────────────────────
+      // ── 5. NOTIFICATIONS ──────────────────────────────────────────
       await supabase.from('notifications').insert([
-        { title: 'Welcome to ICT Academy!', message: 'Thank you for joining. Explore classes, rank papers, and resources to kickstart your learning journey.', target_type: 'ALL' },
-        { title: 'New Rank Paper Available', message: 'A new January 2026 ranking test has been published. Test your skills and compete on the leaderboard!', target_type: 'ALL' },
-        { title: 'Monthly Fee Reminder', message: 'Please pay your monthly class fee before the 10th to retain access to lessons and papers.', target_type: 'ALL' },
-        { title: 'Schedule Published — January 2026', message: 'The class schedule for January 2026 has been published. Check your class page for dates and times.', target_type: 'ALL' },
+        { title: 'Welcome to AL Student!', message: 'Explore classes, rank papers, and resources for all A/L subjects.', target_type: 'ALL' },
+        { title: 'New Rank Paper Available', message: 'A new ICT ranking test has been published. Compete on the leaderboard!', target_type: 'ALL' },
+        { title: 'Monthly Fee Reminder', message: 'Please pay your monthly class fee before the 10th.', target_type: 'ALL' },
       ]);
 
-      // ── 5. PAPERS ─────────────────────────────────────────────────
-      await supabase.from('papers').insert([
-        { title: 'A/L ICT 2024 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2024, term: 1, subject: 'ICT', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-ict-2024.pdf' },
-        { title: 'A/L ICT 2023 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2023, term: 1, subject: 'ICT', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-ict-2023.pdf' },
-        { title: 'A/L ICT 2022 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2022, term: 1, subject: 'ICT', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/al-ict-2022.pdf' },
-        { title: 'A/L ICT 2021 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2021, term: 1, subject: 'ICT', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/al-ict-2021.pdf' },
-        { title: 'A/L ICT 2020 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2020, term: 1, subject: 'ICT', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/al-ict-2020.pdf' },
-        { title: 'O/L ICT 2024 Model Paper', paper_type: 'MODEL_PAPER', grade: 11, year: 2024, subject: 'ICT', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/ol-model-2024.pdf' },
-        { title: 'A/L ICT Model Paper 2026', paper_type: 'MODEL_PAPER', grade: 13, year: 2026, subject: 'ICT', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/al-model-2026.pdf' },
-        { title: 'Royal College 1st Term 2024', paper_type: 'SCHOOL_EXAM', grade: 12, year: 2024, term: 1, school_or_zone: 'Royal College', subject: 'ICT', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/royal-2024-t1.pdf' },
-        { title: 'Ananda College 2nd Term 2024', paper_type: 'SCHOOL_EXAM', grade: 12, year: 2024, term: 2, school_or_zone: 'Ananda College', subject: 'ICT', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/ananda-2024-t2.pdf' },
-        { title: 'Visakha Vidyalaya 1st Term 2023', paper_type: 'SCHOOL_EXAM', grade: 12, year: 2023, term: 1, school_or_zone: 'Visakha Vidyalaya', subject: 'ICT', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/visakha-2023.pdf' },
-        { title: 'Colombo Zone 2023 Combined Exam', paper_type: 'SCHOOL_EXAM', grade: 13, year: 2023, term: 2, school_or_zone: 'Colombo Zone', subject: 'ICT', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/colombo-zone-2023.pdf' },
-      ]);
-
-      // ── 6. SYLLABUS LESSONS ──────────────────────────────────────
-      const syllabusSections = [
-        { title: 'Information and Communication Technology', grade: 13, subject: 'ICT', sort_order: 1 },
-        { title: 'Data and Information', grade: 13, subject: 'ICT', sort_order: 2 },
-        { title: 'Hardware and Software', grade: 13, subject: 'ICT', sort_order: 3 },
-        { title: 'Networking and Internet', grade: 13, subject: 'ICT', sort_order: 4 },
-        { title: 'Programming Concepts', grade: 13, subject: 'ICT', sort_order: 5 },
-        { title: 'Database Management', grade: 13, subject: 'ICT', sort_order: 6 },
-        { title: 'System Analysis and Design', grade: 13, subject: 'ICT', sort_order: 7 },
-        { title: 'Web Technologies', grade: 13, subject: 'ICT', sort_order: 8 },
+      // ── 6. PAPERS (multi-subject) ─────────────────────────────────
+      const papersData = [
+        { title: 'A/L ICT 2024 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2024, term: 1, subject: 'ICT', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-ict-2024.pdf', subject_id: subjectMap['ict'] },
+        { title: 'A/L ICT 2023 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2023, term: 1, subject: 'ICT', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-ict-2023.pdf', subject_id: subjectMap['ict'] },
+        { title: 'A/L ICT 2022 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2022, term: 1, subject: 'ICT', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/al-ict-2022.pdf', subject_id: subjectMap['ict'] },
+        { title: 'A/L ICT 2021 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2021, term: 1, subject: 'ICT', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/al-ict-2021.pdf', subject_id: subjectMap['ict'] },
+        { title: 'A/L Combined Maths 2024', paper_type: 'PAST_PAPER', grade: 13, year: 2024, term: 1, subject: 'Combined Maths', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-maths-2024.pdf', subject_id: subjectMap['combined-maths'] },
+        { title: 'A/L Combined Maths 2023', paper_type: 'PAST_PAPER', grade: 13, year: 2023, term: 1, subject: 'Combined Maths', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/al-maths-2023.pdf', subject_id: subjectMap['combined-maths'] },
+        { title: 'A/L Physics 2024 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2024, term: 1, subject: 'Physics', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-physics-2024.pdf', subject_id: subjectMap['physics'] },
+        { title: 'A/L Physics 2023 Paper I', paper_type: 'PAST_PAPER', grade: 13, year: 2023, term: 1, subject: 'Physics', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/al-physics-2023.pdf', subject_id: subjectMap['physics'] },
+        { title: 'A/L Chemistry 2024', paper_type: 'PAST_PAPER', grade: 13, year: 2024, term: 1, subject: 'Chemistry', medium: 'ENGLISH', is_free: true, pdf_url: 'https://example.com/al-chem-2024.pdf', subject_id: subjectMap['chemistry'] },
+        { title: 'A/L Biology 2024', paper_type: 'PAST_PAPER', grade: 13, year: 2024, term: 1, subject: 'Biology', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/al-bio-2024.pdf', subject_id: subjectMap['biology'] },
+        { title: 'Royal College ICT 1st Term 2024', paper_type: 'SCHOOL_EXAM', grade: 12, year: 2024, term: 1, school_or_zone: 'Royal College', subject: 'ICT', medium: 'ENGLISH', is_free: false, pdf_url: 'https://example.com/royal-ict-2024.pdf', subject_id: subjectMap['ict'] },
+        { title: 'Ananda College Physics 2024', paper_type: 'SCHOOL_EXAM', grade: 12, year: 2024, term: 2, school_or_zone: 'Ananda College', subject: 'Physics', medium: 'SINHALA', is_free: false, pdf_url: 'https://example.com/ananda-phy-2024.pdf', subject_id: subjectMap['physics'] },
       ];
+      await supabase.from('papers').insert(papersData);
 
-      const { data: syllabus } = await supabase.from('syllabus_lessons').insert(syllabusSections).select();
+      // ── 7. SYLLABUS LESSONS (ICT) ─────────────────────────────────
+      const ictSyllabus = [
+        { title: 'Information and Communication Technology', grade: 13, subject: 'ICT', sort_order: 1, subject_id: subjectMap['ict'] },
+        { title: 'Data and Information', grade: 13, subject: 'ICT', sort_order: 2, subject_id: subjectMap['ict'] },
+        { title: 'Hardware and Software', grade: 13, subject: 'ICT', sort_order: 3, subject_id: subjectMap['ict'] },
+        { title: 'Networking and Internet', grade: 13, subject: 'ICT', sort_order: 4, subject_id: subjectMap['ict'] },
+        { title: 'Programming Concepts', grade: 13, subject: 'ICT', sort_order: 5, subject_id: subjectMap['ict'] },
+        { title: 'Database Management', grade: 13, subject: 'ICT', sort_order: 6, subject_id: subjectMap['ict'] },
+      ];
+      const { data: syllabus } = await supabase.from('syllabus_lessons').insert(ictSyllabus).select();
 
-      // Sub-lessons
       if (syllabus && syllabus.length > 0) {
-        const subLessons = [];
+        const subLessons: any[] = [];
         const subMap: Record<string, string[]> = {
-          'Information and Communication Technology': ['History of ICT', 'Impact of ICT on Society', 'E-Commerce and E-Business'],
-          'Data and Information': ['Data Types and Representations', 'Number Systems', 'Data Encoding (ASCII, Unicode)', 'Data Compression'],
-          'Hardware and Software': ['Input/Output Devices', 'Storage Devices', 'CPU and Memory', 'Operating Systems', 'Application Software'],
-          'Networking and Internet': ['Network Topologies', 'OSI Model and TCP/IP', 'IP Addressing', 'Internet Services', 'Network Security'],
-          'Programming Concepts': ['Algorithms and Flowcharts', 'Variables and Data Types', 'Control Structures', 'Functions and Procedures', 'Object-Oriented Programming', 'Python Basics'],
-          'Database Management': ['Database Concepts', 'ER Diagrams', 'SQL Fundamentals', 'Normalization', 'Transactions and Concurrency'],
-          'System Analysis and Design': ['SDLC Phases', 'Requirements Analysis', 'UML Diagrams', 'Testing Strategies'],
-          'Web Technologies': ['HTML and CSS', 'JavaScript Basics', 'Client-Server Architecture', 'Web Security'],
+          'Information and Communication Technology': ['History of ICT', 'Impact of ICT on Society'],
+          'Data and Information': ['Data Types', 'Number Systems', 'Data Encoding'],
+          'Hardware and Software': ['Input/Output Devices', 'CPU and Memory', 'Operating Systems'],
+          'Networking and Internet': ['Network Topologies', 'OSI Model', 'IP Addressing'],
+          'Programming Concepts': ['Algorithms', 'Control Structures', 'OOP'],
+          'Database Management': ['ER Diagrams', 'SQL Fundamentals', 'Normalization'],
         };
         for (const parent of syllabus) {
-          const subs = subMap[parent.title] || [];
-          subs.forEach((title, i) => {
-            subLessons.push({ title, parent_id: parent.id, grade: 13, subject: 'ICT', sort_order: i + 1 });
+          (subMap[parent.title] || []).forEach((title, i) => {
+            subLessons.push({ title, parent_id: parent.id, grade: 13, subject: 'ICT', sort_order: i + 1, subject_id: subjectMap['ict'] });
           });
         }
         await supabase.from('syllabus_lessons').insert(subLessons);
       }
 
-      // ── 7. QUESTION BANK ──────────────────────────────────────────
-      const { data: allSyllabus } = await supabase.from('syllabus_lessons').select('id, title').is('parent_id', null);
+      // ── 8. QUESTION BANK ──────────────────────────────────────────
+      const { data: allSyllabus } = await supabase.from('syllabus_lessons').select('id').is('parent_id', null);
       const lessonIds = (allSyllabus || []).map(l => l.id);
 
       const mcqQuestions = [
-        { question_text: 'What does CPU stand for?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE' },
-        { question_text: 'Which of the following is a primary memory?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE' },
-        { question_text: 'What is the binary representation of decimal 10?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATA' },
-        { question_text: 'Which protocol is used for sending emails?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING' },
-        { question_text: 'What does HTML stand for?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'WEB' },
-        { question_text: 'Which layer of the OSI model handles routing?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING' },
-        { question_text: 'What is the time complexity of binary search?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'PROGRAMMING' },
-        { question_text: 'Which SQL command is used to retrieve data?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE' },
-        { question_text: 'What is a foreign key in a relational database?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE' },
-        { question_text: 'Which data structure uses LIFO principle?', correct_option_no: 4, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'PROGRAMMING' },
-        { question_text: 'What does DNS stand for?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING' },
-        { question_text: 'Which generation of computers used vacuum tubes?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HISTORY' },
-        { question_text: 'What is the hexadecimal value of decimal 255?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATA' },
-        { question_text: 'Which of the following is NOT an input device?', correct_option_no: 4, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE' },
-        { question_text: 'In OOP, what is encapsulation?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'PROGRAMMING' },
-        { question_text: 'Which topology connects all devices to a central hub?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING' },
-        { question_text: 'What does DBMS stand for?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE' },
-        { question_text: 'Which phase of SDLC involves creating DFDs?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'SYSTEMS' },
-        { question_text: 'What is the purpose of a cache memory?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE' },
-        { question_text: 'Which normal form eliminates transitive dependencies?', correct_option_no: 4, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE' },
-        // Sinhala medium
-        { question_text: 'CPU යන්නෙහි සම්පූර්ණ නාමය කුමක්ද?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'HARDWARE' },
-        { question_text: 'ද්වීමය ක්‍රමයේ 1010 දශමය අගය කොපමණද?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'DATA' },
-        { question_text: 'IP ලිපිනය සඳහා කොතෙකුත් bits ගනනාවක් ද?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'NETWORKING' },
-        { question_text: 'HTML හි < table > හි tbody නොමැති විට HTML Valid ද?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'WEB' },
-        { question_text: 'Database Normalization හි 1NF නිර්ණය කිරීමේ නිර්ණය කුමක්ද?', correct_option_no: 4, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'DATABASE' },
-        // Short essay
-        { question_text: 'Explain the difference between RAM and ROM with examples.', correct_option_no: null, question_type: 'SHORT_ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE' },
-        { question_text: 'Describe the OSI model and the function of each layer.', correct_option_no: null, question_type: 'SHORT_ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING' },
-        { question_text: 'Explain the concept of normalization in database design.', correct_option_no: null, question_type: 'SHORT_ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE' },
-        { question_text: 'Describe the phases of the Software Development Life Cycle (SDLC).', correct_option_no: null, question_type: 'SHORT_ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'SYSTEMS' },
-        { question_text: 'What is object-oriented programming? Explain with an example.', correct_option_no: null, question_type: 'SHORT_ESSAY', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'PROGRAMMING' },
-        // Essays
-        { question_text: 'Discuss the impact of ICT on education, healthcare, and banking in Sri Lanka.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'SOCIAL' },
-        { question_text: 'Explain the concept of cloud computing and its advantages and disadvantages.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING' },
-        { question_text: 'Describe database management systems and how they are used in modern applications.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE' },
-        { question_text: 'Explain network security threats and the measures used to protect against them.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'SINHALA', category: 'NETWORKING' },
-        { question_text: 'Describe the history of computers and the evolution of computing technology.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HISTORY' },
-        { question_text: 'Discuss algorithms, flowcharts, and pseudocode with practical examples.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'PROGRAMMING' },
+        { question_text: 'What does CPU stand for?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE', subject_id: subjectMap['ict'] },
+        { question_text: 'Which is a primary memory?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE', subject_id: subjectMap['ict'] },
+        { question_text: 'Binary of decimal 10?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATA', subject_id: subjectMap['ict'] },
+        { question_text: 'Protocol for sending emails?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING', subject_id: subjectMap['ict'] },
+        { question_text: 'What does HTML stand for?', correct_option_no: 2, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'WEB', subject_id: subjectMap['ict'] },
+        { question_text: 'OSI layer for routing?', correct_option_no: 3, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'NETWORKING', subject_id: subjectMap['ict'] },
+        { question_text: 'SQL command to retrieve data?', correct_option_no: 1, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'DATABASE', subject_id: subjectMap['ict'] },
+        { question_text: 'LIFO data structure?', correct_option_no: 4, question_type: 'MCQ', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'PROGRAMMING', subject_id: subjectMap['ict'] },
+        { question_text: 'Explain RAM vs ROM.', correct_option_no: null, question_type: 'SHORT_ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'HARDWARE', subject_id: subjectMap['ict'] },
+        { question_text: 'Describe SDLC phases.', correct_option_no: null, question_type: 'ESSAY', grade: 13, subject: 'ICT', medium: 'ENGLISH', category: 'SYSTEMS', subject_id: subjectMap['ict'] },
       ];
 
-      // Attach lesson_ids to questions
       const questionsToInsert = mcqQuestions.map((q, i) => ({
-        ...q,
-        lesson_id: lessonIds.length > 0 ? lessonIds[i % lessonIds.length] : null,
+        ...q, lesson_id: lessonIds.length > 0 ? lessonIds[i % lessonIds.length] : null,
       }));
-
       const { data: insertedQuestions } = await supabase.from('question_bank').insert(questionsToInsert).select();
 
-      // Add options to MCQ questions
       const mcqOptionSets: Record<number, { texts: string[]; correct: number }> = {
         0: { texts: ['Central Processing Unit', 'Computer Processing Unit', 'Central Program Unit', 'Core Processing Unit'], correct: 1 },
         1: { texts: ['Hard Disk', 'RAM', 'CD-ROM', 'Flash Drive'], correct: 2 },
@@ -234,57 +237,33 @@ Deno.serve(async (req) => {
         3: { texts: ['SMTP', 'FTP', 'HTTP', 'POP3'], correct: 1 },
         4: { texts: ['Hyper Terminal Markup Language', 'HyperText Markup Language', 'Hyperlink Text Markup Language', 'High-level Text Markup Language'], correct: 2 },
         5: { texts: ['Physical', 'Data Link', 'Network', 'Transport'], correct: 3 },
-        6: { texts: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], correct: 2 },
-        7: { texts: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'], correct: 1 },
-        8: { texts: ['A key that uniquely identifies each row', 'A key linking two tables', 'A key that references a primary key in another table', 'A composite key'], correct: 3 },
-        9: { texts: ['Queue', 'Array', 'Linked List', 'Stack'], correct: 4 },
-        10: { texts: ['Data Network System', 'Domain Name System', 'Dynamic Network Service', 'Default Name Server'], correct: 2 },
-        11: { texts: ['First', 'Second', 'Third', 'Fourth'], correct: 1 },
-        12: { texts: ['FA', 'FE', 'FF', '100'], correct: 3 },
-        13: { texts: ['Keyboard', 'Mouse', 'Scanner', 'Monitor'], correct: 4 },
-        14: { texts: ['Hiding complex implementation', 'Bundling data and methods together', 'Inheriting from a parent class', 'Supporting multiple forms'], correct: 2 },
-        15: { texts: ['Star', 'Bus', 'Ring', 'Mesh'], correct: 1 },
-        16: { texts: ['Data Building Management System', 'Database Backup Management System', 'Database Management System', 'Digital Binary Management System'], correct: 3 },
-        17: { texts: ['Planning', 'Analysis', 'Design', 'Implementation'], correct: 2 },
-        18: { texts: ['To provide fast temporary storage between CPU and RAM', 'To store permanent data', 'To run the operating system', 'To connect to the internet'], correct: 1 },
-        19: { texts: ['1NF', '2NF', 'BCNF', '3NF'], correct: 4 },
-        20: { texts: ['Central Processing Unit', 'Computer Processing Unit', 'Core Program Unit', 'Control Processing Unit'], correct: 1 },
-        21: { texts: ['8', '10', '12', '16'], correct: 2 },
-        22: { texts: ['16 bits', '32 bits', '64 bits', '128 bits'], correct: 3 },
-        23: { texts: ['ඔව්', 'නැත', 'සමහර විට', 'HTML5 පමණි'], correct: 1 },
-        24: { texts: ['Repeating groups නොතිබීම', 'Atomic values', 'Primary key ඇතිවීම', 'සියල්ල'], correct: 4 },
+        6: { texts: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'], correct: 1 },
+        7: { texts: ['Queue', 'Array', 'Linked List', 'Stack'], correct: 4 },
       };
 
-      const optionsToInsert = [];
+      const optionsToInsert: any[] = [];
       for (const q of insertedQuestions || []) {
         const idx = questionsToInsert.findIndex(orig => orig.question_text === q.question_text);
         if (q.question_type === 'MCQ' && mcqOptionSets[idx]) {
           const set = mcqOptionSets[idx];
           for (let o = 0; o < 4; o++) {
-            optionsToInsert.push({
-              question_id: q.id,
-              option_no: o + 1,
-              option_text: set.texts[o],
-              is_correct: (o + 1) === set.correct,
-            });
+            optionsToInsert.push({ question_id: q.id, option_no: o + 1, option_text: set.texts[o], is_correct: (o + 1) === set.correct });
           }
         }
       }
-      if (optionsToInsert.length > 0) {
-        await supabase.from('question_bank_options').insert(optionsToInsert);
-      }
+      if (optionsToInsert.length > 0) await supabase.from('question_bank_options').insert(optionsToInsert);
 
-      // ── 8. CLASSES ────────────────────────────────────────────────
+      // ── 9. CLASSES (multi-subject, assigned to teachers) ──────────
       const classesData = [
-        { title: 'A/L ICT Theory 2026', description: 'Full theory syllabus for A/L ICT. Covers all 8 units with structured notes, past papers, and weekly practice tests.', grade_min: 12, grade_max: 13, monthly_fee_amount: 2500, is_private: false },
-        { title: 'O/L ICT Revision 2025', description: 'Intensive revision course covering all G.C.E O/L ICT topics with exam technique and model papers.', grade_min: 10, grade_max: 11, monthly_fee_amount: 2000, is_private: false },
-        { title: 'Grade 10 ICT Foundation', description: 'Foundation course for Grade 10 students preparing for O/L. Builds strong conceptual understanding.', grade_min: 10, grade_max: 10, monthly_fee_amount: 1500, is_private: false },
-        { title: 'Advanced Programming Batch', description: 'Python, Java, and web development for advanced students. Project-based learning with code reviews.', grade_min: 11, grade_max: 13, monthly_fee_amount: 3500, is_private: true, private_code: 'PROG2026' },
+        { title: 'A/L ICT Theory 2026', description: 'Full theory syllabus for A/L ICT.', grade_min: 12, grade_max: 13, monthly_fee_amount: 2500, is_private: false, subject_id: subjectMap['ict'], teacher_id: teacherIds[0] || null, approval_status: 'APPROVED' },
+        { title: 'A/L Combined Maths 2026', description: 'Comprehensive Combined Maths course for A/L.', grade_min: 12, grade_max: 13, monthly_fee_amount: 3000, is_private: false, subject_id: subjectMap['combined-maths'], teacher_id: teacherIds[1] || null, approval_status: 'APPROVED' },
+        { title: 'A/L Physics 2026 Batch', description: 'Complete Physics course with practical sessions.', grade_min: 12, grade_max: 13, monthly_fee_amount: 2800, is_private: false, subject_id: subjectMap['physics'], teacher_id: teacherIds[2] || null, approval_status: 'APPROVED' },
+        { title: 'A/L Chemistry Revision', description: 'Intensive chemistry revision for 2026 exam.', grade_min: 13, grade_max: 13, monthly_fee_amount: 3500, is_private: true, private_code: 'CHEM2026', subject_id: subjectMap['chemistry'], teacher_id: teacherIds[3] || null, approval_status: 'APPROVED' },
+        { title: 'ICT Programming Batch', description: 'Python, Java, and web development.', grade_min: 11, grade_max: 13, monthly_fee_amount: 3500, is_private: true, private_code: 'PROG2026', subject_id: subjectMap['ict'], teacher_id: teacherIds[0] || null, approval_status: 'PENDING' },
       ];
-
       const { data: classes } = await supabase.from('classes').insert(classesData).select();
 
-      // Class months (last 2 + current)
+      // Class months
       const months = ['2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
       const classMonthsData: any[] = [];
       for (const cls of classes || []) {
@@ -294,140 +273,77 @@ Deno.serve(async (req) => {
       }
       const { data: classMonths } = await supabase.from('class_months').insert(classMonthsData).select();
 
-      // Class days with realistic schedules
+      // Class days
       const classDaysData: any[] = [];
       for (const cm of classMonths || []) {
         const base = new Date(cm.year_month + '-01');
         classDaysData.push(
-          { class_month_id: cm.id, date: new Date(base.getTime() + 5 * 86400000).toISOString().split('T')[0], title: 'Theory Session 1', start_time: '09:00', end_time: '11:30', is_extra: false, is_conducted: true },
-          { class_month_id: cm.id, date: new Date(base.getTime() + 12 * 86400000).toISOString().split('T')[0], title: 'Theory Session 2', start_time: '09:00', end_time: '11:30', is_extra: false, is_conducted: true },
-          { class_month_id: cm.id, date: new Date(base.getTime() + 19 * 86400000).toISOString().split('T')[0], title: 'Theory Session 3', start_time: '14:00', end_time: '16:30', is_extra: false, is_conducted: false },
-          { class_month_id: cm.id, date: new Date(base.getTime() + 26 * 86400000).toISOString().split('T')[0], title: 'Monthly Revision', start_time: '10:00', end_time: '12:30', is_extra: true, is_conducted: false }
+          { class_month_id: cm.id, date: new Date(base.getTime() + 5 * 86400000).toISOString().split('T')[0], title: 'Session 1', start_time: '09:00', end_time: '11:30', is_extra: false, is_conducted: true },
+          { class_month_id: cm.id, date: new Date(base.getTime() + 12 * 86400000).toISOString().split('T')[0], title: 'Session 2', start_time: '09:00', end_time: '11:30', is_extra: false, is_conducted: true },
+          { class_month_id: cm.id, date: new Date(base.getTime() + 19 * 86400000).toISOString().split('T')[0], title: 'Session 3', start_time: '14:00', end_time: '16:30', is_extra: false, is_conducted: false },
+          { class_month_id: cm.id, date: new Date(base.getTime() + 26 * 86400000).toISOString().split('T')[0], title: 'Revision', start_time: '10:00', end_time: '12:30', is_extra: true, is_conducted: false }
         );
       }
       await supabase.from('class_days').insert(classDaysData);
 
-      // Seed lessons for conducted days
+      // Lessons for conducted days
       const { data: conductedDays } = await supabase.from('class_days').select('id, title').eq('is_conducted', true).limit(20);
       const lessonTopics = [
-        { title: 'Introduction to ICT & History of Computers', description: 'Covers the evolution of computing from 1st to 5th generation, ICT applications, and societal impact.', notes_text: 'Key points: Generations of computers, Input/Output devices, memory hierarchy.' },
-        { title: 'Number Systems & Data Representation', description: 'Binary, Octal, Hexadecimal conversions and BCD, ASCII, Unicode encoding.', notes_text: 'Practice conversions: Binary↔Decimal, Hex↔Decimal, 2\'s complement.' },
-        { title: 'Hardware Components Deep Dive', description: 'CPU architecture, memory types (RAM, ROM, Cache), storage devices and their characteristics.', notes_text: 'Focus on clock speed, bus width, and cache hierarchy.' },
-        { title: 'Networking Fundamentals', description: 'Network types (LAN, WAN, MAN), topologies, OSI model, TCP/IP protocol suite.', notes_text: 'OSI 7 layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.' },
-        { title: 'Programming with Python', description: 'Variables, data types, control structures, functions, and file I/O in Python.', notes_text: 'Code examples: loops, list comprehensions, exception handling.' },
-        { title: 'Database Design & SQL', description: 'ER diagrams, relational model, SQL DDL & DML commands, normalization (1NF–3NF).', notes_text: 'SQL: SELECT, INSERT, UPDATE, DELETE, JOIN operations.' },
-        { title: 'System Analysis & UML', description: 'SDLC phases, requirements gathering, use case diagrams, DFDs, class diagrams.', notes_text: 'SDLC: Planning→Analysis→Design→Implementation→Testing→Maintenance.' },
-        { title: 'Web Technologies & Security', description: 'HTML5, CSS3, JavaScript basics, HTTP/HTTPS, cybersecurity threats and countermeasures.', notes_text: 'Security: Encryption, firewalls, VPN, authentication methods.' },
+        { title: 'Introduction & History', description: 'Overview and historical context.', notes_text: 'Key concepts covered in detail.' },
+        { title: 'Core Concepts', description: 'Fundamental principles and theories.', notes_text: 'Important formulas and definitions.' },
+        { title: 'Problem Solving', description: 'Applied problem-solving techniques.', notes_text: 'Practice problems included.' },
+        { title: 'Advanced Topics', description: 'Deep dive into advanced material.', notes_text: 'Extended reading references.' },
       ];
-
       const lessonsToInsert: any[] = [];
       for (let i = 0; i < (conductedDays || []).length; i++) {
-        const day = conductedDays![i];
         const topic = lessonTopics[i % lessonTopics.length];
-        lessonsToInsert.push({ class_day_id: day.id, ...topic, youtube_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' });
+        lessonsToInsert.push({ class_day_id: conductedDays![i].id, ...topic, youtube_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' });
       }
       await supabase.from('lessons').insert(lessonsToInsert);
 
-      // Class papers for first class
+      // Class papers
       if (classes && classes.length > 0) {
         await supabase.from('class_papers').insert([
-          { class_id: classes[0].id, title: 'January Daily Paper 1', paper_type: 'DAILY', description: 'First daily paper covering Unit 1 and Unit 2', pdf_url: 'https://example.com/daily-jan-1.pdf', publish_status: 'PUBLISHED', published_at: new Date().toISOString() },
-          { class_id: classes[0].id, title: 'January Daily Paper 2', paper_type: 'DAILY', description: 'Second daily paper covering networking basics', pdf_url: 'https://example.com/daily-jan-2.pdf', answer_pdf_url: 'https://example.com/daily-jan-2-ans.pdf', publish_status: 'PUBLISHED', published_at: new Date().toISOString() },
-          { class_id: classes[0].id, title: 'January Weekly Paper', paper_type: 'WEEKLY', description: 'Weekly comprehensive test on all topics covered in January', pdf_url: 'https://example.com/weekly-jan.pdf', review_video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', answer_pdf_url: 'https://example.com/weekly-jan-ans.pdf', publish_status: 'PUBLISHED', published_at: new Date().toISOString() },
-          { class_id: classes[0].id, title: 'February Daily Paper 1', paper_type: 'DAILY', pdf_url: 'https://example.com/daily-feb-1.pdf', publish_status: 'DRAFT' },
+          { class_id: classes[0].id, title: 'January Daily Paper 1', paper_type: 'DAILY', pdf_url: 'https://example.com/daily-jan-1.pdf', publish_status: 'PUBLISHED', published_at: new Date().toISOString() },
+          { class_id: classes[0].id, title: 'January Weekly Paper', paper_type: 'WEEKLY', pdf_url: 'https://example.com/weekly-jan.pdf', publish_status: 'PUBLISHED', published_at: new Date().toISOString() },
+          { class_id: classes[1].id, title: 'Maths Monthly Test', paper_type: 'MONTHLY', pdf_url: 'https://example.com/maths-monthly.pdf', publish_status: 'PUBLISHED', published_at: new Date().toISOString() },
         ]);
       }
 
-      // ── 9. RANK PAPERS ────────────────────────────────────────────
+      // ── 10. RANK PAPERS (multi-subject) ───────────────────────────
       const rankPapersData = [
-        { title: 'ICT Ranking Test — January 2026', grade: 13, time_limit_minutes: 60, has_mcq: true, has_short_essay: false, has_essay: false, publish_status: 'PUBLISHED', fee_amount: 200, unlock_at: '2026-01-15T08:00:00Z', lock_at: '2026-01-31T23:59:00Z' },
-        { title: 'Comprehensive ICT Assessment — February 2026', grade: 13, time_limit_minutes: 90, has_mcq: true, has_short_essay: true, has_essay: false, publish_status: 'PUBLISHED', fee_amount: 300 },
-        { title: 'O/L ICT Practice Ranking', grade: 11, time_limit_minutes: 45, has_mcq: true, has_short_essay: false, has_essay: false, publish_status: 'DRAFT', fee_amount: 150 },
-        { title: 'Full ICT Paper Simulation — March 2026', grade: 13, time_limit_minutes: 180, has_mcq: true, has_short_essay: true, has_essay: true, publish_status: 'DRAFT', fee_amount: 500 },
+        { title: 'ICT Ranking Test — January 2026', grade: 13, time_limit_minutes: 60, has_mcq: true, has_short_essay: false, has_essay: false, publish_status: 'PUBLISHED', fee_amount: 200, subject_id: subjectMap['ict'] },
+        { title: 'Combined Maths Ranking — February 2026', grade: 13, time_limit_minutes: 90, has_mcq: true, has_short_essay: true, has_essay: false, publish_status: 'PUBLISHED', fee_amount: 300, subject_id: subjectMap['combined-maths'] },
+        { title: 'Physics Practice Ranking', grade: 13, time_limit_minutes: 45, has_mcq: true, has_short_essay: false, has_essay: false, publish_status: 'DRAFT', fee_amount: 150, subject_id: subjectMap['physics'] },
       ];
-
       const { data: rankPapers } = await supabase.from('rank_papers').insert(rankPapersData).select();
 
       for (const paper of rankPapers || []) {
         if (paper.has_mcq) {
-          const questionCount = paper.time_limit_minutes >= 90 ? 10 : 5;
-          const mcqQs = [
-            'Which of the following best describes RAM?',
-            'What is the primary function of an operating system?',
-            'In binary, what is 1111 in decimal?',
-            'Which protocol operates at the Application layer of the OSI model?',
-            'What does SQL stand for?',
-            'Which data structure is best for implementing undo operations?',
-            'What is the purpose of a subnet mask?',
-            'Which of these is NOT a feature of Object-Oriented Programming?',
-            'What does HTTP status code 404 mean?',
-            'Which sorting algorithm has the best average-case complexity?',
+          const count = paper.time_limit_minutes >= 90 ? 8 : 5;
+          const mcqTexts = ['Which is correct?', 'What is the answer?', 'Select the right option:', 'Which one applies?', 'Choose the correct answer:', 'Identify the right one:', 'What is the result?', 'Which statement is true?'];
+          const optSets = [
+            ['Option A', 'Option B', 'Option C', 'Option D'],
+            ['First', 'Second', 'Third', 'Fourth'],
           ];
-          const mcqAnswers = [2, 3, 4, 1, 2, 4, 1, 3, 2, 1];
-          const optionSets = [
-            ['Permanent storage', 'Temporary volatile storage', 'Permanent non-volatile storage', 'Secondary storage'],
-            ['Manage files', 'Execute user programs', 'Manage hardware resources and provide services', 'Connect to internet'],
-            ['13', '14', '15', '16'],
-            ['TCP', 'HTTP', 'IP', 'Ethernet'],
-            ['Standard Query Language', 'Structured Query Language', 'Simple Query Language', 'Sequential Query Language'],
-            ['Array', 'Queue', 'Tree', 'Stack'],
-            ['To encrypt data', 'To identify the network portion of an IP address', 'To assign IP addresses', 'To route packets'],
-            ['Encapsulation', 'Inheritance', 'Polymorphism', 'Compilation'],
-            ['Server Error', 'Redirect', 'Not Found', 'Unauthorized'],
-            ['Merge Sort', 'Bubble Sort', 'Selection Sort', 'Insertion Sort'],
-          ];
-
-          for (let i = 0; i < questionCount; i++) {
-            const { data: q } = await supabase.from('rank_mcq_questions').insert({
-              rank_paper_id: paper.id,
-              q_no: i + 1,
-              question_text: mcqQs[i % mcqQs.length],
-            }).select().single();
-
+          for (let i = 0; i < count; i++) {
+            const { data: q } = await supabase.from('rank_mcq_questions').insert({ rank_paper_id: paper.id, q_no: i + 1, question_text: mcqTexts[i % mcqTexts.length] }).select().single();
             if (q) {
-              const opts = optionSets[i % optionSets.length];
-              const correctNo = mcqAnswers[i % mcqAnswers.length];
-              await supabase.from('rank_mcq_options').insert(
-                opts.map((text, oi) => ({ question_id: q.id, option_no: oi + 1, option_text: text, is_correct: (oi + 1) === correctNo }))
-              );
+              const opts = optSets[i % optSets.length];
+              await supabase.from('rank_mcq_options').insert(opts.map((text, oi) => ({ question_id: q.id, option_no: oi + 1, option_text: text, is_correct: oi === 0 })));
             }
           }
         }
       }
 
-      // ── 10. GENERATED PAPERS ──────────────────────────────────────
-      const mcqQIds = (insertedQuestions || []).filter(q => q.question_type === 'MCQ').slice(0, 10).map(q => ({ id: q.id, correct_option_no: q.correct_option_no }));
-      const essayQIds = (insertedQuestions || []).filter(q => q.question_type !== 'MCQ').slice(0, 7).map(q => ({ id: q.id, correct_option_no: null }));
-      const allQIds = [...mcqQIds, ...essayQIds];
-
-      const paperIds = ['DAILY-' + Date.now(), 'FULL-' + (Date.now() + 1)];
-      await supabase.from('generated_papers').insert([
-        {
-          id: paperIds[0],
-          user_id: user.id,
-          grade: 13,
-          paper_type: 'DAILY',
-          mcq_count: 10,
-          short_essay_count: 0,
-          essay_count: 1,
-          lesson_weights: [],
-          question_ids: allQIds.slice(0, 11),
-        },
-        {
-          id: paperIds[1],
-          user_id: user.id,
-          grade: 13,
-          paper_type: 'FULL',
-          mcq_count: Math.min(20, mcqQIds.length),
-          short_essay_count: Math.min(2, essayQIds.filter((_,i) => i < 2).length),
-          essay_count: Math.min(5, essayQIds.length),
-          lesson_weights: [],
-          question_ids: allQIds,
-        },
+      // ── 11. CONTACT MESSAGES ──────────────────────────────────────
+      await supabase.from('contact_messages').insert([
+        { name: 'Kamal Perera', phone: '0771234567', message: 'How do I enroll in the ICT class?', status: 'NEW' },
+        { name: 'Nimali Silva', email: 'nimali@example.com', message: 'Can I get a refund for last month?', status: 'NEW' },
       ]);
 
       return new Response(
-        JSON.stringify({ success: true, message: 'Database seeded with comprehensive dummy data! Classes, lessons, question bank, papers, rank papers and generated papers are ready.' }),
+        JSON.stringify({ success: true, message: 'Database seeded with multi-subject data, 4 teachers, classes, papers, rank papers, and more!' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
