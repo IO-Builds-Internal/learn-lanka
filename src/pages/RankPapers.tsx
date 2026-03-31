@@ -44,6 +44,27 @@ const RankPapers = () => {
     },
   });
 
+  // Fetch user's enrolled class subject IDs for prioritization
+  const { data: enrolledSubjectIds = [] } = useQuery({
+    queryKey: ['enrolled-subject-ids', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data: enrollments } = await supabase
+        .from('class_enrollments')
+        .select('class_id')
+        .eq('user_id', user.id)
+        .eq('status', 'ACTIVE');
+      if (!enrollments?.length) return [];
+      const classIds = enrollments.map(e => e.class_id);
+      const { data: classes } = await supabase
+        .from('classes')
+        .select('subject_id')
+        .in('id', classIds);
+      return [...new Set((classes || []).map(c => c.subject_id).filter(Boolean))] as string[];
+    },
+    enabled: !!user,
+  });
+
   // Fetch published rank papers
   const { data: rankPapers = [], isLoading: loadingPapers } = useQuery({
     queryKey: ['rank-papers'],
@@ -140,8 +161,17 @@ const RankPapers = () => {
   const submittedIds = new Set(attempts.filter((a: any) => a.submitted_at).map((a: any) => a.rank_paper_id));
   const inProgressIds = new Set(attempts.filter((a: any) => !a.submitted_at).map((a: any) => a.rank_paper_id));
 
-  const availablePapers = applyFilters(rankPapers.filter(p => !submittedIds.has(p.id)));
-  const historyPapers = applyFilters(rankPapers.filter(p => submittedIds.has(p.id)));
+  // Sort: enrolled subjects first
+  const sortByEnrolled = (papers: any[]) => {
+    return [...papers].sort((a, b) => {
+      const aEnrolled = enrolledSubjectIds.includes(a.subject_id) ? 0 : 1;
+      const bEnrolled = enrolledSubjectIds.includes(b.subject_id) ? 0 : 1;
+      return aEnrolled - bEnrolled;
+    });
+  };
+
+  const availablePapers = sortByEnrolled(applyFilters(rankPapers.filter(p => !submittedIds.has(p.id))));
+  const historyPapers = sortByEnrolled(applyFilters(rankPapers.filter(p => submittedIds.has(p.id))));
 
   const isLoading = loadingPapers;
 

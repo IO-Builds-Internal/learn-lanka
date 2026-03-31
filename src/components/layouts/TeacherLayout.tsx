@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import {
   GraduationCap, LayoutDashboard, BookOpen, Users, CreditCard,
-  ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle,
+  ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle, Scissors, MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,8 @@ const navItems = [
   { path: '/admin/papers', label: 'Past Papers', icon: FileText },
   { path: '/admin/syllabus', label: 'Syllabus', icon: Layers },
   { path: '/admin/question-bank', label: 'Question Bank', icon: HelpCircle },
+  { path: '/admin/paper-crop', label: 'Paper Crop', icon: Scissors },
+  { path: '/admin/bulk-sms', label: 'Bulk SMS', icon: MessageSquare },
 ];
 
 const TeacherLayout = ({ children }: TeacherLayoutProps) => {

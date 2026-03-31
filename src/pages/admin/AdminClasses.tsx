@@ -55,6 +55,7 @@ import ClassDetailDialog from '@/components/admin/ClassDetailDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 const DEFAULT_CLASS_IMAGE = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=60';
 
@@ -75,7 +76,10 @@ interface ClassData {
 
 const AdminClasses = () => {
   const queryClient = useQueryClient();
+  const { isTeacher, profile } = useAuth();
+  const teacherSubjectId = (profile as any)?.subject_id;
   const [searchQuery, setSearchQuery] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [deleteClassId, setDeleteClassId] = useState<string | null>(null);
@@ -114,6 +118,15 @@ const AdminClasses = () => {
   };
 
   // Fetch classes from database
+  // Fetch subjects for filter
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug, color').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
+
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ['admin-classes'],
     queryFn: async () => {
@@ -253,9 +266,11 @@ const AdminClasses = () => {
     setProfitSharePercent('');
   };
 
-  const filteredClasses = classes.filter((cls) => 
-    cls.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredClasses = classes.filter((cls) => {
+    const matchesSearch = cls.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSubject = subjectFilter === 'all' || (cls as any).subject_id === subjectFilter;
+    return matchesSearch && matchesSubject;
+  });
 
   if (isLoading) {
     return (
@@ -272,7 +287,7 @@ const AdminClasses = () => {
       <div className="space-y-6">
       <AdminPageHeader
         title="Classes"
-        description="Manage your ICT classes"
+        description="Manage all classes across subjects"
         breadcrumbs={[{ label: 'Academics' }, { label: 'Classes' }]}
         actions={
           <Button onClick={() => { setEditingClass(null); resetForm(); setIsDialogOpen(true); }}>
@@ -452,15 +467,28 @@ const AdminClasses = () => {
             </DialogContent>
           </Dialog>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search classes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        {/* Search & Subject Filter */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search classes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="All Subjects" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              {subjects.map((s: any) => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Classes Grid */}

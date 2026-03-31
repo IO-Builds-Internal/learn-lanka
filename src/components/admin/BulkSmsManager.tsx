@@ -57,7 +57,8 @@ interface SmsLog {
 }
 
 const BulkSmsManager = () => {
-  const { user } = useAuth();
+  const { user, isTeacher, isAdmin, profile } = useAuth();
+  const teacherSubjectId = isTeacher && !isAdmin ? (profile as any)?.subject_id : null;
   const [recipients, setRecipients] = useState('');
   const [message, setMessage] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
@@ -83,14 +84,15 @@ const BulkSmsManager = () => {
     },
   });
 
-  // Fetch classes
+  // Fetch classes (scoped by teacher subject if teacher)
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes-for-sms'],
+    queryKey: ['classes-for-sms', teacherSubjectId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('id, title')
-        .order('title');
+      let query = supabase.from('classes').select('id, title, subject_id').order('title');
+      if (teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -314,12 +316,16 @@ const BulkSmsManager = () => {
             <Tabs value={targetGroup} onValueChange={handleTargetGroupChange}>
               <TabsList className="w-full justify-start flex-wrap h-auto gap-1">
                 <TabsTrigger value="custom">Custom List</TabsTrigger>
-                <TabsTrigger value="all">
-                  All Users ({userStats?.total || 0})
-                </TabsTrigger>
-                <TabsTrigger value="enrolled">
-                  Enrolled ({userStats?.enrolled || 0})
-                </TabsTrigger>
+                {!teacherSubjectId && (
+                  <>
+                    <TabsTrigger value="all">
+                      All Users ({userStats?.total || 0})
+                    </TabsTrigger>
+                    <TabsTrigger value="enrolled">
+                      Enrolled ({userStats?.enrolled || 0})
+                    </TabsTrigger>
+                  </>
+                )}
                 <TabsTrigger value="class">
                   <GraduationCap className="w-4 h-4 mr-1" />
                   By Class
