@@ -30,7 +30,7 @@ const Terms = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground">
-                By accessing and using ALICT platform, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service.
+                By accessing and using A/L Student Academy platform, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service.
               </p>
             </section>
 
