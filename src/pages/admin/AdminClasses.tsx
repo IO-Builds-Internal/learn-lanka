@@ -118,6 +118,15 @@ const AdminClasses = () => {
   };
 
   // Fetch classes from database
+  // Fetch subjects for filter
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug, color').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
+
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ['admin-classes'],
     queryFn: async () => {
