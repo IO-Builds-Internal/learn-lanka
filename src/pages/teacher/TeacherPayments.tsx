@@ -20,7 +20,7 @@ const TeacherPayments = () => {
       if (!user) return [];
       const { data } = await supabase
         .from('classes')
-        .select('id, title, monthly_fee_amount, profit_share_percent')
+        .select('id, title, monthly_fee_amount')
         .eq('teacher_id', user.id)
         .eq('approval_status', 'APPROVED')
         .order('title');
@@ -78,10 +78,6 @@ const TeacherPayments = () => {
 
   // Calculate totals
   const totalRevenue = payments.reduce((sum: number, p: any) => sum + p.amount, 0);
-  const avgShare = classes.length > 0
-    ? classes.reduce((s: number, c: any) => s + (c.profit_share_percent || 0), 0) / classes.length
-    : 0;
-  const estimatedShare = Math.round(totalRevenue * avgShare / 100);
 
   return (
     <TeacherLayout>
@@ -91,7 +87,7 @@ const TeacherPayments = () => {
           <p className="text-muted-foreground">View approved payments for your classes</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
@@ -99,16 +95,6 @@ const TeacherPayments = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Rs. {totalRevenue.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Your Share (est.)</CardTitle>
-              <CreditCard className="w-4 h-4 text-success" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-success">Rs. {estimatedShare.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Avg {avgShare.toFixed(0)}% share</p>
             </CardContent>
           </Card>
           <Card>

@@ -141,7 +141,7 @@ const defaultForm = () => ({
 // ──────────────── Component ────────────────
 const AdminQuestionBank = () => {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, isTeacher } = useAuth();
   const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -158,9 +158,13 @@ const AdminQuestionBank = () => {
 
   // Lessons
   const { data: lessons = [] } = useQuery<SyllabusLesson[]>({
-    queryKey: ['syllabus_lessons'],
+    queryKey: ['syllabus_lessons', isTeacher ? teacherSubjectId : 'all'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('syllabus_lessons').select('*').order('sort_order');
+      let query = supabase.from('syllabus_lessons').select('*').order('sort_order');
+      if (isTeacher && teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -168,12 +172,18 @@ const AdminQuestionBank = () => {
 
   // Questions
   const { data: questions = [] as QuestionBankRow[], isLoading } = useQuery<QuestionBankRow[]>({
-    queryKey: ['question_bank'],
+    queryKey: ['question_bank', isTeacher ? teacherSubjectId : 'all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('question_bank')
         .select('*, question_bank_options(*)')
         .order('created_at', { ascending: false });
+      
+      if (isTeacher && teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return ((data || []) as any[]).map(q => ({
         ...q,
