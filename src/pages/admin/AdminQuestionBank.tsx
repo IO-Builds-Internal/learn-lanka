@@ -135,6 +135,7 @@ const defaultForm = () => ({
   question_part: null as string | null,
   linked_group_id: '',
   question_images: [] as string[],
+  subject: '' as string,
 });
 
 // ──────────────── Component ────────────────
