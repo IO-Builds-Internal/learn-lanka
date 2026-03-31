@@ -131,17 +131,20 @@ const PaperGenerator = () => {
   // Fetch lessons for grade + medium
   const gradeParam = selectedGrade === '12' ? [12, 13] : [parseInt(selectedGrade)];
   const { data: allLessons = [] } = useQuery({
-    queryKey: ['syllabus-lessons-for-gen', selectedGrade, selectedMedium],
+    queryKey: ['syllabus-lessons-for-gen', selectedGrade, selectedMedium, selectedSubjectId],
     queryFn: async () => {
+      if (!selectedSubjectId) return [];
       const { data, error } = await supabase
         .from('syllabus_lessons')
         .select('id, title, parent_id')
+        .eq('subject_id', selectedSubjectId)
         .in('grade', gradeParam)
         .or(`medium.eq.${selectedMedium},medium.is.null`)
         .order('sort_order');
       if (error) throw error;
       return data as LessonItem[];
     },
+    enabled: !!selectedSubjectId,
   });
 
   // Available (not yet added) lessons
