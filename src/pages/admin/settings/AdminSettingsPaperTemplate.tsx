@@ -63,7 +63,7 @@ const AdminSettingsPaperTemplate = () => {
           <CardContent className="pt-6 space-y-5">
             <div className="space-y-2">
               <Label>School / Institute Name (Header)</Label>
-              <Input value={paperSchoolName} onChange={e => setPaperSchoolName(e.target.value)} placeholder="e.g. ICT Academy" />
+              <Input value={paperSchoolName} onChange={e => setPaperSchoolName(e.target.value)} placeholder="e.g. AL Student" />
               <p className="text-xs text-muted-foreground">Shown as the main title in the paper header</p>
             </div>
             <Separator />
