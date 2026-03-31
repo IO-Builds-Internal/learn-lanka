@@ -52,7 +52,7 @@ const AdminSubjects = () => {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = { name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''), description: description || null, icon_name: iconName, color, is_active: isActive };
+      const payload = { name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''), description: description || null, icon_name: iconName, color, image_url: imageUrl || null, is_active: isActive };
       if (editing) {
         const { error } = await supabase.from('subjects').update(payload).eq('id', editing.id);
         if (error) throw error;
