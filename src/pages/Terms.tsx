@@ -37,7 +37,7 @@ const Terms = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">2. Description of Service</h2>
               <p className="text-muted-foreground">
-                ALICT provides online educational services including but not limited to:
+                A/L Student Academy provides online educational services including but not limited to:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                 <li>Online classes and lessons</li>
