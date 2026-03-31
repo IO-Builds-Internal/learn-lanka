@@ -155,18 +155,29 @@ const SubjectHome = () => {
       </header>
 
       {/* Hero */}
-      <section className="border-b" style={{ backgroundColor: `${subject.color}08` }}>
-        <div className="page-container py-12 sm:py-16">
+      <section className="border-b relative overflow-hidden" style={{ backgroundColor: `${subject.color}08` }}>
+        {subject.image_url && (
+          <div className="absolute inset-0">
+            <img src={subject.image_url} alt="" className="w-full h-full object-cover opacity-10" />
+          </div>
+        )}
+        <div className="relative page-container py-10 sm:py-16">
           <div className="flex items-center gap-4 mb-4">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: `${subject.color}20` }}
-            >
-              <Icon className="w-8 h-8" style={{ color: subject.color }} />
-            </div>
+            {subject.image_url ? (
+              <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 border">
+                <img src={subject.image_url} alt={subject.name} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `${subject.color}20` }}
+              >
+                <Icon className="w-8 h-8" style={{ color: subject.color }} />
+              </div>
+            )}
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">{subject.name}</h1>
-              <p className="text-muted-foreground">{subject.description}</p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-foreground">{subject.name}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">{subject.description}</p>
             </div>
           </div>
 
