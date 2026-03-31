@@ -287,7 +287,7 @@ const AdminClasses = () => {
       <div className="space-y-6">
       <AdminPageHeader
         title="Classes"
-        description="Manage your ICT classes"
+        description="Manage all classes across subjects"
         breadcrumbs={[{ label: 'Academics' }, { label: 'Classes' }]}
         actions={
           <Button onClick={() => { setEditingClass(null); resetForm(); setIsDialogOpen(true); }}>
