@@ -141,7 +141,7 @@ const defaultForm = () => ({
 // ──────────────── Component ────────────────
 const AdminQuestionBank = () => {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, isTeacher } = useAuth();
   const teacherSubjectId = (profile as any)?.subject_id;
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
