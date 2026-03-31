@@ -80,7 +80,7 @@ export const mockNotifications: Notification[] = [
     id: '1',
     targetType: 'ALL',
     title: 'New Rank Paper Available',
-    message: 'A/L ICT Model Paper 2026 is now available. Complete it before the deadline to secure your spot on the leaderboard!',
+    message: 'A/L Model Paper 2026 is now available. Complete it before the deadline to secure your spot on the leaderboard!',
     createdBy: 'admin',
     createdAt: '2024-02-01T09:00:00Z',
   },
