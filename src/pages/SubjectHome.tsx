@@ -157,16 +157,16 @@ const SubjectHome = () => {
 
       {/* Hero */}
       <section className="border-b relative overflow-hidden" style={{ backgroundColor: `${subject.color}08` }}>
-        {subject.image_url && (
+        {(subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug]) && (
           <div className="absolute inset-0">
-            <img src={subject.image_url} alt="" className="w-full h-full object-cover opacity-10" />
+            <img src={subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug]} alt="" className="w-full h-full object-cover opacity-10" />
           </div>
         )}
         <div className="relative page-container py-10 sm:py-16">
           <div className="flex items-center gap-4 mb-4">
-            {subject.image_url ? (
+            {(subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug]) ? (
               <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 border">
-                <img src={subject.image_url} alt={subject.name} className="w-full h-full object-cover" />
+                <img src={subject.image_url || SUBJECT_FALLBACK_IMAGES[subject.slug]} alt={subject.name} className="w-full h-full object-cover" />
               </div>
             ) : (
               <div
