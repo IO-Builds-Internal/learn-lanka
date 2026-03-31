@@ -30,8 +30,8 @@ export const mockClasses: Class[] = [
   },
   {
     id: '2',
-    title: 'O/L ICT 2025 Batch',
-    description: 'Complete O/L ICT preparation course with practical exercises and model papers.',
+    title: 'A/L Physics 2025 Batch',
+    description: 'Complete A/L Physics preparation course with practical exercises and model papers.',
     gradeMin: 10,
     gradeMax: 11,
     monthlyFeeAmount: 2500,
