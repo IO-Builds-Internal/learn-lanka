@@ -98,7 +98,7 @@ const AdminSettings = () => {
         const settings: Record<string, string> = {};
         data?.forEach((s: any) => { settings[s.key] = s.value; });
         
-        setSiteName(settings['site_name'] || 'ICT Academy');
+        setSiteName(settings['site_name'] || 'A/L Student Academy');
         setContactPhone(settings['contact_phone'] || '');
         setContactEmail(settings['contact_email'] || '');
         if (settings['logo_url']) setLogoUrl(settings['logo_url']);
