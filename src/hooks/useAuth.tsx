@@ -11,6 +11,7 @@ interface AuthContextType {
   roles: string[];
   isAdmin: boolean;
   isModerator: boolean;
+  isTeacher: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -125,6 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isAdmin = roles.includes('admin');
   const isModerator = roles.includes('moderator') || isAdmin;
+  const isTeacher = roles.includes('teacher');
 
   return (
     <AuthContext.Provider value={{
@@ -136,6 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       roles,
       isAdmin,
       isModerator,
+      isTeacher,
       signOut,
       refreshProfile,
     }}>

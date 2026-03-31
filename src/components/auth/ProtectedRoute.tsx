@@ -6,13 +6,14 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
   requireModerator?: boolean;
+  requireTeacher?: boolean;
 }
 
-// Student-only routes — admin/mod should not land here
+// Student-only routes — admin/mod/teacher should not land here
 const STUDENT_ONLY_PATHS = ['/dashboard', '/classes', '/rank-papers', '/shop', '/checkout', '/notifications', '/papers', '/playground', '/profile'];
 
-const ProtectedRoute = ({ children, requireAdmin, requireModerator }: ProtectedRouteProps) => {
-  const { user, loading, rolesLoading, isAdmin, isModerator } = useAuth();
+const ProtectedRoute = ({ children, requireAdmin, requireModerator, requireTeacher }: ProtectedRouteProps) => {
+  const { user, loading, rolesLoading, isAdmin, isModerator, isTeacher } = useAuth();
   const location = useLocation();
 
   if (loading || rolesLoading) {
@@ -28,12 +29,19 @@ const ProtectedRoute = ({ children, requireAdmin, requireModerator }: ProtectedR
   }
 
   // Admins/mods visiting student-only routes → send to admin panel
-  // Unless they have explicitly enabled student preview mode
   const isStudentPreview = sessionStorage.getItem('admin_student_preview') === 'true';
-  if ((isAdmin || isModerator) && !requireAdmin && !requireModerator && !isStudentPreview) {
+  if ((isAdmin || isModerator) && !requireAdmin && !requireModerator && !requireTeacher && !isStudentPreview) {
     const isStudentOnly = STUDENT_ONLY_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
     if (isStudentOnly) {
       return <Navigate to="/admin" replace />;
+    }
+  }
+
+  // Teachers visiting student-only routes → send to teacher panel
+  if (isTeacher && !isAdmin && !isModerator && !requireTeacher && !isStudentPreview) {
+    const isStudentOnly = STUDENT_ONLY_PATHS.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
+    if (isStudentOnly) {
+      return <Navigate to="/teacher" replace />;
     }
   }
 
@@ -43,6 +51,10 @@ const ProtectedRoute = ({ children, requireAdmin, requireModerator }: ProtectedR
 
   if (requireModerator && !isModerator) {
     return <Navigate to="/admin" replace />;
+  }
+
+  if (requireTeacher && !isTeacher && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

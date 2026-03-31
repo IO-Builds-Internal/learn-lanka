@@ -8,10 +8,18 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import FeatureGate from "@/components/auth/FeatureGate";
 import PublicOnlyRoute from "@/components/auth/PublicOnlyRoute";
-// Auth Pages
+import { CartProvider } from "@/hooks/useCart";
+
+// Public Pages
+import HomePage from "./pages/Home";
+import SubjectHome from "./pages/SubjectHome";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
 
 // Student Pages
 import Dashboard from "./pages/Dashboard";
@@ -28,16 +36,18 @@ import Checkout from "./pages/Checkout";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import PaperGenerator from "./pages/PaperGenerator";
-import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminPrices from "./pages/admin/AdminPrices";
 import MyOrders from "./pages/MyOrders";
-import { CartProvider } from "@/hooks/useCart";
+import Playground from "./pages/Playground";
+
+// Teacher Pages
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import TeacherClasses from "./pages/teacher/TeacherClasses";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminModerators from "./pages/admin/AdminModerators";
+import AdminTeachers from "./pages/admin/AdminTeachers";
 import AdminClasses from "./pages/admin/AdminClasses";
 import AdminClassContent from "./pages/admin/AdminClassContent";
 import AdminPayments from "./pages/admin/AdminPayments";
@@ -62,13 +72,11 @@ import AdminSyllabus from "./pages/admin/AdminSyllabus";
 import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
 import AdminOtpLogs from "./pages/admin/AdminOtpLogs";
 import AdminPaperCrop from "./pages/admin/AdminPaperCrop";
-import Contact from "./pages/Contact";
-import Terms from "./pages/Terms";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import RefundPolicy from "./pages/RefundPolicy";
-
+import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminPrices from "./pages/admin/AdminPrices";
+import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
-import Playground from "./pages/Playground";
 
 const queryClient = new QueryClient();
 
@@ -82,74 +90,84 @@ const App = () => (
               <Toaster />
               <Sonner />
               <Routes>
-              {/* Public Routes - redirect to dashboard/admin if logged in */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-              <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
-              <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/refund-policy" element={<RefundPolicy />} />
+                {/* Public Home */}
+                <Route path="/" element={<HomePage />} />
 
-              {/* Papers - accessible without login (for free papers only) */}
-              <Route path="/papers" element={<FeatureGate flag="section_papers"><Papers /></FeatureGate>} />
-              <Route path="/playground" element={<ProtectedRoute><FeatureGate flag="section_playground"><Playground /></FeatureGate></ProtectedRoute>} />
+                {/* Auth Routes */}
+                <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+                <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+                <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
 
-              {/* Protected Student Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/classes" element={<ProtectedRoute><FeatureGate flag="section_classes"><Classes /></FeatureGate></ProtectedRoute>} />
-              <Route path="/classes/:id" element={<ProtectedRoute><FeatureGate flag="section_classes"><ClassDetail /></FeatureGate></ProtectedRoute>} />
-              <Route path="/rank-papers" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPapers /></FeatureGate></ProtectedRoute>} />
-              <Route path="/rank-papers/:id" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperDetail /></FeatureGate></ProtectedRoute>} />
-              <Route path="/rank-papers/:id/attempt" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperAttempt /></FeatureGate></ProtectedRoute>} />
-              <Route path="/rank-papers/:id/results" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperResults /></FeatureGate></ProtectedRoute>} />
-              <Route path="/rank-papers/:id/leaderboard" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperLeaderboard /></FeatureGate></ProtectedRoute>} />
-              <Route path="/shop" element={<ProtectedRoute><FeatureGate flag="section_shop"><Shop /></FeatureGate></ProtectedRoute>} />
-              <Route path="/checkout" element={<ProtectedRoute><FeatureGate flag="section_shop"><Checkout /></FeatureGate></ProtectedRoute>} />
-              <Route path="/notifications" element={<ProtectedRoute><FeatureGate flag="section_notifications"><Notifications /></FeatureGate></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/paper-generator" element={<ProtectedRoute><PaperGenerator /></ProtectedRoute>} />
-              <Route path="/my-orders" element={<ProtectedRoute><FeatureGate flag="section_shop"><MyOrders /></FeatureGate></ProtectedRoute>} />
+                {/* Papers - accessible without login */}
+                <Route path="/papers" element={<FeatureGate flag="section_papers"><Papers /></FeatureGate>} />
+                <Route path="/playground" element={<ProtectedRoute><FeatureGate flag="section_playground"><Playground /></FeatureGate></ProtectedRoute>} />
 
-              {/* Protected Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
-              <Route path="/admin/moderators" element={<ProtectedRoute requireAdmin><AdminModerators /></ProtectedRoute>} />
-              <Route path="/admin/classes" element={<ProtectedRoute requireModerator><AdminClasses /></ProtectedRoute>} />
-              <Route path="/admin/classes/:id/content" element={<ProtectedRoute requireModerator><AdminClassContent /></ProtectedRoute>} />
-              <Route path="/admin/payments" element={<ProtectedRoute requireModerator><AdminPayments /></ProtectedRoute>} />
-              <Route path="/admin/coupons" element={<ProtectedRoute requireModerator><AdminCoupons /></ProtectedRoute>} />
-              <Route path="/admin/rank-papers" element={<ProtectedRoute requireModerator><AdminRankPapers /></ProtectedRoute>} />
-              <Route path="/admin/rank-papers/:paperId/questions" element={<ProtectedRoute requireModerator><AdminRankPaperQuestions /></ProtectedRoute>} />
-              <Route path="/admin/rank-paper-attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttemptsIndex /></ProtectedRoute>} />
-              <Route path="/admin/rank-papers/:paperId/attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttempts /></ProtectedRoute>} />
-              <Route path="/admin/shop" element={<ProtectedRoute requireModerator><AdminShop /></ProtectedRoute>} />
-              <Route path="/admin/papers" element={<ProtectedRoute requireModerator><AdminPapers /></ProtectedRoute>} />
-              <Route path="/admin/notifications" element={<ProtectedRoute requireModerator><AdminNotifications /></ProtectedRoute>} />
-              <Route path="/admin/bulk-sms" element={<ProtectedRoute requireModerator><AdminBulkSms /></ProtectedRoute>} />
-              <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
-              <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
-              <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
-              <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />
-              <Route path="/admin/settings/features" element={<ProtectedRoute requireAdmin><AdminSettingsFeatures /></ProtectedRoute>} />
-              <Route path="/admin/settings/contact" element={<ProtectedRoute requireAdmin><AdminSettingsContact /></ProtectedRoute>} />
-              <Route path="/admin/settings/paper-template" element={<ProtectedRoute requireAdmin><AdminSettingsPaperTemplate /></ProtectedRoute>} />
-              <Route path="/admin/settings/bank" element={<ProtectedRoute requireAdmin><AdminSettingsBank /></ProtectedRoute>} />
-              <Route path="/admin/settings/sms" element={<ProtectedRoute requireAdmin><AdminSettingsSms /></ProtectedRoute>} />
-              <Route path="/admin/settings/backup" element={<ProtectedRoute requireAdmin><AdminSettingsBackup /></ProtectedRoute>} />
-              <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
-              <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
-              <Route path="/admin/prices" element={<ProtectedRoute requireModerator><AdminPrices /></ProtectedRoute>} />
-              <Route path="/admin/otp-logs" element={<ProtectedRoute requireAdmin><AdminOtpLogs /></ProtectedRoute>} />
-              <Route path="/admin/paper-crop" element={<ProtectedRoute requireModerator><AdminPaperCrop /></ProtectedRoute>} />
+                {/* Protected Student Routes */}
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/classes" element={<ProtectedRoute><FeatureGate flag="section_classes"><Classes /></FeatureGate></ProtectedRoute>} />
+                <Route path="/classes/:id" element={<ProtectedRoute><FeatureGate flag="section_classes"><ClassDetail /></FeatureGate></ProtectedRoute>} />
+                <Route path="/rank-papers" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPapers /></FeatureGate></ProtectedRoute>} />
+                <Route path="/rank-papers/:id" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperDetail /></FeatureGate></ProtectedRoute>} />
+                <Route path="/rank-papers/:id/attempt" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperAttempt /></FeatureGate></ProtectedRoute>} />
+                <Route path="/rank-papers/:id/results" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperResults /></FeatureGate></ProtectedRoute>} />
+                <Route path="/rank-papers/:id/leaderboard" element={<ProtectedRoute><FeatureGate flag="section_rank_papers"><RankPaperLeaderboard /></FeatureGate></ProtectedRoute>} />
+                <Route path="/shop" element={<ProtectedRoute><FeatureGate flag="section_shop"><Shop /></FeatureGate></ProtectedRoute>} />
+                <Route path="/checkout" element={<ProtectedRoute><FeatureGate flag="section_shop"><Checkout /></FeatureGate></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><FeatureGate flag="section_notifications"><Notifications /></FeatureGate></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/paper-generator" element={<ProtectedRoute><PaperGenerator /></ProtectedRoute>} />
+                <Route path="/my-orders" element={<ProtectedRoute><FeatureGate flag="section_shop"><MyOrders /></FeatureGate></ProtectedRoute>} />
 
-              {/* Catch-all */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </CartProvider>
-        </AuthProvider>
+                {/* Teacher Routes */}
+                <Route path="/teacher" element={<ProtectedRoute requireTeacher><TeacherDashboard /></ProtectedRoute>} />
+                <Route path="/teacher/classes" element={<ProtectedRoute requireTeacher><TeacherClasses /></ProtectedRoute>} />
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
+                <Route path="/admin/teachers" element={<ProtectedRoute requireAdmin><AdminTeachers /></ProtectedRoute>} />
+                <Route path="/admin/moderators" element={<ProtectedRoute requireAdmin><AdminModerators /></ProtectedRoute>} />
+                <Route path="/admin/classes" element={<ProtectedRoute requireModerator><AdminClasses /></ProtectedRoute>} />
+                <Route path="/admin/classes/:id/content" element={<ProtectedRoute requireModerator><AdminClassContent /></ProtectedRoute>} />
+                <Route path="/admin/payments" element={<ProtectedRoute requireModerator><AdminPayments /></ProtectedRoute>} />
+                <Route path="/admin/coupons" element={<ProtectedRoute requireModerator><AdminCoupons /></ProtectedRoute>} />
+                <Route path="/admin/rank-papers" element={<ProtectedRoute requireModerator><AdminRankPapers /></ProtectedRoute>} />
+                <Route path="/admin/rank-papers/:paperId/questions" element={<ProtectedRoute requireModerator><AdminRankPaperQuestions /></ProtectedRoute>} />
+                <Route path="/admin/rank-paper-attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttemptsIndex /></ProtectedRoute>} />
+                <Route path="/admin/rank-papers/:paperId/attempts" element={<ProtectedRoute requireModerator><AdminRankPaperAttempts /></ProtectedRoute>} />
+                <Route path="/admin/shop" element={<ProtectedRoute requireModerator><AdminShop /></ProtectedRoute>} />
+                <Route path="/admin/papers" element={<ProtectedRoute requireModerator><AdminPapers /></ProtectedRoute>} />
+                <Route path="/admin/notifications" element={<ProtectedRoute requireModerator><AdminNotifications /></ProtectedRoute>} />
+                <Route path="/admin/bulk-sms" element={<ProtectedRoute requireModerator><AdminBulkSms /></ProtectedRoute>} />
+                <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
+                <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
+                <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
+                <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />
+                <Route path="/admin/settings/features" element={<ProtectedRoute requireAdmin><AdminSettingsFeatures /></ProtectedRoute>} />
+                <Route path="/admin/settings/contact" element={<ProtectedRoute requireAdmin><AdminSettingsContact /></ProtectedRoute>} />
+                <Route path="/admin/settings/paper-template" element={<ProtectedRoute requireAdmin><AdminSettingsPaperTemplate /></ProtectedRoute>} />
+                <Route path="/admin/settings/bank" element={<ProtectedRoute requireAdmin><AdminSettingsBank /></ProtectedRoute>} />
+                <Route path="/admin/settings/sms" element={<ProtectedRoute requireAdmin><AdminSettingsSms /></ProtectedRoute>} />
+                <Route path="/admin/settings/backup" element={<ProtectedRoute requireAdmin><AdminSettingsBackup /></ProtectedRoute>} />
+                <Route path="/admin/answer-access-payments" element={<ProtectedRoute requireModerator><AdminAnswerAccessPayments /></ProtectedRoute>} />
+                <Route path="/admin/orders" element={<ProtectedRoute requireModerator><AdminOrders /></ProtectedRoute>} />
+                <Route path="/admin/prices" element={<ProtectedRoute requireModerator><AdminPrices /></ProtectedRoute>} />
+                <Route path="/admin/otp-logs" element={<ProtectedRoute requireAdmin><AdminOtpLogs /></ProtectedRoute>} />
+                <Route path="/admin/paper-crop" element={<ProtectedRoute requireModerator><AdminPaperCrop /></ProtectedRoute>} />
+
+                {/* Subject pages (must be last before catch-all) */}
+                <Route path="/:slug" element={<SubjectHome />} />
+
+                {/* Catch-all */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </CartProvider>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
