@@ -142,7 +142,7 @@ const HomePage = () => {
       </section>
 
       {/* Subjects Grid */}
-      <section className="page-container pb-20">
+      <section className="page-container pb-16">
         <h2 className="text-2xl font-bold text-foreground mb-2">Browse by Subject</h2>
         <p className="text-muted-foreground mb-8">Select a subject to explore classes, papers, and resources</p>
 
@@ -181,6 +181,9 @@ const HomePage = () => {
           </div>
         )}
       </section>
+
+      {/* Our Teachers Section */}
+      <TeachersSection />
 
       {/* Footer */}
       <footer className="border-t bg-card/50">
