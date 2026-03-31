@@ -140,7 +140,7 @@ const TeacherClasses = () => {
                 </p>
                 <Button
                   onClick={() => createClass.mutate()}
-                  disabled={!title || createClass.isPending}
+                  disabled={!title || !teacherSubjectId || createClass.isPending}
                   className="w-full"
                 >
                   {createClass.isPending ? 'Submitting...' : 'Submit for Approval'}
