@@ -115,7 +115,7 @@ const AdminTeachers = () => {
       if (!selectedUser || !imageFile || !selectedSubjectId) throw new Error('Please select a user, subject, and upload an image');
       setUploading(true);
       const imageUrl = await uploadImage(imageFile, selectedUser.id);
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl, subject_id: selectedSubjectId } as any).eq('id', selectedUser.id);
+      await supabase.from('profiles').update({ teacher_image_url: imageUrl, subject_id: selectedSubjectId }).eq('id', selectedUser.id);
       const { error } = await supabase.from('user_roles').insert({ user_id: selectedUser.id, role: 'teacher' as any });
       if (error) throw error;
     },
@@ -140,7 +140,7 @@ const AdminTeachers = () => {
     mutationFn: async () => {
       if (!editTeacher || !editImageFile) throw new Error('Select an image');
       const imageUrl = await uploadImage(editImageFile, editTeacher.id);
-      await supabase.from('profiles').update({ teacher_image_url: imageUrl } as any).eq('id', editTeacher.id);
+      await supabase.from('profiles').update({ teacher_image_url: imageUrl }).eq('id', editTeacher.id);
     },
     onSuccess: () => {
       toast.success('Teacher image updated');
@@ -156,7 +156,7 @@ const AdminTeachers = () => {
   const changeSubjectMutation = useMutation({
     mutationFn: async () => {
       if (!changeSubjectTeacher || !newSubjectId) throw new Error('Select a subject');
-      const { error } = await supabase.from('profiles').update({ subject_id: newSubjectId } as any).eq('id', changeSubjectTeacher.id);
+      const { error } = await supabase.from('profiles').update({ subject_id: newSubjectId }).eq('id', changeSubjectTeacher.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -178,7 +178,7 @@ const AdminTeachers = () => {
         .eq('role', 'teacher' as any);
       if (error) throw error;
       // Clear subject assignment
-      await supabase.from('profiles').update({ subject_id: null } as any).eq('id', userId);
+      await supabase.from('profiles').update({ subject_id: null }).eq('id', userId);
     },
     onSuccess: () => {
       toast.success('Teacher role removed');
