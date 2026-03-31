@@ -1,10 +1,11 @@
 import { forwardRef, useEffect, useState } from 'react';
-import { FileText, Download, Lock, Loader2, LogIn, Video, ExternalLink, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { FileText, Download, Lock, Loader2, LogIn, Video, ExternalLink, X, GraduationCap } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -46,24 +47,48 @@ interface PaperAttachment {
 
 const Papers = () => {
   const { user, loading: authLoading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('PAST_PAPER');
   const [tabInitialized, setTabInitialized] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [downloadingAttachment, setDownloadingAttachment] = useState<string | null>(null);
   const [selectedPaperForReview, setSelectedPaperForReview] = useState<Paper | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(searchParams.get('subject') || '');
   const isGuest = !user;
 
-  // Fetch papers with attachments count
-  const { data: papers = [], isLoading } = useQuery({
-    queryKey: ['papers'],
+  // Fetch enabled subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['papers-subjects'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('papers')
-        .select('*')
-        .order('year', { ascending: false });
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
+
+  // Auto-select first subject if none selected
+  useEffect(() => {
+    if (subjects.length > 0 && !selectedSubjectId) {
+      // Check if URL has a subject slug
+      const slugParam = searchParams.get('subject');
+      if (slugParam) {
+        const found = subjects.find((s: any) => s.slug === slugParam);
+        if (found) { setSelectedSubjectId(found.id); return; }
+      }
+      setSelectedSubjectId(subjects[0].id);
+    }
+  }, [subjects, selectedSubjectId, searchParams]);
+
+  // Fetch papers filtered by subject
+  const { data: papers = [], isLoading } = useQuery({
+    queryKey: ['papers', selectedSubjectId],
+    queryFn: async () => {
+      let query = supabase.from('papers').select('*').order('year', { ascending: false });
+      if (selectedSubjectId) query = query.eq('subject_id', selectedSubjectId);
+      const { data, error } = await query;
       if (error) throw error;
       return data as Paper[];
     },
+    enabled: !!selectedSubjectId,
   });
 
   // Fetch attachments for all papers
@@ -295,22 +320,34 @@ const Papers = () => {
   return (
     <PageWrapper isGuest={isGuest}>
       <div className="space-y-6">
-        {/* Header */}
+        {/* Subject Selector + Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Past Papers & Resources</h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
               {isGuest ? 'Free papers available - Log in for full access' : 'Download past papers and exam resources'}
             </p>
           </div>
-          {isGuest && (
-            <Link to="/login">
-              <Button>
-                <LogIn className="w-4 h-4 mr-2" />
-                Log In
-              </Button>
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            <Select value={selectedSubjectId} onValueChange={(v) => setSelectedSubjectId(v)}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select subject" />
+              </SelectTrigger>
+              <SelectContent>
+                {subjects.map((s: any) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isGuest && (
+              <Link to="/login">
+                <Button>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Log In
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -471,9 +508,9 @@ const PageWrapper = ({ children, isGuest }: { children: React.ReactNode; isGuest
           <div className="container flex h-14 items-center justify-between px-4">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <FileText className="w-4 h-4 text-primary-foreground" />
+              <GraduationCap className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">AL ICT</span>
+              <span className="font-bold text-lg">AL Student</span>
             </Link>
             <Link to="/login">
               <Button variant="outline" size="sm">
