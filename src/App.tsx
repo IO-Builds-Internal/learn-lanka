@@ -69,6 +69,8 @@ import AdminPapers from "./pages/admin/AdminPapers";
 import AdminBulkSms from "./pages/admin/AdminBulkSms";
 import AdminContactMessages from "./pages/admin/AdminContactMessages";
 import AdminSyllabus from "./pages/admin/AdminSyllabus";
+import AdminSubjects from "./pages/admin/AdminSubjects";
+import AdminClassApprovals from "./pages/admin/AdminClassApprovals";
 import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
 import AdminOtpLogs from "./pages/admin/AdminOtpLogs";
 import AdminPaperCrop from "./pages/admin/AdminPaperCrop";
@@ -145,6 +147,8 @@ const App = () => (
                 <Route path="/admin/bulk-sms" element={<ProtectedRoute requireModerator><AdminBulkSms /></ProtectedRoute>} />
                 <Route path="/admin/contact-messages" element={<ProtectedRoute requireModerator><AdminContactMessages /></ProtectedRoute>} />
                 <Route path="/admin/syllabus" element={<ProtectedRoute requireModerator><AdminSyllabus /></ProtectedRoute>} />
+                <Route path="/admin/subjects" element={<ProtectedRoute requireAdmin><AdminSubjects /></ProtectedRoute>} />
+                <Route path="/admin/class-approvals" element={<ProtectedRoute requireAdmin><AdminClassApprovals /></ProtectedRoute>} />
                 <Route path="/admin/question-bank" element={<ProtectedRoute requireModerator><AdminQuestionBank /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<Navigate to="/admin/settings/branding" replace />} />
                 <Route path="/admin/settings/branding" element={<ProtectedRoute requireAdmin><AdminSettingsBranding /></ProtectedRoute>} />

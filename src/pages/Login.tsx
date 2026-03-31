@@ -37,7 +37,7 @@ const Login = () => {
     try {
       // Format phone for email-like login
       const formattedPhone = phone.replace(/\D/g, '');
-      const phoneEmail = `${formattedPhone}@phone.alict.lk`;
+      const phoneEmail = `${formattedPhone}@phone.alstudent.com`;
 
       const { error } = await supabase.auth.signInWithPassword({
         email: phoneEmail,
@@ -57,10 +57,7 @@ const Login = () => {
     }
   };
 
-  const siteName = settings?.site_name || 'A/L ICT';
-  const bgStyle = settings?.login_bg_url
-    ? { backgroundImage: `url(${settings.login_bg_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+  const siteName = settings?.site_name || 'AL Student';
 
   return (
     <div className="relative min-h-screen flex flex-col" style={settings?.login_bg_url ? { backgroundImage: `url(${settings.login_bg_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a)' }}>
@@ -80,7 +77,7 @@ const Login = () => {
               </div>
             )}
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">
-              {siteName || 'AL Student'}
+              {siteName}
             </h1>
             <p className="text-lg md:text-xl text-slate-300">
               Sri Lanka's #1 A/L Learning Platform

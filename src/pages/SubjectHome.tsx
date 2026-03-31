@@ -30,7 +30,6 @@ const SubjectHome = () => {
         .from('subjects')
         .select('*')
         .eq('slug', slug)
-        .eq('is_active', true)
         .maybeSingle();
       return data;
     },
@@ -81,6 +80,37 @@ const SubjectHome = () => {
 
   if (!subject) {
     return <Navigate to="/" replace />;
+  }
+
+  // Show "Coming Soon" if subject is disabled
+  if (!subject.is_active) {
+    const SubIcon = ICON_MAP[subject.icon_name] || BookOpen;
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur">
+          <div className="page-container py-0">
+            <div className="flex h-14 items-center justify-between">
+              <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="w-5 h-5" />
+                <GraduationCap className="w-6 h-6 text-primary" />
+                <span className="font-bold text-foreground">AL Student</span>
+              </Link>
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <div className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: `${subject.color}20` }}>
+              <SubIcon className="w-10 h-10" style={{ color: subject.color }} />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-3">{subject.name}</h1>
+            <p className="text-lg text-muted-foreground mb-6">Coming Soon!</p>
+            <p className="text-sm text-muted-foreground mb-8">We're working hard to bring you the best {subject.name} content. Check back soon!</p>
+            <Link to="/"><Button variant="outline" className="gap-2"><ArrowLeft className="w-4 h-4" />Back to Home</Button></Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const Icon = ICON_MAP[subject.icon_name] || BookOpen;

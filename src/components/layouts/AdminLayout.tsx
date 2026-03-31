@@ -37,6 +37,8 @@ import {
   KeyRound,
   DollarSign,
   ListChecks,
+  Globe,
+  CheckSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -89,6 +91,8 @@ const navGroups: NavGroup[] = [
   {
     label: 'Academics',
     entries: [
+      { type: 'leaf', path: '/admin/subjects', label: 'Subjects', icon: Globe },
+      { type: 'leaf', path: '/admin/class-approvals', label: 'Class Approvals', icon: CheckSquare },
       {
         type: 'subgroup',
         label: 'Classes',
