@@ -88,13 +88,14 @@ const AdminSyllabus = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (values: typeof form & { id?: string }) => {
-      const payload = {
+      const payload: any = {
         title: values.title,
         grade: values.grade ? Number(values.grade) : null,
         medium: values.medium || null,
         subject: values.subject,
         sort_order: Number(values.sort_order),
         parent_id: values.parent_id || null,
+        subject_id: teacherSubjectId || null,
       };
       if (values.id) {
         const { error } = await supabase
