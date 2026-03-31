@@ -140,14 +140,16 @@ const Classes = () => {
 
   const enrolledClassIds = enrollments.map(e => e.class_id);
 
-  const filteredClasses = classes.filter((cls) => {
+  const filteredClasses = classes.filter((cls: any) => {
     const matchesSearch = cls.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (cls.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     
     const matchesGrade = gradeFilter === 'all' || 
       (parseInt(gradeFilter) >= cls.grade_min && parseInt(gradeFilter) <= cls.grade_max);
+
+    const matchesSubject = subjectFilter === 'all' || cls.subject_id === subjectFilter;
     
-    return matchesSearch && matchesGrade;
+    return matchesSearch && matchesGrade && matchesSubject;
   });
 
   if (classesLoading) {
