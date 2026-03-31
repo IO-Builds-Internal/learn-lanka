@@ -139,7 +139,7 @@ export const mockShopProducts: ShopProduct[] = [
 export const mockRankPapers: RankPaper[] = [
   {
     id: '1',
-    title: 'A/L ICT Model Paper 2026 - January',
+    title: 'A/L Combined Maths Model Paper 2026 - January',
     grade: 13,
     classId: '1',
     feeAmount: 500,
