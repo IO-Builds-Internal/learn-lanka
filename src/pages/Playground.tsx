@@ -80,7 +80,7 @@ print(Cat("Luna").speak())
   </style>
 </head>
 <body>
-  <h1>Hello, ICT Student!</h1>
+  <h1>Hello, A/L Student!</h1>
   <p id="msg">Click the button below.</p>
   <button onclick="document.getElementById('msg').textContent='Hello World!'">Click Me</button>
 </body>
@@ -1097,8 +1097,8 @@ const Playground = () => {
             <Code2 className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">ICT Playground</h1>
-            <p className="text-sm text-muted-foreground">A/L ICT Code Practice</p>
+            <h1 className="text-xl font-bold text-foreground">Code Playground</h1>
+            <p className="text-sm text-muted-foreground">A/L Code Practice</p>
           </div>
         </div>
 

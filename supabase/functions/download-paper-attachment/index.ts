@@ -104,7 +104,7 @@ serve(async (req) => {
     const userName = profile 
       ? `${profile.first_name} ${profile.last_name}` 
       : "Unknown";
-    const userPhone = profile?.phone?.replace(/@phone\.alict\.lk$/i, '') || "";
+    const userPhone = profile?.phone?.replace(/@phone\.alstudent\.com$/i, '') || "";
 
     // Fetch the original PDF
     const pdfResponse = await fetch(pdfUrl);

@@ -40,7 +40,7 @@ const RefundPolicy = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">1. No Cash Refunds Policy</h2>
               <p className="text-muted-foreground">
-                ALICT maintains a strict no cash refund policy. Once a payment is made and verified, we are unable to process cash refunds or reverse bank transfers. This policy applies to all services and products including:
+                A/L Student Academy maintains a strict no cash refund policy. Once a payment is made and verified, we are unable to process cash refunds or reverse bank transfers. This policy applies to all services and products including:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                 <li>Monthly class fees</li>
@@ -67,7 +67,7 @@ const RefundPolicy = () => {
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                 <li>Technical issues that prevented access to paid content for an extended period</li>
                 <li>Duplicate payments made in error</li>
-                <li>Class cancellation by ALICT (not student withdrawal)</li>
+                <li>Class cancellation by A/L Student Academy (not student withdrawal)</li>
                 <li>Defective printed materials that cannot be replaced</li>
               </ul>
             </section>
@@ -137,7 +137,7 @@ const RefundPolicy = () => {
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">8. Final Decision</h2>
               <p className="text-muted-foreground">
-                All compensation requests are reviewed on a case-by-case basis. The decision of ALICT management regarding compensation requests is final and binding. We reserve the right to deny compensation requests that do not meet our eligibility criteria.
+                All compensation requests are reviewed on a case-by-case basis. The decision of A/L Student Academy management regarding compensation requests is final and binding. We reserve the right to deny compensation requests that do not meet our eligibility criteria.
               </p>
             </section>
 

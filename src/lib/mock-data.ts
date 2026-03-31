@@ -19,8 +19,8 @@ export const mockCurrentUser: User = {
 export const mockClasses: Class[] = [
   {
     id: '1',
-    title: 'A/L ICT 2026 Batch',
-    description: 'Comprehensive ICT course for A/L students preparing for the 2026 examination. Covers all units including programming, databases, and networking.',
+    title: 'A/L Combined Maths 2026 Batch',
+    description: 'Comprehensive Combined Maths course for A/L students preparing for the 2026 examination.',
     gradeMin: 12,
     gradeMax: 13,
     monthlyFeeAmount: 3500,
@@ -30,8 +30,8 @@ export const mockClasses: Class[] = [
   },
   {
     id: '2',
-    title: 'O/L ICT 2025 Batch',
-    description: 'Complete O/L ICT preparation course with practical exercises and model papers.',
+    title: 'A/L Physics 2025 Batch',
+    description: 'Complete A/L Physics preparation course with practical exercises and model papers.',
     gradeMin: 10,
     gradeMax: 11,
     monthlyFeeAmount: 2500,
@@ -41,8 +41,8 @@ export const mockClasses: Class[] = [
   },
   {
     id: '3',
-    title: 'Grade 9 ICT Foundation',
-    description: 'Build a strong foundation in ICT concepts for Grade 9 students.',
+    title: 'A/L Chemistry Foundation',
+    description: 'Build a strong foundation in Chemistry concepts for A/L students.',
     gradeMin: 9,
     gradeMax: 9,
     monthlyFeeAmount: 2000,
@@ -80,7 +80,7 @@ export const mockNotifications: Notification[] = [
     id: '1',
     targetType: 'ALL',
     title: 'New Rank Paper Available',
-    message: 'A/L ICT Model Paper 2026 is now available. Complete it before the deadline to secure your spot on the leaderboard!',
+    message: 'A/L Model Paper 2026 is now available. Complete it before the deadline to secure your spot on the leaderboard!',
     createdBy: 'admin',
     createdAt: '2024-02-01T09:00:00Z',
   },
@@ -107,8 +107,8 @@ export const mockNotifications: Notification[] = [
 export const mockShopProducts: ShopProduct[] = [
   {
     id: '1',
-    title: 'A/L ICT Complete Theory Notes',
-    description: 'Comprehensive theory notes covering all A/L ICT syllabus topics with diagrams and examples.',
+    title: 'A/L Complete Theory Notes',
+    description: 'Comprehensive theory notes covering all A/L syllabus topics with diagrams and examples.',
     type: 'BOTH',
     priceSoft: 1500,
     pricePrinted: 2500,
@@ -126,7 +126,7 @@ export const mockShopProducts: ShopProduct[] = [
   {
     id: '3',
     title: 'Past Papers Collection 2015-2024',
-    description: 'All A/L ICT past papers with detailed marking schemes.',
+    description: 'All A/L past papers with detailed marking schemes.',
     type: 'BOTH',
     priceSoft: 1200,
     pricePrinted: 2000,
@@ -139,7 +139,7 @@ export const mockShopProducts: ShopProduct[] = [
 export const mockRankPapers: RankPaper[] = [
   {
     id: '1',
-    title: 'A/L ICT Model Paper 2026 - January',
+    title: 'A/L Combined Maths Model Paper 2026 - January',
     grade: 13,
     classId: '1',
     feeAmount: 500,
@@ -152,7 +152,7 @@ export const mockRankPapers: RankPaper[] = [
   },
   {
     id: '2',
-    title: 'O/L ICT Practice Test - February',
+    title: 'A/L Physics Practice Test - February',
     grade: 11,
     classId: '2',
     feeAmount: 300,
@@ -170,7 +170,7 @@ export const mockBankAccounts: BankAccount[] = [
   {
     id: '1',
     bankName: 'Bank of Ceylon',
-    accountName: 'ICT Academy',
+    accountName: 'A/L Student Academy',
     accountNumber: '12345678901234',
     branch: 'Colombo Main',
     isActive: true,
@@ -178,7 +178,7 @@ export const mockBankAccounts: BankAccount[] = [
   {
     id: '2',
     bankName: 'Commercial Bank',
-    accountName: 'ICT Academy',
+    accountName: 'A/L Student Academy',
     accountNumber: '98765432109876',
     branch: 'Kollupitiya',
     isActive: true,

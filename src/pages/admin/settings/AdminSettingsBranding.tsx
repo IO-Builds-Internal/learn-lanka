@@ -33,7 +33,7 @@ const AdminSettingsBranding = () => {
       const { data } = await (supabase as any).from('site_settings').select('key, value');
       const m: Record<string, string> = {};
       data?.forEach((s: any) => { m[s.key] = s.value; });
-      setSiteName(m['site_name'] || 'ICT Academy');
+      setSiteName(m['site_name'] || 'A/L Student Academy');
       if (m['logo_url']) setLogoUrl(m['logo_url']);
       if (m['favicon_url']) setFaviconUrl(m['favicon_url']);
       if (m['login_bg_url']) setLoginBgUrl(m['login_bg_url']);

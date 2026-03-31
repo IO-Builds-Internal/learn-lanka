@@ -127,7 +127,7 @@ const SmsTemplatesManager = () => {
       paper_title: 'Data Communication Practice Paper',
       grade: '11',
       link: 'https://app.example.com',
-      class_name: 'A/L ICT Theory 2026',
+      class_name: 'A/L Combined Maths Theory 2026',
       month: 'February 2026',
       date: 'Mon, Feb 10',
       time: '9:00 AM - 10:30 AM',

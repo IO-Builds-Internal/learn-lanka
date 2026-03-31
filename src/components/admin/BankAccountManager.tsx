@@ -277,7 +277,7 @@ const BankAccountManager = () => {
               <Label htmlFor="accountName">Account Holder Name</Label>
               <Input
                 id="accountName"
-                placeholder="e.g., ICT Academy"
+                placeholder="e.g., A/L Student Academy"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
               />

@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     }
     
     // Send SMS via Text.lk API
-    const smsMessage = `Your ICT Academy verification code is: ${otp}. Valid for 5 minutes.`;
+    const smsMessage = `Your A/L Student Academy verification code is: ${otp}. Valid for 5 minutes.`;
     
     const smsResponse = await fetch('https://app.text.lk/api/v3/sms/send', {
       method: 'POST',

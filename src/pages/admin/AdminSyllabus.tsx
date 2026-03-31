@@ -56,7 +56,7 @@ const defaultForm = {
   title: '',
   grade: '',
   medium: '',
-  subject: 'ICT',
+  subject: '',
   sort_order: 0,
   parent_id: '',
 };
