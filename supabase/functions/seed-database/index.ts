@@ -95,14 +95,25 @@ Deno.serve(async (req) => {
 
       // ── 0. SUBJECTS ────────────────────────────────────────────────
       const subjectsData = [
-        { name: 'ICT', slug: 'ict', description: 'Advanced Level Information & Communication Technology', icon_name: 'Monitor', color: '#3b82f6', is_active: true, sort_order: 0, image_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80' },
-        { name: 'Combined Maths', slug: 'combined-maths', description: 'Advanced Level Combined Mathematics', icon_name: 'Calculator', color: '#8b5cf6', is_active: true, sort_order: 1, image_url: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80' },
-        { name: 'Physics', slug: 'physics', description: 'Advanced Level Physics', icon_name: 'Atom', color: '#06b6d4', is_active: true, sort_order: 2, image_url: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=80' },
-        { name: 'Chemistry', slug: 'chemistry', description: 'Advanced Level Chemistry', icon_name: 'FlaskConical', color: '#10b981', is_active: true, sort_order: 3, image_url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=600&q=80' },
-        { name: 'Biology', slug: 'biology', description: 'Advanced Level Biology', icon_name: 'Leaf', color: '#22c55e', is_active: true, sort_order: 4, image_url: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=600&q=80' },
-        { name: 'Accounting', slug: 'accounting', description: 'Advanced Level Accounting', icon_name: 'Receipt', color: '#f59e0b', is_active: false, sort_order: 5, image_url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80' },
-        { name: 'Economics', slug: 'economics', description: 'Advanced Level Economics', icon_name: 'TrendingUp', color: '#ef4444', is_active: false, sort_order: 6, image_url: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80' },
-        { name: 'Business Studies', slug: 'business-studies', description: 'Advanced Level Business Studies', icon_name: 'Briefcase', color: '#6366f1', is_active: false, sort_order: 7, image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80' },
+        { name: 'ICT', slug: 'ict', description: 'Information & Communication Technology', icon_name: 'Monitor', color: '#3b82f6', is_active: true, sort_order: 0 },
+        { name: 'Combined Maths', slug: 'combined-maths', description: 'Pure & Applied Mathematics', icon_name: 'Calculator', color: '#8b5cf6', is_active: true, sort_order: 1 },
+        { name: 'Physics', slug: 'physics', description: 'Advanced Level Physics', icon_name: 'Atom', color: '#06b6d4', is_active: true, sort_order: 2 },
+        { name: 'Chemistry', slug: 'chemistry', description: 'Advanced Level Chemistry', icon_name: 'FlaskConical', color: '#10b981', is_active: true, sort_order: 3 },
+        { name: 'Biology', slug: 'biology', description: 'Advanced Level Biology', icon_name: 'Leaf', color: '#22c55e', is_active: true, sort_order: 4 },
+        { name: 'Accounting', slug: 'accounting', description: 'Financial & Management Accounting', icon_name: 'Receipt', color: '#f59e0b', is_active: false, sort_order: 5 },
+        { name: 'Economics', slug: 'economics', description: 'Micro & Macro Economics', icon_name: 'TrendingUp', color: '#ef4444', is_active: false, sort_order: 6 },
+        { name: 'Business Studies', slug: 'business-studies', description: 'Business Management & Entrepreneurship', icon_name: 'Briefcase', color: '#6366f1', is_active: false, sort_order: 7 },
+        { name: 'Political Science', slug: 'political-science', description: 'Government & Political Systems', icon_name: 'Scale', color: '#475569', is_active: false, sort_order: 8 },
+        { name: 'Sinhala', slug: 'sinhala', description: 'Sinhala Language & Literature', icon_name: 'Languages', color: '#ec4899', is_active: false, sort_order: 9 },
+        { name: 'Tamil', slug: 'tamil', description: 'Tamil Language & Literature', icon_name: 'Languages', color: '#a855f7', is_active: false, sort_order: 10 },
+        { name: 'English', slug: 'english', description: 'English Language & Literature', icon_name: 'BookText', color: '#0ea5e9', is_active: false, sort_order: 11 },
+        { name: 'Geography', slug: 'geography', description: 'Physical & Human Geography', icon_name: 'Globe', color: '#14b8a6', is_active: false, sort_order: 12 },
+        { name: 'Buddhist Civilization', slug: 'buddhist-civilization', description: 'Buddhist Philosophy & History', icon_name: 'Landmark', color: '#d97706', is_active: false, sort_order: 13 },
+        { name: 'Art', slug: 'art', description: 'Visual Arts & Aesthetics', icon_name: 'Palette', color: '#f43f5e', is_active: false, sort_order: 14 },
+        { name: 'Music', slug: 'music', description: 'Music Theory & Practice', icon_name: 'Music', color: '#a78bfa', is_active: false, sort_order: 15 },
+        { name: 'Logic', slug: 'logic', description: 'Formal Logic & Reasoning', icon_name: 'Brain', color: '#64748b', is_active: false, sort_order: 16 },
+        { name: 'Agriculture', slug: 'agriculture', description: 'Agricultural Science', icon_name: 'Sprout', color: '#65a30d', is_active: false, sort_order: 17 },
+        { name: 'Home Economics', slug: 'home-economics', description: 'Home Management & Nutrition', icon_name: 'Home', color: '#ea580c', is_active: false, sort_order: 18 },
       ];
 
       const { data: subjects } = await supabase.from('subjects').insert(subjectsData).select();
