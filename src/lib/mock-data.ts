@@ -152,7 +152,7 @@ export const mockRankPapers: RankPaper[] = [
   },
   {
     id: '2',
-    title: 'O/L ICT Practice Test - February',
+    title: 'A/L Physics Practice Test - February',
     grade: 11,
     classId: '2',
     feeAmount: 300,
