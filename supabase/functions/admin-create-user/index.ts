@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     });
 
     // Use email format for phone-based auth (consistent with rest of app)
-    const email = `${phone}@phone.alict.lk`;
+    const email = `${phone}@phone.alstudent.com`;
 
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,

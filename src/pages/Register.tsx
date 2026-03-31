@@ -142,7 +142,7 @@ const Register = () => {
     try {
       // Format phone for email-like signup
       const formattedPhone = phone.replace(/\D/g, '');
-      const phoneEmail = `${formattedPhone}@phone.alict.lk`;
+      const phoneEmail = `${formattedPhone}@phone.alstudent.com`;
 
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
