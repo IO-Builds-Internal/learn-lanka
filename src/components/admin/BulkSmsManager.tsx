@@ -57,7 +57,8 @@ interface SmsLog {
 }
 
 const BulkSmsManager = () => {
-  const { user } = useAuth();
+  const { user, isTeacher, isAdmin, profile } = useAuth();
+  const teacherSubjectId = isTeacher && !isAdmin ? (profile as any)?.subject_id : null;
   const [recipients, setRecipients] = useState('');
   const [message, setMessage] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
