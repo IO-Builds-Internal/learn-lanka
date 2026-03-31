@@ -156,7 +156,7 @@ const AdminTeachers = () => {
   const changeSubjectMutation = useMutation({
     mutationFn: async () => {
       if (!changeSubjectTeacher || !newSubjectId) throw new Error('Select a subject');
-      const { error } = await supabase.from('profiles').update({ subject_id: newSubjectId } as any).eq('id', changeSubjectTeacher.id);
+      const { error } = await supabase.from('profiles').update({ subject_id: newSubjectId }).eq('id', changeSubjectTeacher.id);
       if (error) throw error;
     },
     onSuccess: () => {
