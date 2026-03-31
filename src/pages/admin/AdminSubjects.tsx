@@ -27,6 +27,7 @@ const AdminSubjects = () => {
   const [description, setDescription] = useState('');
   const [iconName, setIconName] = useState('BookOpen');
   const [color, setColor] = useState('#3b82f6');
+  const [imageUrl, setImageUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
 
   const { data: subjects = [], isLoading } = useQuery({
