@@ -47,6 +47,7 @@ import TeacherClasses from "./pages/teacher/TeacherClasses";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminModerators from "./pages/admin/AdminModerators";
+import AdminTeachers from "./pages/admin/AdminTeachers";
 import AdminClasses from "./pages/admin/AdminClasses";
 import AdminClassContent from "./pages/admin/AdminClassContent";
 import AdminPayments from "./pages/admin/AdminPayments";
