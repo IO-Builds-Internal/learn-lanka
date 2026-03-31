@@ -43,7 +43,7 @@ export const useSiteSettings = () => {
       const flag = (key: string) => map[key] !== 'false'; // default true unless explicitly 'false'
       const hidden = (key: string) => map[key] === 'true'; // default false unless explicitly 'true'
       return {
-        site_name: map['site_name'] || 'A/L ICT',
+        site_name: map['site_name'] || 'AL Student',
         logo_url: map['logo_url'] || null,
         favicon_url: map['favicon_url'] || null,
         login_bg_url: map['login_bg_url'] || null,
