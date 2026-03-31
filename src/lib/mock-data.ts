@@ -41,8 +41,8 @@ export const mockClasses: Class[] = [
   },
   {
     id: '3',
-    title: 'Grade 9 ICT Foundation',
-    description: 'Build a strong foundation in ICT concepts for Grade 9 students.',
+    title: 'A/L Chemistry Foundation',
+    description: 'Build a strong foundation in Chemistry concepts for A/L students.',
     gradeMin: 9,
     gradeMax: 9,
     monthlyFeeAmount: 2000,
