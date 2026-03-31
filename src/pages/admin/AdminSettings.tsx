@@ -567,7 +567,7 @@ const AdminSettings = () => {
                     id="paperSchoolName"
                     value={paperSchoolName}
                     onChange={e => setPaperSchoolName(e.target.value)}
-                    placeholder="e.g. ICT Academy"
+                    placeholder="e.g. A/L Student Academy"
                   />
                   <p className="text-xs text-muted-foreground">Shown as the main title in the paper header</p>
                 </div>
