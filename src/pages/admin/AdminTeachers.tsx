@@ -178,7 +178,7 @@ const AdminTeachers = () => {
         .eq('role', 'teacher' as any);
       if (error) throw error;
       // Clear subject assignment
-      await supabase.from('profiles').update({ subject_id: null } as any).eq('id', userId);
+      await supabase.from('profiles').update({ subject_id: null }).eq('id', userId);
     },
     onSuccess: () => {
       toast.success('Teacher role removed');
