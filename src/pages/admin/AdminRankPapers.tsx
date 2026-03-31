@@ -73,6 +73,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { invokeFunction } from '@/lib/functions';
+import { useAuth } from '@/hooks/useAuth';
 
 interface RankPaper {
   id: string;
