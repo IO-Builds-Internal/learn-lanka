@@ -177,9 +177,20 @@ const RankPapers = () => {
               className="pl-9 h-10"
             />
           </div>
+          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+            <SelectTrigger className="w-full sm:w-[160px] h-10">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Subject" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              {subjects.map((s: any) => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={gradeFilter} onValueChange={setGradeFilter}>
             <SelectTrigger className="w-full sm:w-[140px] h-10">
-              <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Grade" />
             </SelectTrigger>
             <SelectContent>
