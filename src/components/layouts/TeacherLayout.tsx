@@ -22,6 +22,8 @@ const navItems = [
   { path: '/admin/papers', label: 'Past Papers', icon: FileText },
   { path: '/admin/syllabus', label: 'Syllabus', icon: Layers },
   { path: '/admin/question-bank', label: 'Question Bank', icon: HelpCircle },
+  { path: '/admin/paper-crop', label: 'Paper Crop Tool', icon: FileText },
+  { path: '/admin/bulk-sms', label: 'Bulk SMS', icon: LayoutDashboard },
 ];
 
 const TeacherLayout = ({ children }: TeacherLayoutProps) => {
