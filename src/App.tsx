@@ -144,7 +144,7 @@ const App = () => (
                 <Route path="/admin/teachers" element={<ProtectedRoute requireAdmin><AdminTeachers /></ProtectedRoute>} />
                 <Route path="/admin/moderators" element={<ProtectedRoute requireAdmin><AdminModerators /></ProtectedRoute>} />
                 <Route path="/admin/classes" element={<ProtectedRoute requireModerator><AdminClasses /></ProtectedRoute>} />
-                <Route path="/admin/classes/:id/content" element={<ProtectedRoute requireModerator><AdminClassContent /></ProtectedRoute>} />
+                <Route path="/admin/classes/:id/content" element={<ProtectedRoute requireTeacher><AdminClassContent /></ProtectedRoute>} />
                 <Route path="/admin/payments" element={<ProtectedRoute requireModerator><AdminPayments /></ProtectedRoute>} />
                 <Route path="/admin/coupons" element={<ProtectedRoute requireModerator><AdminCoupons /></ProtectedRoute>} />
                 <Route path="/admin/rank-papers" element={<ProtectedRoute requireModerator><AdminRankPapers /></ProtectedRoute>} />
