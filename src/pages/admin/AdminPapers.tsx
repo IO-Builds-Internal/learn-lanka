@@ -102,14 +102,20 @@ const AdminPapers = () => {
   const [isFree, setIsFree] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
 
-  // Fetch papers
+  // Fetch papers (teachers see only their subject)
   const { data: papers = [], isLoading } = useQuery({
-    queryKey: ['admin-papers'],
+    queryKey: ['admin-papers', isTeacher ? teacherSubjectId : 'all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('papers')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      if (isTeacher && teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data as Paper[];
     },
