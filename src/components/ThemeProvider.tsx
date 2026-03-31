@@ -24,7 +24,7 @@ export const ThemeProvider = React.forwardRef<unknown, ThemeProviderProps>(funct
   {
     children,
     defaultTheme = "system",
-    storageKey = "ict-academy-theme",
+    storageKey = "al-student-theme",
   },
   _ref,
 ) {

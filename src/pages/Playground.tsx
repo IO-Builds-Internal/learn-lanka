@@ -1097,8 +1097,8 @@ const Playground = () => {
             <Code2 className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">ICT Playground</h1>
-            <p className="text-sm text-muted-foreground">A/L ICT Code Practice</p>
+            <h1 className="text-xl font-bold text-foreground">Code Playground</h1>
+            <p className="text-sm text-muted-foreground">A/L Code Practice</p>
           </div>
         </div>
 

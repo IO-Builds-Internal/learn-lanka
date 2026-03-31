@@ -545,7 +545,7 @@ const AdminRankPapers = () => {
                   <Label htmlFor="title">Paper Title</Label>
                   <Input 
                     id="title" 
-                    placeholder="e.g., A/L ICT Model Paper 2025" 
+                    placeholder="e.g., A/L Physics Model Paper 2025" 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />

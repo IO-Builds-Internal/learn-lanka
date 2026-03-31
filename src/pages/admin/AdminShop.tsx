@@ -377,7 +377,7 @@ const AdminShop = () => {
               <Label htmlFor="title">Product Title</Label>
               <Input 
                 id="title" 
-                placeholder="e.g., A/L ICT Complete Notes" 
+                placeholder="e.g., A/L Physics Complete Notes" 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />

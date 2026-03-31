@@ -61,7 +61,7 @@ export async function downloadGeneratedPaperPdf(params: {
   const settings: Record<string, string> = {};
   settingsData?.forEach((s: any) => { settings[s.key] = s.value; });
 
-  const schoolName = settings['paper_template_school_name'] || settings['site_name'] || 'ICT Academy';
+  const schoolName = settings['paper_template_school_name'] || settings['site_name'] || 'A/L Student Academy';
   const instructions = settings[`paper_template_instructions_${paperType.toLowerCase()}`] || '';
   const footer = settings['paper_template_footer'] || '';
 
