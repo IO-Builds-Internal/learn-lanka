@@ -172,6 +172,7 @@ const AdminPapers = () => {
             medium: medium || null,
             pdf_url: pdfUrl,
             is_free: isFree,
+            subject_id: teacherSubjectId || null,
           });
         
         if (error) throw error;
