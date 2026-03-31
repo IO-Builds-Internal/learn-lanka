@@ -169,6 +169,7 @@ const AdminClasses = () => {
           private_code: isPrivate ? generatePrivateCode() : null,
           max_students: isPrivate && maxStudents ? parseInt(maxStudents) : null,
           image_url: imageUrl || null,
+          profit_share_percent: profitSharePercent ? parseInt(profitSharePercent) : 0,
         });
       if (error) throw error;
     },
