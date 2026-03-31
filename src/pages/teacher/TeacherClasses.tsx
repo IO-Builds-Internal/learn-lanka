@@ -184,7 +184,7 @@ const TeacherClasses = () => {
                     )}
                   </div>
                   {cls.approval_status === 'APPROVED' && (
-                    <Link to={`/admin/classes/${cls.id}/content`}>
+                    <Link to={`/teacher/classes/${cls.id}/content`}>
                       <Button variant="outline" size="sm" className="w-full mt-3 gap-2">
                         Manage Content
                       </Button>

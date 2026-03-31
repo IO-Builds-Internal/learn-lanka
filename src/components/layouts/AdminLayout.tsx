@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import TeacherLayout from '@/components/layouts/TeacherLayout';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -376,6 +377,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  if (isTeacher && !isAdmin && !isModerator) {
+    return <TeacherLayout>{children}</TeacherLayout>;
   }
 
   if (!isAdmin && !isModerator && !isTeacher) {
