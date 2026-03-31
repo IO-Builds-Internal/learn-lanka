@@ -213,6 +213,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {filteredSubjects.map((subject: any) => {
             const Icon = ICON_MAP[subject.icon_name] || BookOpen;
+            const imgSrc = subject.image_url || FALLBACK_IMAGES[subject.slug];
             return (
               <Link
                 key={subject.id}
@@ -220,10 +221,11 @@ const HomePage = () => {
                 className="group relative rounded-2xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-200"
               >
                 <div className="aspect-[4/3] bg-muted overflow-hidden relative">
-                  {subject.image_url ? (
+                  {imgSrc ? (
                     <img
-                      src={subject.image_url}
+                      src={imgSrc}
                       alt={subject.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
