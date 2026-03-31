@@ -170,7 +170,7 @@ const Classes = () => {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Classes</h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Browse and enroll in ICT classes
+              Browse and enroll in classes
             </p>
           </div>
           <Button 
