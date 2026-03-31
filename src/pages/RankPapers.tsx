@@ -33,6 +33,16 @@ const RankPapers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
   const [mediumFilter, setMediumFilter] = useState<string>('all');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
+
+  // Fetch enabled subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('id, name, slug').eq('is_active', true).order('sort_order');
+      return data || [];
+    },
+  });
 
   // Fetch published rank papers
   const { data: rankPapers = [], isLoading: loadingPapers } = useQuery({
