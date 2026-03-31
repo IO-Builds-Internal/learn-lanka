@@ -70,6 +70,7 @@ interface ClassData {
   max_students: number | null;
   image_url: string | null;
   created_at: string;
+  profit_share_percent: number | null;
 }
 
 const AdminClasses = () => {
