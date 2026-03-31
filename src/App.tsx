@@ -69,6 +69,8 @@ import AdminPapers from "./pages/admin/AdminPapers";
 import AdminBulkSms from "./pages/admin/AdminBulkSms";
 import AdminContactMessages from "./pages/admin/AdminContactMessages";
 import AdminSyllabus from "./pages/admin/AdminSyllabus";
+import AdminSubjects from "./pages/admin/AdminSubjects";
+import AdminClassApprovals from "./pages/admin/AdminClassApprovals";
 import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
 import AdminOtpLogs from "./pages/admin/AdminOtpLogs";
 import AdminPaperCrop from "./pages/admin/AdminPaperCrop";
