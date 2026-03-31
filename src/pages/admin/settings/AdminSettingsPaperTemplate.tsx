@@ -24,7 +24,7 @@ const AdminSettingsPaperTemplate = () => {
       const { data } = await (supabase as any).from('site_settings').select('key, value');
       const m: Record<string, string> = {};
       data?.forEach((s: any) => { m[s.key] = s.value; });
-      setPaperSchoolName(m['paper_template_school_name'] || 'ICT Academy');
+      setPaperSchoolName(m['paper_template_school_name'] || 'AL Student');
       setPaperInstructionsDaily(m['paper_template_instructions_daily'] || '');
       setPaperInstructionsFull(m['paper_template_instructions_full'] || '');
       setPaperFooter(m['paper_template_footer'] || '');
