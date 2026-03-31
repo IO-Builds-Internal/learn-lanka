@@ -330,6 +330,7 @@ const AdminQuestionBank = () => {
       question_part: q.question_part,
       linked_group_id: q.linked_group_id || '',
       question_images: imgs,
+      subject: q.subject || '',
     });
     setDialogOpen(true);
   };
