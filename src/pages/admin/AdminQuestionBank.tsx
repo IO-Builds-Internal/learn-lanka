@@ -197,7 +197,7 @@ const AdminQuestionBank = () => {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const payload: any = {
         question_type: form.question_type,
         question_text: form.questionInputMode === 'text' ? form.question_text || null : null,
         question_image_url: form.questionInputMode === 'image' ? (form.question_images[0] || null) : null,
@@ -209,7 +209,8 @@ const AdminQuestionBank = () => {
           : null,
         medium: form.medium || null,
         grade: form.grade ? Number(form.grade) : null,
-        subject: 'ICT',
+        subject: form.subject || 'ICT',
+        subject_id: teacherSubjectId || null,
         lesson_id: form.lesson_id || null,
         correct_option_no: form.question_type === 'MCQ' ? form.correct_option_no : null,
         explain_video_url: form.explain_video_url || null,
