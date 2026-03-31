@@ -40,13 +40,13 @@ const AdminSubjects = () => {
   });
 
   const resetForm = () => {
-    setName(''); setSlug(''); setDescription(''); setIconName('BookOpen'); setColor('#3b82f6'); setIsActive(true); setEditing(null);
+    setName(''); setSlug(''); setDescription(''); setIconName('BookOpen'); setColor('#3b82f6'); setImageUrl(''); setIsActive(true); setEditing(null);
   };
 
   const openCreate = () => { resetForm(); setDialogOpen(true); };
   const openEdit = (s: any) => {
     setEditing(s); setName(s.name); setSlug(s.slug); setDescription(s.description || '');
-    setIconName(s.icon_name || 'BookOpen'); setColor(s.color || '#3b82f6'); setIsActive(s.is_active);
+    setIconName(s.icon_name || 'BookOpen'); setColor(s.color || '#3b82f6'); setImageUrl(s.image_url || ''); setIsActive(s.is_active);
     setDialogOpen(true);
   };
 
