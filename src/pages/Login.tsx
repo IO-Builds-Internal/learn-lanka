@@ -57,10 +57,7 @@ const Login = () => {
     }
   };
 
-  const siteName = settings?.site_name || 'A/L ICT';
-  const bgStyle = settings?.login_bg_url
-    ? { backgroundImage: `url(${settings.login_bg_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+  const siteName = settings?.site_name || 'AL Student';
 
   return (
     <div className="relative min-h-screen flex flex-col" style={settings?.login_bg_url ? { backgroundImage: `url(${settings.login_bg_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a)' }}>
