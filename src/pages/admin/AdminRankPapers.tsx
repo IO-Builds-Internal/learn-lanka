@@ -127,14 +127,20 @@ const AdminRankPapers = () => {
   const [lockAt, setLockAt] = useState('');
   const [classId, setClassId] = useState<string>('');
 
-  // Fetch rank papers
+  // Fetch rank papers (teachers see only their subject)
   const { data: papers = [], isLoading } = useQuery({
-    queryKey: ['admin-rank-papers'],
+    queryKey: ['admin-rank-papers', isTeacher ? teacherSubjectId : 'all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('rank_papers')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      if (isTeacher && teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data as RankPaper[];
     },
