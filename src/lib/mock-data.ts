@@ -107,8 +107,8 @@ export const mockNotifications: Notification[] = [
 export const mockShopProducts: ShopProduct[] = [
   {
     id: '1',
-    title: 'A/L ICT Complete Theory Notes',
-    description: 'Comprehensive theory notes covering all A/L ICT syllabus topics with diagrams and examples.',
+    title: 'A/L Complete Theory Notes',
+    description: 'Comprehensive theory notes covering all A/L syllabus topics with diagrams and examples.',
     type: 'BOTH',
     priceSoft: 1500,
     pricePrinted: 2500,
