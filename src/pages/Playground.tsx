@@ -80,7 +80,7 @@ print(Cat("Luna").speak())
   </style>
 </head>
 <body>
-  <h1>Hello, ICT Student!</h1>
+  <h1>Hello, A/L Student!</h1>
   <p id="msg">Click the button below.</p>
   <button onclick="document.getElementById('msg').textContent='Hello World!'">Click Me</button>
 </body>
