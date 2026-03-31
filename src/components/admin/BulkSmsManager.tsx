@@ -316,12 +316,16 @@ const BulkSmsManager = () => {
             <Tabs value={targetGroup} onValueChange={handleTargetGroupChange}>
               <TabsList className="w-full justify-start flex-wrap h-auto gap-1">
                 <TabsTrigger value="custom">Custom List</TabsTrigger>
-                <TabsTrigger value="all">
-                  All Users ({userStats?.total || 0})
-                </TabsTrigger>
-                <TabsTrigger value="enrolled">
-                  Enrolled ({userStats?.enrolled || 0})
-                </TabsTrigger>
+                {!teacherSubjectId && (
+                  <>
+                    <TabsTrigger value="all">
+                      All Users ({userStats?.total || 0})
+                    </TabsTrigger>
+                    <TabsTrigger value="enrolled">
+                      Enrolled ({userStats?.enrolled || 0})
+                    </TabsTrigger>
+                  </>
+                )}
                 <TabsTrigger value="class">
                   <GraduationCap className="w-4 h-4 mr-1" />
                   By Class
