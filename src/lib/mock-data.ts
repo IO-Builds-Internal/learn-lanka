@@ -178,7 +178,7 @@ export const mockBankAccounts: BankAccount[] = [
   {
     id: '2',
     bankName: 'Commercial Bank',
-    accountName: 'ICT Academy',
+    accountName: 'A/L Student Academy',
     accountNumber: '98765432109876',
     branch: 'Kollupitiya',
     isActive: true,
