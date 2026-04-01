@@ -73,6 +73,7 @@ interface ShopProduct {
   is_active: boolean;
   created_at: string;
   subject_id: string | null;
+  profit_share_amount: number | null;
 }
 
 const AdminShop = () => {
@@ -94,6 +95,7 @@ const AdminShop = () => {
   const [priceSoft, setPriceSoft] = useState('');
   const [pricePrinted, setPricePrinted] = useState('');
   const [priceBoth, setPriceBoth] = useState('');
+  const [profitShareAmount, setProfitShareAmount] = useState('');
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
@@ -153,6 +155,7 @@ const AdminShop = () => {
           price_soft: priceSoft ? parseInt(priceSoft) : null,
           price_printed: pricePrinted ? parseInt(pricePrinted) : null,
           price_both: priceBoth ? parseInt(priceBoth) : null,
+          ...((!teacherSubjectId) ? { profit_share_amount: profitShareAmount ? parseInt(profitShareAmount) : 0 } : {}),
         })
         .eq('id', editingProduct.id);
       if (error) throw error;
@@ -213,6 +216,7 @@ const AdminShop = () => {
     setPriceSoft('');
     setPricePrinted('');
     setPriceBoth('');
+    setProfitShareAmount('');
   };
 
   const openEditDialog = (product: ShopProduct) => {
@@ -223,6 +227,7 @@ const AdminShop = () => {
     setPriceSoft(product.price_soft?.toString() || '');
     setPricePrinted(product.price_printed?.toString() || '');
     setPriceBoth(product.price_both?.toString() || '');
+    setProfitShareAmount(product.profit_share_amount?.toString() || '');
     setIsDialogOpen(true);
   };
 
@@ -287,6 +292,7 @@ const AdminShop = () => {
                   <TableHead>Soft Copy</TableHead>
                   <TableHead>Printed</TableHead>
                   <TableHead>Both</TableHead>
+                  {!teacherSubjectId && <TableHead>Profit Share</TableHead>}
                   <TableHead>Status</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
@@ -319,6 +325,11 @@ const AdminShop = () => {
                     <TableCell>
                       {product.price_both ? `Rs. ${product.price_both}` : '-'}
                     </TableCell>
+                    {!teacherSubjectId && (
+                      <TableCell>
+                        {product.profit_share_amount ? `Rs. ${product.profit_share_amount}` : '-'}
+                      </TableCell>
+                    )}
                     <TableCell>
                       <Button 
                         variant="ghost" 
@@ -458,6 +469,19 @@ const AdminShop = () => {
                 </div>
               </div>
             </div>
+            {/* Admin-only: Profit Share Amount */}
+            {!teacherSubjectId && (
+              <div className="space-y-2">
+                <Label>Teacher Profit Share (per product sold)</Label>
+                <Input 
+                  type="number"
+                  placeholder="Rs. e.g. 5"
+                  value={profitShareAmount}
+                  onChange={(e) => setProfitShareAmount(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">Amount given to the teacher for each unit sold</p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
