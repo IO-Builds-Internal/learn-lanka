@@ -173,22 +173,6 @@ const Login = () => {
               </div>
             </form>
 
-            {/* Papers & Playground Buttons */}
-            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="w-full dark:border-slate-600 dark:text-slate-300 gap-2 text-sm"
-                onClick={() => window.open('/playground', '_blank', 'noopener,noreferrer')}
-              >
-                🖥️ Playground
-              </Button>
-              <Link to="/papers" className="block">
-                <Button variant="outline" className="w-full dark:border-slate-600 dark:text-slate-300 text-sm">
-                  📄 Past Papers
-                </Button>
-              </Link>
-            </div>
-
             {/* Footer Links */}
             <div className="mt-4 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
               <Link to="/contact" className="hover:text-blue-600 transition-colors">

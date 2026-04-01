@@ -26,6 +26,8 @@ const navItems = [
   { path: '/teacher/question-bank', label: 'Question Bank', icon: HelpCircle },
   { path: '/teacher/paper-crop', label: 'Paper Crop', icon: Scissors },
   { path: '/teacher/bulk-sms', label: 'Bulk SMS', icon: MessageSquare },
+  { path: '/teacher/shop', label: 'Shop Products', icon: ShoppingBag },
+  { path: '/teacher/orders', label: 'Orders', icon: Package },
 ];
 
 const TeacherLayout = ({ children }: TeacherLayoutProps) => {
