@@ -1563,6 +1563,7 @@ export type Database = {
           note: string | null
           slip_url: string | null
           status: string
+          subject_id: string | null
           total_amount: number
           updated_at: string
           user_id: string
@@ -1574,6 +1575,7 @@ export type Database = {
           note?: string | null
           slip_url?: string | null
           status?: string
+          subject_id?: string | null
           total_amount: number
           updated_at?: string
           user_id: string
@@ -1585,11 +1587,20 @@ export type Database = {
           note?: string | null
           slip_url?: string | null
           status?: string
+          subject_id?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shop_orders_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shop_products: {
         Row: {
@@ -1600,6 +1611,7 @@ export type Database = {
           price_both: number | null
           price_printed: number | null
           price_soft: number | null
+          subject_id: string | null
           title: string
           type: string
         }
@@ -1611,6 +1623,7 @@ export type Database = {
           price_both?: number | null
           price_printed?: number | null
           price_soft?: number | null
+          subject_id?: string | null
           title: string
           type: string
         }
@@ -1622,10 +1635,19 @@ export type Database = {
           price_both?: number | null
           price_printed?: number | null
           price_soft?: number | null
+          subject_id?: string | null
           title?: string
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shop_products_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_settings: {
         Row: {

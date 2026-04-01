@@ -38,11 +38,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import TeacherLayout from '@/components/layouts/TeacherLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'react-router-dom';
 
 interface OrderItem {
   id: string;
@@ -89,20 +92,30 @@ const STATUS_BADGE: Record<string, string> = {
 
 const AdminOrders = () => {
   const queryClient = useQueryClient();
+  const { isTeacher, isAdmin, isModerator, profile } = useAuth();
+  const location = useLocation();
+  const isTeacherRoute = location.pathname.startsWith('/teacher');
+  const teacherSubjectId = isTeacher && !isAdmin && !isModerator ? profile?.subject_id : null;
+  const Layout = isTeacherRoute ? TeacherLayout : AdminLayout;
+
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [slipPreviewUrl, setSlipPreviewUrl] = useState<string | null>(null);
 
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['admin-orders'],
+    queryKey: ['admin-orders', teacherSubjectId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('shop_orders')
         .select(`
           *,
           items:shop_order_items(*, shop_products(title, type))
         `)
         .order('created_at', { ascending: false });
+      if (teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
 
       // Enrich with profiles

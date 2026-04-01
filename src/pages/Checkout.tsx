@@ -246,6 +246,10 @@ const Checkout = () => {
 
     setIsSubmitting(true);
     try {
+      // Determine subject_id from cart products
+      const firstProduct = products.find(p => cart.some(c => c.productId === p.id));
+      const orderSubjectId = (firstProduct as any)?.subject_id || null;
+
       // Create order
       const { data: order, error: orderError } = await (supabase as any)
         .from('shop_orders')
@@ -255,7 +259,8 @@ const Checkout = () => {
           delivery_address: needsDelivery ? deliveryAddress : null,
           phone: phone,
           notes: notes || null,
-          status: 'pending'
+          status: 'pending',
+          subject_id: orderSubjectId,
         })
         .select()
         .single();

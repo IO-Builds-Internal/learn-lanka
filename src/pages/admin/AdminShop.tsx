@@ -54,10 +54,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import TeacherLayout from '@/components/layouts/TeacherLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'react-router-dom';
 
 interface ShopProduct {
   id: string;
@@ -69,10 +72,17 @@ interface ShopProduct {
   price_both: number | null;
   is_active: boolean;
   created_at: string;
+  subject_id: string | null;
 }
 
 const AdminShop = () => {
   const queryClient = useQueryClient();
+  const { isTeacher, isAdmin, isModerator, profile } = useAuth();
+  const location = useLocation();
+  const isTeacherRoute = location.pathname.startsWith('/teacher');
+  const teacherSubjectId = isTeacher && !isAdmin && !isModerator ? profile?.subject_id : null;
+  const Layout = isTeacherRoute ? TeacherLayout : AdminLayout;
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
@@ -87,12 +97,16 @@ const AdminShop = () => {
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['admin-shop-products'],
+    queryKey: ['admin-shop-products', teacherSubjectId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('shop_products')
         .select('*')
         .order('created_at', { ascending: false });
+      if (teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data as ShopProduct[];
     },
@@ -111,6 +125,7 @@ const AdminShop = () => {
           price_printed: pricePrinted ? parseInt(pricePrinted) : null,
           price_both: priceBoth ? parseInt(priceBoth) : null,
           is_active: true,
+          subject_id: teacherSubjectId || null,
         });
       if (error) throw error;
     },
@@ -238,16 +253,16 @@ const AdminShop = () => {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <Layout>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </Layout>
     );
   }
 
   return (
-    <AdminLayout>
+    <Layout>
       <div className="space-y-6">
       <AdminPageHeader
         title="Shop Products"
@@ -476,7 +491,7 @@ const AdminShop = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AdminLayout>
+    </Layout>
   );
 };
 
