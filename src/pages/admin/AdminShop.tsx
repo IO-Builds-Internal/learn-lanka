@@ -324,6 +324,11 @@ const AdminShop = () => {
                     <TableCell>
                       {product.price_both ? `Rs. ${product.price_both}` : '-'}
                     </TableCell>
+                    {!teacherSubjectId && (
+                      <TableCell>
+                        {product.profit_share_amount ? `Rs. ${product.profit_share_amount}` : '-'}
+                      </TableCell>
+                    )}
                     <TableCell>
                       <Button 
                         variant="ghost" 
