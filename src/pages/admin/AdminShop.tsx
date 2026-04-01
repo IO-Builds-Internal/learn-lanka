@@ -95,6 +95,7 @@ const AdminShop = () => {
   const [priceSoft, setPriceSoft] = useState('');
   const [pricePrinted, setPricePrinted] = useState('');
   const [priceBoth, setPriceBoth] = useState('');
+  const [profitShareAmount, setProfitShareAmount] = useState('');
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
