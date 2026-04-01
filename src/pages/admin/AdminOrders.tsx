@@ -200,7 +200,7 @@ const AdminOrders = () => {
       </TableCell>
       <TableCell onClick={e => e.stopPropagation()}>
         <div className="flex gap-1">
-          {order.status === 'PAYMENT_UPLOADED' && (
+          {!teacherSubjectId && order.status === 'PAYMENT_UPLOADED' && (
             <>
               <Button
                 variant="ghost"
@@ -219,6 +219,26 @@ const AdminOrders = () => {
                 <XCircle className="w-4 h-4" />
               </Button>
             </>
+          )}
+          {teacherSubjectId && order.status === 'PAYMENT_VERIFIED' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary h-7 px-2"
+              onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'PROCESSING' })}
+            >
+              <Package className="w-4 h-4" />
+            </Button>
+          )}
+          {teacherSubjectId && order.status === 'PROCESSING' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-success h-7 px-2"
+              onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'COMPLETED' })}
+            >
+              <CheckCircle className="w-4 h-4" />
+            </Button>
           )}
           <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setSelectedOrder(order)}>
             <Eye className="w-4 h-4" />
