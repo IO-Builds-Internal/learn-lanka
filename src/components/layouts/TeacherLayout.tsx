@@ -3,6 +3,7 @@ import { Link, useLocation, Navigate } from 'react-router-dom';
 import {
   GraduationCap, LayoutDashboard, BookOpen, Users, CreditCard,
   ChevronLeft, Menu, LogOut, Loader2, FileText, Layers, HelpCircle, Scissors, MessageSquare, Award,
+  ShoppingBag, Package,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
