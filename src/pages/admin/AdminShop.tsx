@@ -469,6 +469,19 @@ const AdminShop = () => {
                 </div>
               </div>
             </div>
+            {/* Admin-only: Profit Share Amount */}
+            {!teacherSubjectId && (
+              <div className="space-y-2">
+                <Label>Teacher Profit Share (per product sold)</Label>
+                <Input 
+                  type="number"
+                  placeholder="Rs. e.g. 5"
+                  value={profitShareAmount}
+                  onChange={(e) => setProfitShareAmount(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">Amount given to the teacher for each unit sold</p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
