@@ -226,6 +226,7 @@ const AdminShop = () => {
     setPriceSoft(product.price_soft?.toString() || '');
     setPricePrinted(product.price_printed?.toString() || '');
     setPriceBoth(product.price_both?.toString() || '');
+    setProfitShareAmount(product.profit_share_amount?.toString() || '');
     setIsDialogOpen(true);
   };
 
