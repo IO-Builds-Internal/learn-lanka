@@ -125,6 +125,7 @@ const AdminShop = () => {
           price_printed: pricePrinted ? parseInt(pricePrinted) : null,
           price_both: priceBoth ? parseInt(priceBoth) : null,
           is_active: true,
+          subject_id: teacherSubjectId || null,
         });
       if (error) throw error;
     },
