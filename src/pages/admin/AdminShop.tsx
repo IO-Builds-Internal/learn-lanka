@@ -155,6 +155,7 @@ const AdminShop = () => {
           price_soft: priceSoft ? parseInt(priceSoft) : null,
           price_printed: pricePrinted ? parseInt(pricePrinted) : null,
           price_both: priceBoth ? parseInt(priceBoth) : null,
+          ...((!teacherSubjectId) ? { profit_share_amount: profitShareAmount ? parseInt(profitShareAmount) : 0 } : {}),
         })
         .eq('id', editingProduct.id);
       if (error) throw error;
