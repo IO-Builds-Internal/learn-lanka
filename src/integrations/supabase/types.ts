@@ -1611,6 +1611,7 @@ export type Database = {
           price_both: number | null
           price_printed: number | null
           price_soft: number | null
+          profit_share_amount: number | null
           subject_id: string | null
           title: string
           type: string
@@ -1623,6 +1624,7 @@ export type Database = {
           price_both?: number | null
           price_printed?: number | null
           price_soft?: number | null
+          profit_share_amount?: number | null
           subject_id?: string | null
           title: string
           type: string
@@ -1635,6 +1637,7 @@ export type Database = {
           price_both?: number | null
           price_printed?: number | null
           price_soft?: number | null
+          profit_share_amount?: number | null
           subject_id?: string | null
           title?: string
           type?: string
