@@ -77,6 +77,12 @@ interface ShopProduct {
 
 const AdminShop = () => {
   const queryClient = useQueryClient();
+  const { isTeacher, isAdmin, isModerator, profile } = useAuth();
+  const location = useLocation();
+  const isTeacherRoute = location.pathname.startsWith('/teacher');
+  const teacherSubjectId = isTeacher && !isAdmin && !isModerator ? profile?.subject_id : null;
+  const Layout = isTeacherRoute ? TeacherLayout : AdminLayout;
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
@@ -91,12 +97,16 @@ const AdminShop = () => {
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['admin-shop-products'],
+    queryKey: ['admin-shop-products', teacherSubjectId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('shop_products')
         .select('*')
         .order('created_at', { ascending: false });
+      if (teacherSubjectId) {
+        query = query.eq('subject_id', teacherSubjectId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data as ShopProduct[];
     },
