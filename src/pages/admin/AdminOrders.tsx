@@ -423,7 +423,8 @@ const AdminOrders = () => {
               <div>
                 <p className="text-sm font-medium mb-2">Update Status</p>
                 <div className="flex gap-2 flex-wrap">
-                  {selectedOrder.status === 'PAYMENT_UPLOADED' && (
+                  {/* Admin-only: verify/reject payments */}
+                  {!teacherSubjectId && selectedOrder.status === 'PAYMENT_UPLOADED' && (
                     <>
                       <Button
                         size="sm"
@@ -442,6 +443,10 @@ const AdminOrders = () => {
                         Reject
                       </Button>
                     </>
+                  )}
+                  {/* Teacher info: waiting for admin verification */}
+                  {teacherSubjectId && selectedOrder.status === 'PAYMENT_UPLOADED' && (
+                    <p className="text-sm text-muted-foreground italic">Waiting for admin to verify payment</p>
                   )}
                   {selectedOrder.status === 'PAYMENT_VERIFIED' && (
                     <Button
@@ -462,19 +467,22 @@ const AdminOrders = () => {
                       Mark Completed
                     </Button>
                   )}
-                  <Select
-                    value={selectedOrder.status}
-                    onValueChange={status => updateStatusMutation.mutate({ id: selectedOrder.id, status })}
-                  >
-                    <SelectTrigger className="w-40 h-8 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_OPTIONS.map(s => (
-                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* Admin-only: full status dropdown */}
+                  {!teacherSubjectId && (
+                    <Select
+                      value={selectedOrder.status}
+                      onValueChange={status => updateStatusMutation.mutate({ id: selectedOrder.id, status })}
+                    >
+                      <SelectTrigger className="w-40 h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATUS_OPTIONS.map(s => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
             </div>
