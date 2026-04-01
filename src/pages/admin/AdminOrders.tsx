@@ -92,6 +92,12 @@ const STATUS_BADGE: Record<string, string> = {
 
 const AdminOrders = () => {
   const queryClient = useQueryClient();
+  const { isTeacher, isAdmin, isModerator, profile } = useAuth();
+  const location = useLocation();
+  const isTeacherRoute = location.pathname.startsWith('/teacher');
+  const teacherSubjectId = isTeacher && !isAdmin && !isModerator ? profile?.subject_id : null;
+  const Layout = isTeacherRoute ? TeacherLayout : AdminLayout;
+
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [slipPreviewUrl, setSlipPreviewUrl] = useState<string | null>(null);
