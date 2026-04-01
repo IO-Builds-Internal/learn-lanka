@@ -73,6 +73,7 @@ interface ShopProduct {
   is_active: boolean;
   created_at: string;
   subject_id: string | null;
+  profit_share_amount: number | null;
 }
 
 const AdminShop = () => {
