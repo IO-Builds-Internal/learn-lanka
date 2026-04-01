@@ -291,6 +291,7 @@ const AdminShop = () => {
                   <TableHead>Soft Copy</TableHead>
                   <TableHead>Printed</TableHead>
                   <TableHead>Both</TableHead>
+                  {!teacherSubjectId && <TableHead>Profit Share</TableHead>}
                   <TableHead>Status</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
