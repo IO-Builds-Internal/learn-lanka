@@ -72,6 +72,7 @@ interface ShopProduct {
   price_both: number | null;
   is_active: boolean;
   created_at: string;
+  subject_id: string | null;
 }
 
 const AdminShop = () => {
