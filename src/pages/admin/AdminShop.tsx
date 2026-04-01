@@ -253,16 +253,16 @@ const AdminShop = () => {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      <Layout>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </Layout>
     );
   }
 
   return (
-    <AdminLayout>
+    <Layout>
       <div className="space-y-6">
       <AdminPageHeader
         title="Shop Products"
@@ -491,7 +491,7 @@ const AdminShop = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AdminLayout>
+    </Layout>
   );
 };
 
