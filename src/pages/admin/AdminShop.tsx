@@ -215,6 +215,7 @@ const AdminShop = () => {
     setPriceSoft('');
     setPricePrinted('');
     setPriceBoth('');
+    setProfitShareAmount('');
   };
 
   const openEditDialog = (product: ShopProduct) => {
