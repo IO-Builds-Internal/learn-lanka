@@ -140,6 +140,8 @@ const App = () => (
                 <Route path="/teacher/syllabus" element={<ProtectedRoute requireTeacher><AdminSyllabus /></ProtectedRoute>} />
                 <Route path="/teacher/question-bank" element={<ProtectedRoute requireTeacher><AdminQuestionBank /></ProtectedRoute>} />
                 <Route path="/teacher/paper-crop" element={<ProtectedRoute requireTeacher><AdminPaperCrop /></ProtectedRoute>} />
+                <Route path="/teacher/shop" element={<ProtectedRoute requireTeacher><AdminShop /></ProtectedRoute>} />
+                <Route path="/teacher/orders" element={<ProtectedRoute requireTeacher><AdminOrders /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
