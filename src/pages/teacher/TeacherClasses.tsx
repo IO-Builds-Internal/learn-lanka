@@ -172,8 +172,8 @@ const TeacherClasses = () => {
               <Card key={cls.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{cls.title}</CardTitle>
-                    {getStatusBadge(cls.approval_status)}
+                     <CardTitle className="text-base">{cls.title}</CardTitle>
+                    {getStatusBadge(cls)}
                   </div>
                   {cls.subjects && (
                     <span className="text-xs font-medium" style={{ color: cls.subjects.color }}>
