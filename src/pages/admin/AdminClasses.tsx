@@ -266,6 +266,7 @@ const AdminClasses = () => {
     setMaxStudents('');
     setImageUrl('');
     setProfitSharePercent('');
+    setClassStatus('ACTIVE');
   };
 
   const filteredClasses = classes.filter((cls) => {
