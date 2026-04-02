@@ -88,6 +88,10 @@ const Classes = () => {
         throw new Error('Invalid invite code. Please check and try again.');
       }
 
+      if ((classData as any).status === 'REGISTRATION_CLOSED') {
+        throw new Error('Registration is closed for this class.');
+      }
+
       // Check if already enrolled
       const { data: existingEnrollment } = await supabase
         .from('class_enrollments')
