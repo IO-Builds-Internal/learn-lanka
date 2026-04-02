@@ -456,6 +456,24 @@ const AdminClasses = () => {
                     Percentage of class revenue shared with the teacher
                   </p>
                 </div>
+
+                {/* Class Status */}
+                <div className="space-y-2">
+                  <Label>Class Status</Label>
+                  <Select value={classStatus} onValueChange={setClassStatus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DRAFT">Draft (Hidden)</SelectItem>
+                      <SelectItem value="ACTIVE">Active (Open for enrollment)</SelectItem>
+                      <SelectItem value="REGISTRATION_CLOSED">Registration Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Draft: hidden from students. Active: open for enrollment. Registration Closed: visible only to enrolled students.
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={closeDialog}>Cancel</Button>
