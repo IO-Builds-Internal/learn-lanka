@@ -428,7 +428,7 @@ const ClassDetail = () => {
   const enrollMutation = useMutation({
     mutationFn: async () => {
       if (!user || !id) throw new Error('Not authenticated');
-
+      if ((classData as any)?.status === 'REGISTRATION_CLOSED') throw new Error('Registration is closed for this class');
       // Validate private class code
       if (classData?.is_private) {
         if (!enrollCode.trim()) throw new Error('Please enter the class code');

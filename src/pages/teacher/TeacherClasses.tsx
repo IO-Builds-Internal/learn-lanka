@@ -76,14 +76,20 @@ const TeacherClasses = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (cls: any) => {
+    const status = cls.status || 'ACTIVE';
+    const approval = cls.approval_status;
+    
+    if (approval === 'PENDING') return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="w-3 h-3 mr-1" />Pending Approval</Badge>;
+    if (approval === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+    
     switch (status) {
-      case 'APPROVED':
-        return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-      case 'PENDING':
-        return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
-      case 'REJECTED':
-        return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      case 'ACTIVE':
+        return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+      case 'DRAFT':
+        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Draft</Badge>;
+      case 'REGISTRATION_CLOSED':
+        return <Badge className="bg-warning/10 text-warning border-warning/20"><XCircle className="w-3 h-3 mr-1" />Reg. Closed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -166,8 +172,8 @@ const TeacherClasses = () => {
               <Card key={cls.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{cls.title}</CardTitle>
-                    {getStatusBadge(cls.approval_status)}
+                     <CardTitle className="text-base">{cls.title}</CardTitle>
+                    {getStatusBadge(cls)}
                   </div>
                   {cls.subjects && (
                     <span className="text-xs font-medium" style={{ color: cls.subjects.color }}>
@@ -184,11 +190,18 @@ const TeacherClasses = () => {
                     )}
                   </div>
                   {cls.approval_status === 'APPROVED' && (
-                    <Link to={`/teacher/classes/${cls.id}/content`}>
-                      <Button variant="outline" size="sm" className="w-full mt-3 gap-2">
-                        Manage Content
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2 mt-3">
+                      <Link to={`/teacher/classes/${cls.id}/content`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full gap-2">
+                          Manage Content
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                  {cls.profit_share_percent != null && cls.profit_share_percent > 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Profit Share: {cls.profit_share_percent}%
+                    </p>
                   )}
                 </CardContent>
               </Card>
