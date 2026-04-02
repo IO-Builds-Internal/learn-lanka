@@ -109,6 +109,7 @@ const AdminClasses = () => {
     setMaxStudents(cls.max_students?.toString() || '');
     setImageUrl(cls.image_url || '');
     setProfitSharePercent(cls.profit_share_percent?.toString() || '0');
+    setClassStatus((cls as any).status || 'ACTIVE');
     setIsDialogOpen(true);
   };
 
