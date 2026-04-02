@@ -534,12 +534,23 @@ const AdminClasses = () => {
                     alt={cls.title}
                     className="w-full h-full object-cover"
                   />
-                  {cls.is_private && (
-                    <Badge variant="secondary" className="absolute top-2 right-2 gap-1">
-                      <Lock className="w-3 h-3" />
-                      Private
-                    </Badge>
-                  )}
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {cls.is_private && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Lock className="w-3 h-3" />
+                        Private
+                      </Badge>
+                    )}
+                    {(cls as any).status === 'DRAFT' && (
+                      <Badge className="bg-muted text-muted-foreground">Draft</Badge>
+                    )}
+                    {(cls as any).status === 'REGISTRATION_CLOSED' && (
+                      <Badge className="bg-warning/10 text-warning border-warning/20">Reg. Closed</Badge>
+                    )}
+                    {(cls as any).status === 'ACTIVE' && (
+                      <Badge className="bg-success/10 text-success border-success/20">Active</Badge>
+                    )}
+                  </div>
                 </div>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">

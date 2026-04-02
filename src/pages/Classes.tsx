@@ -48,6 +48,7 @@ const Classes = () => {
         .from('classes')
         .select('*')
         .eq('is_private', false)
+        .eq('status', 'ACTIVE')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];

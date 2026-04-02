@@ -76,14 +76,20 @@ const TeacherClasses = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (cls: any) => {
+    const status = cls.status || 'ACTIVE';
+    const approval = cls.approval_status;
+    
+    if (approval === 'PENDING') return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="w-3 h-3 mr-1" />Pending Approval</Badge>;
+    if (approval === 'REJECTED') return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+    
     switch (status) {
-      case 'APPROVED':
-        return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-      case 'PENDING':
-        return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
-      case 'REJECTED':
-        return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      case 'ACTIVE':
+        return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+      case 'DRAFT':
+        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Draft</Badge>;
+      case 'REGISTRATION_CLOSED':
+        return <Badge className="bg-warning/10 text-warning border-warning/20"><XCircle className="w-3 h-3 mr-1" />Reg. Closed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
