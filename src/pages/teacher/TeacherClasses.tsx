@@ -190,11 +190,18 @@ const TeacherClasses = () => {
                     )}
                   </div>
                   {cls.approval_status === 'APPROVED' && (
-                    <Link to={`/teacher/classes/${cls.id}/content`}>
-                      <Button variant="outline" size="sm" className="w-full mt-3 gap-2">
-                        Manage Content
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2 mt-3">
+                      <Link to={`/teacher/classes/${cls.id}/content`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full gap-2">
+                          Manage Content
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                  {cls.profit_share_percent != null && cls.profit_share_percent > 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Profit Share: {cls.profit_share_percent}%
+                    </p>
                   )}
                 </CardContent>
               </Card>
