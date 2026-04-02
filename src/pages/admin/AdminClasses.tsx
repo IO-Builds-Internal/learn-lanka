@@ -95,6 +95,7 @@ const AdminClasses = () => {
   const [maxStudents, setMaxStudents] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [profitSharePercent, setProfitSharePercent] = useState('');
+  const [classStatus, setClassStatus] = useState('ACTIVE');
 
   // Load form data when editing
   const openEditDialog = (cls: ClassData) => {
