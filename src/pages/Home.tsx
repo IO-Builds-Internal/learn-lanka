@@ -33,9 +33,14 @@ const TeachersSection = () => {
       const ids = teacherRoles.map(r => r.user_id);
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, teacher_image_url')
+        .select('id, first_name, last_name, teacher_image_url, subjects:subjects(name)')
         .in('id', ids);
-      return (profiles || []).filter((p: any) => p.teacher_image_url);
+      return (profiles || [])
+        .map((p: any) => ({
+          ...p,
+          subject_name: p.subjects?.name || ''
+        }))
+        .filter((p: any) => p.teacher_image_url);
     },
   });
 
@@ -57,6 +62,9 @@ const TeachersSection = () => {
             </div>
             <div className="p-3 text-center">
               <p className="font-semibold text-sm text-foreground">{t.first_name} {t.last_name}</p>
+              {t.subject_name && (
+                <p className="text-xs text-muted-foreground mt-1 font-medium">{t.subject_name}</p>
+              )}
             </div>
           </div>
         ))}
