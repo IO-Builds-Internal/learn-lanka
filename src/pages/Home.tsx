@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 import { SUBJECT_FALLBACK_IMAGES } from '@/lib/subjectImages';
@@ -22,6 +22,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 const TeachersSection = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const { data: teachers = [] } = useQuery({
     queryKey: ['public-teachers'],
     queryFn: async () => {
@@ -34,7 +36,8 @@ const TeachersSection = () => {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, teacher_image_url, subjects:subjects(name)')
-        .in('id', ids);
+        .in('id', ids)
+        .order('sort_order', { ascending: true });
       return (profiles || [])
         .map((p: any) => ({
           ...p,
@@ -44,15 +47,60 @@ const TeachersSection = () => {
     },
   });
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || teachers.length === 0) return;
+
+    let animationFrameId: number;
+    let scrollSpeed = 0.5; // pixels per frame (smooth)
+
+    const scroll = () => {
+      el.scrollLeft += scrollSpeed;
+
+      // If we are at the end, jump back to start
+      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
+        el.scrollLeft = 0;
+      }
+
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+
+    // Pause on hover
+    const handleMouseEnter = () => cancelAnimationFrame(animationFrameId);
+    const handleMouseLeave = () => {
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    el.addEventListener('mouseenter', handleMouseEnter);
+    el.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      el.removeEventListener('mouseenter', handleMouseEnter);
+      el.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [teachers]);
+
   if (teachers.length === 0) return null;
 
   return (
-    <section className="page-container pb-16">
+    <section className="page-container pb-16 overflow-hidden">
       <h2 className="text-2xl font-bold text-foreground mb-2">Our Teachers</h2>
-      <p className="text-muted-foreground mb-8">Learn from experienced educators</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <p className="text-muted-foreground mb-6">Learn from experienced educators</p>
+      
+      {/* Horizontal scrolling wrapper */}
+      <div 
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto py-2 scrollbar-none snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {teachers.map((t: any) => (
-          <div key={t.id} className="group rounded-2xl border bg-card overflow-hidden hover:shadow-lg transition-all">
+          <div 
+            key={t.id} 
+            className="group rounded-2xl border bg-card overflow-hidden hover:shadow-md transition-all shrink-0 w-[180px] xs:w-[200px] snap-start"
+          >
             <div className="aspect-[9/16] bg-muted overflow-hidden">
               <img
                 src={t.teacher_image_url}
@@ -61,9 +109,9 @@ const TeachersSection = () => {
               />
             </div>
             <div className="p-3 text-center">
-              <p className="font-semibold text-sm text-foreground">{t.first_name} {t.last_name}</p>
+              <p className="font-semibold text-sm text-foreground truncate">{t.first_name} {t.last_name}</p>
               {t.subject_name && (
-                <p className="text-xs text-muted-foreground mt-1 font-medium">{t.subject_name}</p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium truncate">{t.subject_name}</p>
               )}
             </div>
           </div>

@@ -57,7 +57,8 @@ const AdminTeachers = () => {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('*')
-        .in('id', ids);
+        .in('id', ids)
+        .order('sort_order', { ascending: true });
       const { data: classes } = await supabase
         .from('classes')
         .select('id, teacher_id, approval_status')
@@ -266,6 +267,30 @@ const AdminTeachers = () => {
                         {teacher.pendingClasses} pending
                       </Badge>
                     )}
+                  </div>
+                  <div className="flex items-center gap-1 mr-2 shrink-0">
+                    <span className="text-xs text-muted-foreground">Order:</span>
+                    <Input
+                      type="number"
+                      defaultValue={teacher.sort_order || 0}
+                      className="h-8 w-14 text-center px-1 text-xs"
+                      onBlur={async (e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        if (val !== (teacher.sort_order || 0)) {
+                          try {
+                            const { error } = await supabase
+                              .from('profiles')
+                              .update({ sort_order: val } as any)
+                              .eq('id', teacher.id);
+                            if (error) throw error;
+                            toast.success('Sort order updated');
+                            queryClient.invalidateQueries({ queryKey: ['admin-teachers'] });
+                          } catch (err: any) {
+                            toast.error('Failed to update sort order');
+                          }
+                        }
+                      }}
+                    />
                   </div>
                   <Button
                     variant="outline" size="sm"
