@@ -71,3 +71,12 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## ⚠️ Compulsory Database Modification Rule
+
+Whenever you need to make **any** changes to the database schema (such as altering tables, dropping constraints, adding columns, or creating tables):
+1. **Never apply changes directly to the database first.**
+2. **Create a migration SQL file** under the `supabase/migrations/` directory using the format: `YYYYMMDDHHMMSS_description_of_change.sql`.
+3. Put the SQL statements (DDL/DML) inside that file.
+4. Apply the migration file to the database.
+5. Commit the migration file to the git repository alongside the source code.
