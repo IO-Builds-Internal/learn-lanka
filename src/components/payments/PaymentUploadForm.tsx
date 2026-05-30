@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { compressImage } from '@/lib/imageCompression';
 
 interface Coupon {
   id: string;
@@ -134,7 +135,7 @@ const PaymentUploadForm = ({
     setCouponError('');
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -148,23 +149,54 @@ const PaymentUploadForm = ({
       return;
     }
 
-    // Validate file size (5MB max)
-    if (selectedFile.size > 5 * 1024 * 1024) {
+    let fileToUse = selectedFile;
+
+    // Try to compress if image and exceeds size limit
+    if (selectedFile.type.startsWith('image/') && selectedFile.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Compressing image...',
+        description: 'Your image is larger than 5MB. Compressing to fit limit.',
+      });
+      
+      fileToUse = await compressImage(
+        selectedFile, 
+        5 * 1024 * 1024,
+        undefined,
+        (compFile, savedBytes) => {
+          if (savedBytes > 0) {
+            toast({
+              title: 'Image compressed successfully',
+              description: `Reduced size by ${(savedBytes / (1024 * 1024)).toFixed(2)}MB`,
+            });
+          }
+        }
+      );
+
+      // Check if compression failed to bring it under the limit
+      if (fileToUse.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: 'Failed to compress the image under the 5MB limit. Please upload a smaller image.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else if (selectedFile.size > 5 * 1024 * 1024) {
       toast({
         title: 'File too large',
-        description: 'Maximum file size is 5MB',
+        description: 'Maximum file size is 5MB for PDF files.',
         variant: 'destructive',
       });
       return;
     }
 
-    setFile(selectedFile);
+    setFile(fileToUse);
 
     // Create preview for images
-    if (selectedFile.type.startsWith('image/')) {
+    if (fileToUse.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(selectedFile);
+      reader.readAsDataURL(fileToUse);
     } else {
       setPreview(null);
     }

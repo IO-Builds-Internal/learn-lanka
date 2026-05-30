@@ -37,6 +37,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { compressImage } from '@/lib/imageCompression';
 
 interface Question {
   id: string;
@@ -471,12 +472,52 @@ const RankPaperAttempt = () => {
   const handleFileUpload = async (file: File, type: 'SHORT_ESSAY' | 'ESSAY') => {
     if (!attempt || !user) return;
 
-    const fileExt = file.name.split('.').pop();
+    let fileToUse = file;
+
+    // Validate size limit and try to compress images if they exceed the 10MB limit
+    if (file.type.startsWith('image/') && file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'Compressing image...',
+        description: 'Your answer image is larger than 10MB. Compressing to fit limit.',
+      });
+
+      fileToUse = await compressImage(
+        file,
+        10 * 1024 * 1024,
+        undefined,
+        (compFile, savedBytes) => {
+          if (savedBytes > 0) {
+            toast({
+              title: 'Image compressed successfully',
+              description: `Reduced size by ${(savedBytes / (1024 * 1024)).toFixed(2)}MB`,
+            });
+          }
+        }
+      );
+
+      if (fileToUse.size > 10 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: 'Failed to compress the image under the 10MB limit. Please upload a smaller image.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Maximum file size is 10MB for PDF files.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const fileExt = fileToUse.name.split('.').pop();
     const fileName = `${user.id}/${attempt.id}-${type.toLowerCase()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('essay-uploads')
-      .upload(fileName, file, { upsert: true });
+      .upload(fileName, fileToUse, { upsert: true });
 
     if (uploadError) {
       toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' });

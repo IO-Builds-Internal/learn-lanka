@@ -29,6 +29,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/imageCompression';
 import EditProfileDialog from '@/components/profile/EditProfileDialog';
 import { format } from 'date-fns';
 
@@ -151,21 +152,40 @@ const Profile = () => {
       return;
     }
 
-    // Validate file size (2MB max for avatars)
+    let fileToUse = file;
+
+    // Validate and compress file size (2MB max for avatars)
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image must be less than 2MB');
-      return;
+      const toastId = toast.loading('Compressing image...');
+      
+      fileToUse = await compressImage(
+        file, 
+        2 * 1024 * 1024,
+        undefined,
+        (compFile, savedBytes) => {
+          if (savedBytes > 0) {
+            toast.success(`Profile picture compressed! Saved ${(savedBytes / (1024 * 1024)).toFixed(2)}MB`, { id: toastId });
+          } else {
+            toast.dismiss(toastId);
+          }
+        }
+      );
+
+      if (fileToUse.size > 2 * 1024 * 1024) {
+        toast.error('Failed to compress avatar under 2MB. Please upload a smaller image.');
+        return;
+      }
     }
 
     setUploadingAvatar(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = fileToUse.name.split('.').pop();
       const fileName = `${user.id}/avatar.${fileExt}`;
 
       // Upload file (will overwrite if exists)
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, fileToUse, { upsert: true });
 
       if (uploadError) throw uploadError;
 
