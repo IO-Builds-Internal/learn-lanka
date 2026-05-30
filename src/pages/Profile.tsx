@@ -270,7 +270,7 @@ const Profile = () => {
                   {profile.first_name} {profile.last_name}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {profile.grade ? `Grade ${profile.grade}` : 'Student'}
+                  {profile.grade === 14 ? 'Undergraduate' : profile.grade === 15 ? 'Other' : profile.grade ? `Grade ${profile.grade}` : 'Student'}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="secondary" className="text-xs">
@@ -340,7 +340,7 @@ const Profile = () => {
                 <GraduationCap className="w-5 h-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Grade</p>
-                  <p className="font-medium">{profile.grade ? `Grade ${profile.grade}` : 'Not specified'}</p>
+                  <p className="font-medium">{profile.grade === 14 ? 'Undergraduate' : profile.grade === 15 ? 'Other' : profile.grade ? `Grade ${profile.grade}` : 'Not specified'}</p>
                 </div>
               </div>
             </div>

@@ -460,6 +460,8 @@ const Register = () => {
                             Grade {g}
                           </SelectItem>
                         ))}
+                        <SelectItem value="14">Undergraduate</SelectItem>
+                        <SelectItem value="15">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -161,6 +161,8 @@ const EditProfileDialog = ({ open, onOpenChange, profile, onSuccess }: EditProfi
                           Grade {grade}
                         </SelectItem>
                       ))}
+                      <SelectItem value="14">Undergraduate</SelectItem>
+                      <SelectItem value="15">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
