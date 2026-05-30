@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/imageCompression';
 
 interface OrderItem {
   id: string;
@@ -98,18 +99,42 @@ const MyOrders = () => {
   const activeOrders = orders.filter(o => ['PAYMENT_UPLOADED', 'PAYMENT_VERIFIED', 'PROCESSING'].includes(o.status));
   const completedOrders = orders.filter(o => ['COMPLETED', 'CANCELLED'].includes(o.status));
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type)) {
       toast.error('Please upload an image (JPG, PNG) or PDF');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Maximum file size is 5MB');
+
+    let fileToUse = file;
+
+    if (file.type.startsWith('image/') && file.size > 5 * 1024 * 1024) {
+      const toastId = toast.loading('Compressing image...');
+      
+      fileToUse = await compressImage(
+        file, 
+        5 * 1024 * 1024,
+        undefined,
+        (compFile, savedBytes) => {
+          if (savedBytes > 0) {
+            toast.success(`Image compressed successfully! Saved ${(savedBytes / (1024 * 1024)).toFixed(2)}MB`, { id: toastId });
+          } else {
+            toast.dismiss(toastId);
+          }
+        }
+      );
+
+      if (fileToUse.size > 5 * 1024 * 1024) {
+        toast.error('Failed to compress the image under 5MB. Please upload a smaller image.');
+        return;
+      }
+    } else if (file.size > 5 * 1024 * 1024) {
+      toast.error('Maximum file size is 5MB for PDF files.');
       return;
     }
-    setSlipFile(file);
+
+    setSlipFile(fileToUse);
   };
 
   const handleUploadSlip = async (orderId: string) => {
