@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Clock, 
-  AlertTriangle, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Clock,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
   Upload,
   Send,
   Loader2,
@@ -130,23 +130,23 @@ const RankPaperAttempt = () => {
           return;
         }
         setAttempt(existingAttempt);
-        
+
         // Load existing violation counts
         setTabSwitchCount(existingAttempt.tab_switch_count || 0);
         setWindowCloseCount((existingAttempt.window_close_count || 0) + 1); // Increment for this session
-        
+
         // Save the incremented window close count
         await supabase
           .from('rank_attempts')
           .update({ window_close_count: (existingAttempt.window_close_count || 0) + 1 })
           .eq('id', existingAttempt.id);
-        
+
         // Calculate remaining time
         const endTime = new Date(existingAttempt.ends_at).getTime();
         const now = Date.now();
         const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
         setTimeLeft(remaining);
-        
+
         if (remaining === 0) {
           // Auto-submit if time expired
           handleAutoSubmit(existingAttempt.id);
@@ -245,18 +245,18 @@ const RankPaperAttempt = () => {
   // Save violations to database
   const saveViolations = useCallback(async (newTabCount: number, newWindowCount: number) => {
     if (!attempt) return;
-    
+
     // Debounce the save
     if (violationSaveRef.current) {
       clearTimeout(violationSaveRef.current);
     }
-    
+
     violationSaveRef.current = setTimeout(async () => {
       await supabase
         .from('rank_attempts')
-        .update({ 
+        .update({
           tab_switch_count: newTabCount,
-          window_close_count: newWindowCount 
+          window_close_count: newWindowCount
         })
         .eq('id', attempt.id);
     }, 500);
@@ -297,13 +297,13 @@ const RankPaperAttempt = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
     window.addEventListener('focus', handleWindowFocus);
-    
+
     // Disable right-click
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       toast({ title: 'Right-click disabled', description: 'This action is not allowed during the exam' });
     };
-    
+
     document.addEventListener('contextmenu', handleContextMenu);
 
     // Block copy event
@@ -332,7 +332,7 @@ const RankPaperAttempt = () => {
       // Block PrintScreen
       if (e.key === 'PrintScreen') {
         e.preventDefault();
-        navigator.clipboard.writeText('').catch(() => {});
+        navigator.clipboard.writeText('').catch(() => { });
         toast({ title: 'Screenshots blocked', description: 'Taking screenshots is not allowed during the exam', variant: 'destructive' });
         // Record as violation
         setTabSwitchCount(prev => {
@@ -342,7 +342,7 @@ const RankPaperAttempt = () => {
         });
         return;
       }
-      
+
       // Block Ctrl/Cmd+P (Print), Ctrl/Cmd+S (Save), Ctrl/Cmd+C (Copy), Ctrl/Cmd+A (Select All), Ctrl/Cmd+X (Cut), Ctrl/Cmd+V (Paste)
       if (e.ctrlKey || e.metaKey) {
         if (['p', 's', 'c', 'a', 'x', 'v', 'u'].includes(e.key.toLowerCase())) {
@@ -362,7 +362,7 @@ const RankPaperAttempt = () => {
           return;
         }
       }
-      
+
       // Block F12 (DevTools)
       if (e.key === 'F12') {
         e.preventDefault();
@@ -376,12 +376,12 @@ const RankPaperAttempt = () => {
         return;
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', (e) => {
       // Clear clipboard after PrintScreen keyup
       if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('').catch(() => {});
+        navigator.clipboard.writeText('').catch(() => { });
       }
     });
 
@@ -425,7 +425,7 @@ const RankPaperAttempt = () => {
       .from('rank_attempts')
       .update({ submitted_at: new Date().toISOString(), auto_closed: true })
       .eq('id', attemptId);
-    
+
     toast({ title: 'Time expired', description: 'Your answers have been auto-submitted' });
     navigate(`/rank-papers/${id}/results`);
   };
@@ -549,7 +549,7 @@ const RankPaperAttempt = () => {
   return (
     <div className="min-h-screen bg-background px-3 sm:px-4 py-4 max-w-4xl mx-auto">
       {/* Watermark overlay - deters screenshots */}
-      <div 
+      <div
         className="fixed inset-0 pointer-events-none z-40 select-none"
         style={{
           background: `repeating-linear-gradient(
@@ -626,8 +626,8 @@ const RankPaperAttempt = () => {
               <div className={cn(
                 "flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-mono text-base sm:text-lg font-bold transition-all",
                 timeLeft < 60 ? "bg-destructive text-destructive-foreground animate-pulse scale-110" :
-                timeLeft < 300 ? "bg-destructive/10 text-destructive animate-pulse" : 
-                timeLeft < 600 ? "bg-warning/10 text-warning" : "bg-muted"
+                  timeLeft < 300 ? "bg-destructive/10 text-destructive animate-pulse" :
+                    timeLeft < 600 ? "bg-warning/10 text-warning" : "bg-muted"
               )}>
                 <Clock className="w-4 h-4" />
                 {formatTime(timeLeft)}
@@ -655,8 +655,8 @@ const RankPaperAttempt = () => {
                     className={cn(
                       "w-9 h-9 sm:w-10 sm:h-10 rounded-lg font-medium text-sm transition-colors",
                       idx === currentQuestion && "ring-2 ring-primary",
-                      answers[q.id] 
-                        ? "bg-primary text-primary-foreground" 
+                      answers[q.id]
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
                   >
@@ -679,7 +679,7 @@ const RankPaperAttempt = () => {
                       <p className="text-lg">{questions[currentQuestion].question_text}</p>
                     )}
                     {questions[currentQuestion].question_image_url && (
-                      <img 
+                      <img
                         src={questions[currentQuestion].question_image_url}
                         alt="Question"
                         className="max-w-full rounded-lg"
@@ -691,7 +691,7 @@ const RankPaperAttempt = () => {
                       value={answers[questions[currentQuestion].id] !== undefined
                         ? answers[questions[currentQuestion].id].toString()
                         : ""}
-                      onValueChange={(value) => 
+                      onValueChange={(value) =>
                         handleAnswerChange(questions[currentQuestion].id, parseInt(value))
                       }
                       className="space-y-3"
@@ -711,7 +711,7 @@ const RankPaperAttempt = () => {
                           <Label htmlFor={option.id} className="flex-1 cursor-pointer">
                             {option.option_text && <span>{option.option_text}</span>}
                             {option.option_image_url && (
-                              <img 
+                              <img
                                 src={option.option_image_url}
                                 alt={`Option ${option.option_no}`}
                                 className="max-w-[200px] mt-2 rounded"
