@@ -521,8 +521,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           )}
 
           {collapsed && (
-            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-violet-500 shadow-md shadow-primary/20 overflow-hidden flex-shrink-0">
-              <GraduationCap className="w-4.5 h-4.5 text-white" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl overflow-hidden flex-shrink-0">
+              <img src="/logo.png" alt={siteName} className="w-full h-full object-cover" />
             </div>
           )}
 

@@ -507,8 +507,8 @@ const PageWrapper = ({ children, isGuest }: { children: React.ReactNode; isGuest
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center justify-between px-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                <img src="/logo.png" alt="AL Student" className="w-full h-full object-cover" />
               </div>
               <span className="font-bold text-lg">AL Student</span>
             </Link>

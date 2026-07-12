@@ -93,7 +93,9 @@ const SubjectHome = () => {
             <div className="flex h-14 items-center justify-between">
               <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="w-5 h-5" />
-                <GraduationCap className="w-6 h-6 text-primary" />
+                <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center shrink-0">
+                  <img src="/logo.png" alt="AL Student" className="w-full h-full object-cover" />
+                </div>
                 <span className="font-bold text-foreground">AL Student</span>
               </Link>
             </div>
@@ -132,7 +134,9 @@ const SubjectHome = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <Link to="/" className="flex items-center gap-2">
-                <GraduationCap className="w-6 h-6 text-primary" />
+                <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center shrink-0">
+                  <img src="/logo.png" alt="AL Student" className="w-full h-full object-cover" />
+                </div>
                 <span className="font-bold text-foreground">AL Student</span>
               </Link>
             </div>

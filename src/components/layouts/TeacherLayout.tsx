@@ -62,8 +62,8 @@ const TeacherLayout = ({ children }: TeacherLayoutProps) => {
         )}>
           {!collapsed && (
             <Link to="/teacher" className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-md bg-sidebar-primary flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="w-4 h-4 text-sidebar-primary-foreground" />
+              <div className="w-7 h-7 rounded-md overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img src="/logo.png" alt="Teacher Panel" className="w-full h-full object-cover" />
               </div>
               <span className="font-bold text-sm text-sidebar-foreground truncate">Teacher Panel</span>
             </Link>
@@ -125,7 +125,9 @@ const TeacherLayout = ({ children }: TeacherLayoutProps) => {
         {/* Mobile header */}
         <header className="md:hidden sticky top-0 z-40 h-13 border-b bg-card flex items-center justify-between px-4">
           <Link to="/teacher" className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-primary" />
+            <div className="w-5 h-5 rounded overflow-hidden flex items-center justify-center shrink-0">
+              <img src="/logo.png" alt="Teacher Panel" className="w-full h-full object-cover" />
+            </div>
             <span className="font-bold text-sm">Teacher Panel</span>
           </Link>
           <div className="flex items-center gap-1">
