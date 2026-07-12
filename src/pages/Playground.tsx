@@ -1873,204 +1873,208 @@ const Playground = () => {
             {running && rightTab === 'output' && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary ml-auto mr-4" />}
           </div>
 
-          {rightTab === 'refs' && (
-            <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                {meta.emoji} {meta.label} Cheat Sheet & Examples
-              </p>
-              {(LANG_REFS[lang] ?? LANG_REFS.text).map((ref, i) => (
-                <div key={i} className="flex flex-col gap-1 rounded-xl border overflow-hidden bg-[#080b10]">
-                  <div className="flex items-center justify-between px-3.5 py-2 bg-muted/10 border-b border-border/5">
-                    <div>
-                      <span className="text-xs font-bold text-slate-200">{ref.title}</span>
-                      <span className="text-[10px] text-muted-foreground ml-2">{ref.desc}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(ref.code); toast.success('Copied!'); }}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
-                      >
-                        <Copy className="w-3.5 h-3.5" /> Copy
-                      </button>
-                      <button
-                        onClick={() => {
-                          updateCode(ref.code);
-                          setRightTab('output');
-                          setTimeout(() => handleRun(), 100);
-                        }}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-white hover:opacity-90 transition-all font-semibold"
-                        style={{ background: meta.color }}
-                      >
-                        <Play className="w-3 h-3" /> Load
-                      </button>
-                    </div>
+          {/* References Tab Panel */}
+          <div className={`flex-1 overflow-auto p-4 flex flex-col gap-3 ${rightTab !== 'refs' ? 'hidden' : ''}`}>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              {meta.emoji} {meta.label} Cheat Sheet & Examples
+            </p>
+            {(LANG_REFS[lang] ?? LANG_REFS.text).map((ref, i) => (
+              <div key={i} className="flex flex-col gap-1 rounded-xl border overflow-hidden bg-[#080b10]">
+                <div className="flex items-center justify-between px-3.5 py-2 bg-muted/10 border-b border-border/5">
+                  <div>
+                    <span className="text-xs font-bold text-slate-200">{ref.title}</span>
+                    <span className="text-[10px] text-muted-foreground ml-2">{ref.desc}</span>
                   </div>
-                  <pre className="text-xs font-mono px-3.5 py-2.5 bg-[#0d1117] text-[#cbd5e1] overflow-x-auto whitespace-pre leading-relaxed">
-                    {ref.code}
-                  </pre>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(ref.code); toast.success('Copied!'); }}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                    >
+                      <Copy className="w-3.5 h-3.5" /> Copy
+                    </button>
+                    <button
+                      onClick={() => {
+                        updateCode(ref.code);
+                        setRightTab('output');
+                        setTimeout(() => handleRun(), 100);
+                      }}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-white hover:opacity-90 transition-all font-semibold"
+                      style={{ background: meta.color }}
+                    >
+                      <Play className="w-3 h-3" /> Load
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {rightTab === 'form' && (
-            <div className="flex-1 p-5 overflow-auto flex flex-col gap-5">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">HTTP Request Method</h3>
-                <div className="flex gap-2">
-                  <Button variant={requestMethod === 'POST' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('POST')} className="rounded-xl px-4">POST</Button>
-                  <Button variant={requestMethod === 'GET' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('GET')} className="rounded-xl px-4">GET</Button>
-                </div>
+                <pre className="text-xs font-mono px-3.5 py-2.5 bg-[#0d1117] text-[#cbd5e1] overflow-x-auto whitespace-pre leading-relaxed">
+                  {ref.code}
+                </pre>
               </div>
+            ))}
+          </div>
 
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">Form Parameters (PHP $_POST / $_GET State)</h3>
-                <div className="space-y-2.5">
-                  {formParams.map((p, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <Input placeholder="Key" value={p.key} onChange={e => {
-                        const newParams = [...formParams];
-                        newParams[idx].key = e.target.value;
-                        setFormParams(newParams);
-                      }} className="h-10 text-xs rounded-xl" />
-                      <Input placeholder="Value" value={p.value} onChange={e => {
-                        const newParams = [...formParams];
-                        newParams[idx].value = e.target.value;
-                        setFormParams(newParams);
-                      }} className="h-10 text-xs rounded-xl" />
-                      <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl shrink-0" onClick={() => {
-                        setFormParams(formParams.filter((_, i) => i !== idx));
-                      }}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => setFormParams([...formParams, { key: '', value: '' }])} className="w-full text-xs mt-2 rounded-xl h-10 border-dashed hover:border-solid">
-                    + Add Form Parameter
-                  </Button>
-                </div>
+          {/* Form Inputs Tab Panel */}
+          <div className={`flex-1 p-5 overflow-auto flex flex-col gap-5 ${rightTab !== 'form' ? 'hidden' : ''}`}>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">HTTP Request Method</h3>
+              <div className="flex gap-2">
+                <Button variant={requestMethod === 'POST' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('POST')} className="rounded-xl px-4">POST</Button>
+                <Button variant={requestMethod === 'GET' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('GET')} className="rounded-xl px-4">GET</Button>
               </div>
             </div>
-          )}
 
-          {rightTab === 'db' && (
-            <div className="flex-1 p-5 overflow-auto flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b pb-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Virtual SQL Inspector</h3>
-                <Button variant="outline" size="sm" onClick={() => {
-                  const sqlFile = files.find(f => f.name.endsWith('.sql'));
-                  if (sqlFile) {
-                    const res = executeSql(sqlFile.code, {});
-                    if (res.success) {
-                      setDb(res.updatedDb);
-                      toast.success('Database reset and re-seeded!');
-                    }
-                  }
-                }} className="text-xs px-3 h-7 rounded-lg">
-                  Reset DB
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">Form Parameters (PHP $_POST / $_GET State)</h3>
+              <div className="space-y-2.5">
+                {formParams.map((p, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Key" value={p.key} onChange={e => {
+                      const newParams = [...formParams];
+                      newParams[idx].key = e.target.value;
+                      setFormParams(newParams);
+                    }} className="h-10 text-xs rounded-xl" />
+                    <Input placeholder="Value" value={p.value} onChange={e => {
+                      const newParams = [...formParams];
+                      newParams[idx].value = e.target.value;
+                      setFormParams(newParams);
+                    }} className="h-10 text-xs rounded-xl" />
+                    <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl shrink-0" onClick={() => {
+                      setFormParams(formParams.filter((_, i) => i !== idx));
+                    }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => setFormParams([...formParams, { key: '', value: '' }])} className="w-full text-xs mt-2 rounded-xl h-10 border-dashed hover:border-solid">
+                  + Add Form Parameter
                 </Button>
               </div>
+            </div>
+          </div>
 
-              {Object.keys(db).length === 0 ? (
-                <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-2xl bg-muted/5 flex flex-col items-center justify-center gap-2 p-6">
-                  <Database className="w-8 h-8 text-muted-foreground/30" />
-                  <p>No tables detected in virtual database.</p>
-                  <p className="text-[10px] max-w-[200px]">Run SQL CREATE TABLE statements inside 'school_db.sql' to view tables.</p>
+          {/* Database Schema Tab Panel */}
+          <div className={`flex-1 p-5 overflow-auto flex flex-col gap-4 ${rightTab !== 'db' ? 'hidden' : ''}`}>
+            <div className="flex items-center justify-between border-b pb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Virtual SQL Inspector</h3>
+              <Button variant="outline" size="sm" onClick={() => {
+                const sqlFile = files.find(f => f.name.endsWith('.sql'));
+                if (sqlFile) {
+                  const res = executeSql(sqlFile.code, {});
+                  if (res.success) {
+                    setDb(res.updatedDb);
+                    toast.success('Database reset and re-seeded!');
+                  }
+                }
+              }} className="text-xs px-3 h-7 rounded-lg">
+                Reset DB
+              </Button>
+            </div>
+
+            {Object.keys(db).length === 0 ? (
+              <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-2xl bg-muted/5 flex flex-col items-center justify-center gap-2 p-6">
+                <Database className="w-8 h-8 text-muted-foreground/30" />
+                <p>No tables detected in virtual database.</p>
+                <p className="text-[10px] max-w-[200px]">Run SQL CREATE TABLE statements inside 'school_db.sql' to view tables.</p>
+              </div>
+            ) : (
+              <div className="space-y-4 flex-1">
+                {Object.entries(db).map(([tName, table]) => (
+                  <div key={tName} className="rounded-xl border overflow-hidden bg-muted/5 shadow-sm">
+                    <div className="px-3.5 py-2 bg-muted/40 border-b flex justify-between items-center">
+                      <span className="font-mono text-xs font-bold text-primary">{tName.toUpperCase()}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{table.rows.length} rows</span>
+                    </div>
+                    <div className="p-3 overflow-x-auto scrollbar-thin">
+                      <table className="w-full text-xs font-mono text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-border/80 text-muted-foreground text-[10px]">
+                            {table.columns.map(col => (
+                              <th key={col} className="pb-1.5 pr-4 font-bold">{col.toUpperCase()}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {table.rows.length === 0 ? (
+                            <tr>
+                              <td colSpan={table.columns.length} className="pt-3 text-center text-muted-foreground italic text-[11px]">
+                                Empty table records
+                              </td>
+                            </tr>
+                          ) : (
+                            table.rows.map((row, idx) => (
+                              <tr key={idx} className="border-b border-border/10 last:border-0 hover:bg-muted/10 transition-colors">
+                                {table.columns.map(col => (
+                                  <td key={col} className="py-1.5 pr-4 whitespace-nowrap text-slate-300">{String(row[col] ?? 'NULL')}</td>
+                                ))}
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Console SQL ad-hoc query runner */}
+                <div className="pt-4 border-t mt-6">
+                  <h4 className="text-[11px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">Execute Ad-Hoc Statement</h4>
+                  <form onSubmit={e => {
+                    e.preventDefault();
+                    const target = e.currentTarget;
+                    const qInput = target.elements.namedItem('q') as HTMLInputElement;
+                    const qVal = qInput?.value.trim();
+                    if (!qVal) return;
+                    const res = executeSql(qVal, db);
+                    if (res.success) {
+                      setDb(res.updatedDb);
+                    }
+                    alert(res.outputString);
+                  }} className="flex gap-2">
+                    <Input name="q" placeholder="SELECT * FROM students WHERE marks >= 80;" className="h-10 text-xs font-mono rounded-xl bg-muted/10" />
+                    <Button type="submit" size="sm" className="rounded-xl px-4">Execute</Button>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Output / Preview Tab Panel */}
+          <div className={`flex-1 flex flex-col ${rightTab !== 'output' ? 'hidden' : ''}`}>
+            <iframe
+              srcDoc={htmlPreview}
+              className={`flex-1 w-full bg-white ${!(isWebLang && showPreview) ? 'hidden' : ''}`}
+              title="HTML Preview"
+              sandbox="allow-scripts"
+            />
+            <div
+              ref={outputRef}
+              className={`flex-1 overflow-auto p-4 bg-[#05070a] shadow-inner font-mono text-xs ${isWebLang && showPreview ? 'hidden' : ''}`}
+              style={{ minHeight: 380 }}
+            >
+              {!hasRun ? (
+                <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-20 py-16">
+                  <Terminal className="w-10 h-10 text-slate-500" />
+                  <p className="text-[11px] text-center text-slate-400 font-sans tracking-wide">
+                    {lang === 'html' ? 'Click Preview to render document layout'
+                      : lang === 'sql' ? 'Click Run SQL to execute DB scripts'
+                      : lang === 'php' ? 'Click Run PHP to execute interpretation'
+                      : lang === 'css' ? 'Click Preview to render styles'
+                      : 'Click Run to compile and execute output'}
+                  </p>
+                </div>
+              ) : output ? (
+                <pre className="leading-relaxed whitespace-pre-wrap break-words p-2"
+                  style={{ color: output.startsWith('⚠') ? '#eab308' : output.includes('Error:') || output.includes('Interpreter Error:') ? '#f85149' : '#3fb950' }}>
+                  {output}
+                </pre>
+              ) : running ? (
+                <div className="flex items-center gap-2 text-slate-400 p-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" /> Compiling output console…
                 </div>
               ) : (
-                <div className="space-y-4 flex-1">
-                  {Object.entries(db).map(([tName, table]) => (
-                    <div key={tName} className="rounded-xl border overflow-hidden bg-muted/5 shadow-sm">
-                      <div className="px-3.5 py-2 bg-muted/40 border-b flex justify-between items-center">
-                        <span className="font-mono text-xs font-bold text-primary">{tName.toUpperCase()}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{table.rows.length} rows</span>
-                      </div>
-                      <div className="p-3 overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-xs font-mono text-left border-collapse">
-                          <thead>
-                            <tr className="border-b border-border/80 text-muted-foreground text-[10px]">
-                              {table.columns.map(col => (
-                                <th key={col} className="pb-1.5 pr-4 font-bold">{col.toUpperCase()}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {table.rows.length === 0 ? (
-                              <tr>
-                                <td colSpan={table.columns.length} className="pt-3 text-center text-muted-foreground italic text-[11px]">
-                                  Empty table records
-                                </td>
-                              </tr>
-                            ) : (
-                              table.rows.map((row, idx) => (
-                                <tr key={idx} className="border-b border-border/10 last:border-0 hover:bg-muted/10 transition-colors">
-                                  {table.columns.map(col => (
-                                    <td key={col} className="py-1.5 pr-4 whitespace-nowrap text-slate-300">{String(row[col] ?? 'NULL')}</td>
-                                  ))}
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Console SQL ad-hoc query runner */}
-                  <div className="pt-4 border-t mt-6">
-                    <h4 className="text-[11px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">Execute Ad-Hoc Statement</h4>
-                    <form onSubmit={e => {
-                      e.preventDefault();
-                      const target = e.currentTarget;
-                      const qInput = target.elements.namedItem('q') as HTMLInputElement;
-                      const qVal = qInput?.value.trim();
-                      if (!qVal) return;
-                      const res = executeSql(qVal, db);
-                      if (res.success) {
-                        setDb(res.updatedDb);
-                      }
-                      alert(res.outputString);
-                    }} className="flex gap-2">
-                      <Input name="q" placeholder="SELECT * FROM students WHERE marks >= 80;" className="h-10 text-xs font-mono rounded-xl bg-muted/10" />
-                      <Button type="submit" size="sm" className="rounded-xl px-4">Execute</Button>
-                    </form>
-                  </div>
-                </div>
+                <p className="italic text-slate-500 p-2">Workspace process completed. No output produced.</p>
               )}
             </div>
-          )}
-
-          {rightTab === 'output' && (
-            isWebLang && showPreview ? (
-              <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
-            ) : (
-              <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#05070a] shadow-inner font-mono text-xs" style={{ minHeight: 380 }}>
-                {!hasRun ? (
-                  <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-20 py-16">
-                    <Terminal className="w-10 h-10 text-slate-500" />
-                    <p className="text-[11px] text-center text-slate-400 font-sans tracking-wide">
-                      {lang === 'html' ? 'Click Preview to render document layout'
-                        : lang === 'sql' ? 'Click Run SQL to execute DB scripts'
-                        : lang === 'php' ? 'Click Run PHP to execute interpretation'
-                        : lang === 'css' ? 'Click Preview to render styles'
-                        : 'Click Run to compile and execute output'}
-                    </p>
-                  </div>
-                ) : output ? (
-                  <pre className="leading-relaxed whitespace-pre-wrap break-words p-2"
-                    style={{ color: output.startsWith('⚠') ? '#eab308' : output.includes('Error:') || output.includes('Interpreter Error:') ? '#f85149' : '#3fb950' }}>
-                    {output}
-                  </pre>
-                ) : running ? (
-                  <div className="flex items-center gap-2 text-slate-400 p-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" /> Compiling output console…
-                  </div>
-                ) : (
-                  <p className="italic text-slate-500 p-2">Workspace process completed. No output produced.</p>
-                )}
-              </div>
-            )
-          )}
+          </div>
         </div>
       </div>
     </StudentLayout>
