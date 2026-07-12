@@ -208,7 +208,7 @@ const HomePage = () => {
         <div className="relative page-container py-16 sm:py-24 text-center">
 
           {/* Main Title */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.15]">
+          <h1 className="font-caveat text-5xl sm:text-6xl md:text-7xl font-bold text-foreground mb-5 tracking-tight leading-[1.15]">
             Your Gateway to
             <span className="bg-gradient-to-r from-primary via-[#3b82f6] to-accent bg-clip-text text-transparent"> A/L Success</span>
           </h1>
@@ -219,17 +219,17 @@ const HomePage = () => {
           </p>
 
           {/* Search Box */}
-          <div className="max-w-xl mx-auto mb-10">
-            <span className="block font-caveat text-2xl sm:text-3xl text-primary/85 mb-3 font-medium animate-bounce-subtle">
+          <div className="max-w-2xl mx-auto mb-10">
+            <span className="block font-caveat text-2xl sm:text-3.5xl text-primary/85 mb-3 font-medium animate-bounce-subtle">
               Which subject are we learning today?
             </span>
-            <div className="relative group transition-all duration-300 focus-within:scale-[1.025] focus-within:shadow-lg focus-within:shadow-primary/10 rounded-2xl">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5.5 h-5.5 text-muted-foreground group-hover:text-primary transition-colors pointer-events-none" />
+            <div className="relative group transition-all duration-300 focus-within:scale-[1.02] focus-within:shadow-lg focus-within:shadow-primary/10 rounded-2xl">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors pointer-events-none" />
               <Input
                 placeholder="Search subjects (Maths, Physics, Commerce...)"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-13 h-15 text-lg rounded-2xl bg-card border-border shadow-sm hover:border-primary/45 focus:border-primary focus:ring-1 focus:ring-primary transition-all font-sans"
+                className="pl-14 h-16 text-lg rounded-2xl bg-card border-border shadow-sm hover:border-primary/45 focus:border-primary focus:ring-1 focus:ring-primary transition-all font-sans"
               />
             </div>
           </div>
