@@ -80,6 +80,7 @@ import AdminAnswerAccessPayments from "./pages/admin/AdminAnswerAccessPayments";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminPrices from "./pages/admin/AdminPrices";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminTraffic from "./pages/admin/AdminTraffic";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -145,6 +146,7 @@ const App = () => (
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<ProtectedRoute requireModerator><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/traffic" element={<ProtectedRoute requireModerator><AdminTraffic /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
                 <Route path="/admin/teachers" element={<ProtectedRoute requireAdmin><AdminTeachers /></ProtectedRoute>} />
                 <Route path="/admin/moderators" element={<ProtectedRoute requireAdmin><AdminModerators /></ProtectedRoute>} />
