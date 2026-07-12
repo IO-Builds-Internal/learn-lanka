@@ -105,6 +105,7 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        caveat: ["Caveat", "cursive"],
       },
     },
   },
