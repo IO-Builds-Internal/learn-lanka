@@ -507,11 +507,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         )}>
           {!collapsed && (
             <Link to="/admin" className="flex items-center gap-2.5 min-w-0 transition-transform active:scale-95">
-              <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-violet-500 shadow-md shadow-primary/25 overflow-hidden flex-shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-xl overflow-hidden flex-shrink-0">
                 {settings?.logo_url ? (
                   <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
                 ) : (
-                  <GraduationCap className="w-4.5 h-4.5 text-white" />
+                  <img src="/logo.png" alt={siteName} className="w-full h-full object-cover" />
                 )}
               </div>
               <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent truncate">
@@ -800,11 +800,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   className="flex items-center gap-2.5"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <div className="flex items-center justify-center w-7.5 h-7.5 rounded-xl bg-gradient-to-tr from-primary to-violet-500 overflow-hidden">
+                  <div className="flex items-center justify-center w-7.5 h-7.5 rounded-xl overflow-hidden">
                     {settings?.logo_url ? (
                       <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
                     ) : (
-                      <GraduationCap className="w-4 h-4 text-white" />
+                      <img src="/logo.png" alt={siteName} className="w-full h-full object-cover" />
                     )}
                   </div>
                   <span className="font-bold text-sm text-sidebar-foreground tracking-wide">{siteName}</span>

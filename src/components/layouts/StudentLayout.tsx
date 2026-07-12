@@ -110,11 +110,11 @@ const StudentLayout = React.forwardRef<HTMLDivElement, StudentLayoutProps>(({ ch
           <div className="flex h-14 sm:h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary overflow-hidden">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden shrink-0">
                 {settings?.logo_url ? (
                   <img src={settings.logo_url} alt={siteName} className="w-full h-full object-contain" />
                 ) : (
-                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+                  <img src="/logo.png" alt={siteName} className="w-full h-full object-cover" />
                 )}
               </div>
               <span className="font-bold text-base sm:text-lg text-foreground hidden xs:block">{siteName}</span>

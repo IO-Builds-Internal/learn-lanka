@@ -71,9 +71,7 @@ const Login = () => {
               <img src={settings.logo_url} alt={siteName} className="w-20 h-20 object-contain mx-auto lg:mx-0 mb-4 rounded-xl" />
             ) : (
               <div className="flex items-center justify-center lg:justify-start mb-4">
-                <div className="w-16 h-16 rounded-xl bg-blue-600 flex items-center justify-center">
-                  <GraduationCap className="w-10 h-10 text-white" />
-                </div>
+                <img src="/logo.png" alt={siteName} className="w-20 h-20 object-cover mx-auto lg:mx-0 rounded-xl" />
               </div>
             )}
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">

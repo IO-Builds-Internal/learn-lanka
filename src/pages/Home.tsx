@@ -156,11 +156,11 @@ const HomePage = () => {
         <div className="page-container py-0">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
                 {settings?.logo_url ? (
                   <img src={settings.logo_url} alt="AL Student" className="w-full h-full object-contain rounded-xl" />
                 ) : (
-                  <GraduationCap className="w-6 h-6 text-primary-foreground" />
+                  <img src="/logo.png" alt="AL Student" className="w-full h-full object-cover rounded-xl" />
                 )}
               </div>
               <div>
@@ -200,45 +200,74 @@ const HomePage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+      <section className="relative overflow-hidden border-b border-border/40">
+        {/* Soft light gradient background with pure CSS grid pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-background to-accent/[0.02]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px', color: 'hsl(var(--primary))' }} />
+
         <div className="relative page-container py-16 sm:py-24 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <BookOpen className="w-4 h-4" />
-            All A/L Subjects in One Place
+          {/* Dynamic Status Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-semibold tracking-wide uppercase mb-6 border border-primary/10">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Live A/L Preparation Platform
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-4 tracking-tight">
+
+          {/* Main Title */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.15]">
             Your Gateway to
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> A/L Success</span>
+            <span className="bg-gradient-to-r from-primary via-[#3b82f6] to-accent bg-clip-text text-transparent"> A/L Success</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Access past papers, expert classes, rank papers, and study materials for every Advanced Level subject — all in one platform.
+
+          {/* Subtitle */}
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            Access past papers, expert classes, rank papers, and study materials for every Advanced Level subject — all in one centralized platform.
           </p>
 
-          {/* Search */}
-          <div className="max-w-lg mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          {/* Search Box */}
+          <div className="max-w-lg mx-auto relative mb-8">
+            <Search className="absolute left-4.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Search subjects..."
+              placeholder="Search subjects (e.g., Maths, Biology, ICT)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 h-12 text-base rounded-xl bg-card border-border shadow-sm"
+              className="pl-12 h-13 text-base rounded-2xl bg-card border-border shadow-sm hover:border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-all"
             />
           </div>
 
           {/* Quick Links */}
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
+          <div className="flex flex-wrap justify-center gap-3">
             <Link to="/papers">
-              <Button variant="outline" className="gap-2 rounded-full">
+              <Button variant="outline" className="gap-2 rounded-xl h-11 px-5 hover:bg-muted font-medium">
                 <FileText className="w-4 h-4" />
                 Past Papers Library
               </Button>
             </Link>
             <Link to="/contact">
-              <Button variant="outline" className="gap-2 rounded-full">
+              <Button variant="outline" className="gap-2 rounded-xl h-11 px-5 hover:bg-muted font-medium">
                 Contact Us
               </Button>
             </Link>
+          </div>
+
+          {/* Minimal Trust Statistics */}
+          <div className="flex justify-center items-center gap-6 sm:gap-12 mt-12 pt-8 border-t border-border/50 max-w-xl mx-auto">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground tracking-tight">10,000+</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Students</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground tracking-tight">500+</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Past Papers</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground tracking-tight">20+</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Subjects</p>
+            </div>
           </div>
         </div>
       </section>
