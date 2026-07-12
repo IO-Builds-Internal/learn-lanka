@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Play, RotateCcw, Copy, Check, Loader2, Terminal, FilePlus, Trash2,
-  Save, Cloud, CloudOff, AlertCircle, Code2, Pencil
+  Save, Cloud, CloudOff, AlertCircle, Code2, Pencil, Database
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import StudentLayout from '@/components/layouts/StudentLayout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
