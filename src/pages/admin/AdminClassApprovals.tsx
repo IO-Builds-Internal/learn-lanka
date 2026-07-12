@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Clock, BookOpen, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, BookOpen, Loader2, Trash2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const AdminClassApprovals = () => {
@@ -38,6 +38,19 @@ const AdminClassApprovals = () => {
     },
     onSuccess: (_, { status }) => {
       toast.success(`Class ${status.toLowerCase()}`);
+      queryClient.invalidateQueries({ queryKey: ['admin-class-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-classes'] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteClassMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('classes').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Class cleared successfully');
       queryClient.invalidateQueries({ queryKey: ['admin-class-approvals'] });
       queryClient.invalidateQueries({ queryKey: ['admin-classes'] });
     },
@@ -83,9 +96,14 @@ const AdminClassApprovals = () => {
             </>
           )}
           {cls.approval_status === 'REJECTED' && (
-            <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ id: cls.id, status: 'APPROVED' })}>
-              Approve
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ id: cls.id, status: 'APPROVED' })}>
+                Approve
+              </Button>
+              <Button size="sm" variant="destructive" className="gap-1" onClick={() => deleteClassMutation.mutate(cls.id)}>
+                <Trash2 className="w-3.5 h-3.5" /> Clear
+              </Button>
+            </div>
           )}
           {cls.approval_status === 'APPROVED' && (
             <Button size="sm" variant="outline" className="text-destructive" onClick={() => updateStatusMutation.mutate({ id: cls.id, status: 'REJECTED' })}>
