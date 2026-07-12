@@ -125,23 +125,42 @@ function greet(person) {
 console.log(greet("Nimal"));
 ` },
   { name: 'student_form.php', sortOrder: 5, code: `<?php
-$name  = "Kamal";
-$marks = 85;
-
-echo "Name  : $name\\n";
-echo "Marks : $marks\\n";
-
-if ($marks >= 75) {
-    echo "Result: Distinction\\n";
-} elseif ($marks >= 55) {
-    echo "Result: Pass\\n";
+// Simulated form handling for A/L Students
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $name = $_POST["student_name"] ?? "Anonymous";
+    $marks = intval($_POST["marks"] ?? 0);
+    
+    echo "--- Student Form Submission ---\\n";
+    echo "Name: $name\\n";
+    echo "Marks: $marks\\n";
+    
+    if ($marks >= 75) {
+        echo "Grade: A (Distinction)\\n";
+    } elseif ($marks >= 65) {
+        echo "Grade: B\\n";
+    } elseif ($marks >= 55) {
+        echo "Grade: C\\n";
+    } else {
+        echo "Grade: F\\n";
+    }
+    
+    // Connect to simulated DB
+    $conn = mysqli_connect("localhost", "root", "", "school");
+    if ($conn) {
+        // Insert submitted student info into our database
+        $randId = rand(10, 99);
+        mysqli_query($conn, "INSERT INTO students VALUES ($randId, '$name', 13, $marks)");
+        echo "Successfully registered student $name in virtual database!\\n";
+        
+        // Print all registered students in database
+        echo "\\n--- Updated Student Database Table ---\\n";
+        $result = mysqli_query($conn, "SELECT * FROM students");
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "ID: " . $row['id'] . " | Name: " . $row['name'] . " | Marks: " . $row['marks'] . "\\n";
+        }
+    }
 } else {
-    echo "Result: Fail\\n";
-}
-
-$students = ["Kamal", "Nimal", "Dilani"];
-foreach ($students as $s) {
-    echo "Student: $s\\n";
+    echo "Please submit the form using POST method from the 'Form Inputs' tab to see form submission in action!";
 }
 ?>` },
   { name: 'school_db.sql', sortOrder: 6, code: `-- SQL Basics
@@ -232,347 +251,27 @@ const LANG_REFS: Record<Language, CodeRef[]> = {
   ],
 };
 
-// ─── PHP Simulator ────────────────────────────────────────────────────────────
-const runPhpInBrowser = (code: string): string => {
-  try {
-    const output: string[] = [];
-    let php = code.replace(/<\?php/gi, '').replace(/\?>/g, '').trim();
-    const lines = php.split('\n');
-    const vars: Record<string, any> = {};
-    const constants: Record<string, any> = {};
-    const functions: Record<string, { params: string[]; body: string[] }> = {};
-
-    const resolveVal = (raw: string): any => {
-      raw = raw.trim();
-      if (raw.toLowerCase() === 'null') return null;
-      if (raw.toLowerCase() === 'true') return true;
-      if (raw.toLowerCase() === 'false') return false;
-      if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
-        let s = raw.slice(1, -1);
-        if (raw.startsWith('"')) s = s.replace(/\$(\w+)/g, (_, n) => String(vars['$' + n] ?? vars[n] ?? ''));
-        return s;
-      }
-      if (!isNaN(Number(raw))) return Number(raw);
-      if (raw.startsWith('$')) return vars[raw] ?? '';
-      if (constants[raw] !== undefined) return constants[raw];
-      if (raw.includes(' . ')) return raw.split(' . ').map(p => resolveVal(p.trim())).join('');
-      const strRepeat = raw.match(/str_repeat\s*\(\s*(.+?),\s*(\d+)\s*\)/i);
-      if (strRepeat) return resolveVal(strRepeat[1]).repeat(Number(strRepeat[2]));
-      const countM = raw.match(/(?:count|sizeof)\s*\(\s*(\$\w+)\s*\)/i);
-      if (countM) { const v = vars[countM[1]]; return Array.isArray(v) ? v.length : 0; }
-      const sumM = raw.match(/array_sum\s*\(\s*(\$\w+)\s*\)/i);
-      if (sumM) { const v = vars[sumM[1]]; return Array.isArray(v) ? v.reduce((a: number, b: number) => a + Number(b), 0) : 0; }
-      const maxM = raw.match(/max\s*\(\s*(\$\w+)\s*\)/i);
-      if (maxM) { const v = vars[maxM[1]]; return Array.isArray(v) ? Math.max(...v.map(Number)) : 0; }
-      const minM = raw.match(/min\s*\(\s*(\$\w+)\s*\)/i);
-      if (minM) { const v = vars[minM[1]]; return Array.isArray(v) ? Math.min(...v.map(Number)) : 0; }
-      const upperM = raw.match(/strtoupper\s*\(\s*(.+)\s*\)/i);
-      if (upperM) return String(resolveVal(upperM[1])).toUpperCase();
-      const lowerM = raw.match(/strtolower\s*\(\s*(.+)\s*\)/i);
-      if (lowerM) return String(resolveVal(lowerM[1])).toLowerCase();
-      const trimM = raw.match(/trim\s*\(\s*(.+)\s*\)/i);
-      if (trimM) return String(resolveVal(trimM[1])).trim();
-      const lenM = raw.match(/strlen\s*\(\s*(.+)\s*\)/i);
-      if (lenM) return String(resolveVal(lenM[1])).length;
-      const replM = raw.match(/str_replace\s*\(\s*(.+?),\s*(.+?),\s*(.+?)\s*\)/i);
-      if (replM) return String(resolveVal(replM[3])).replace(new RegExp(resolveVal(replM[1]), 'g'), resolveVal(replM[2]));
-      const implodeM = raw.match(/implode\s*\(\s*(.+?),\s*(\$\w+)\s*\)/i);
-      if (implodeM) { const arr = vars[implodeM[2]]; return Array.isArray(arr) ? arr.join(resolveVal(implodeM[1])) : ''; }
-      const explodeM = raw.match(/explode\s*\(\s*(.+?),\s*(.+?)\s*\)/i);
-      if (explodeM) return String(resolveVal(explodeM[2])).split(String(resolveVal(explodeM[1])));
-      const roundM = raw.match(/round\s*\(\s*(.+?)\s*(?:,\s*(\d+))?\s*\)/i);
-      if (roundM) { const dp = Number(roundM[2] ?? 0); return Number(Number(resolveVal(roundM[1])).toFixed(dp)); }
-      const mergeM = raw.match(/array_merge\s*\((.+)\)/i);
-      if (mergeM) return mergeM[1].split(',').flatMap(p => { const v = resolveVal(p.trim()); return Array.isArray(v) ? v : [v]; });
-      const funcCallM = raw.match(/^(\w+)\s*\((.*)?\)$/);
-      if (funcCallM && functions[funcCallM[1].toLowerCase()]) {
-        const fn = functions[funcCallM[1].toLowerCase()];
-        const argVals = funcCallM[2] ? funcCallM[2].split(',').map(a => resolveVal(a.trim())) : [];
-        const localVars = { ...vars };
-        fn.params.forEach((p, i) => { localVars[p] = argVals[i] ?? null; });
-        const savedVars = { ...vars };
-        Object.assign(vars, localVars);
-        let ret: any = null;
-        for (const bl of fn.body) {
-          const retM = bl.trim().match(/^return\s+(.+);?$/i);
-          if (retM) { ret = resolveVal(retM[1]); break; }
-          processLine(bl, output);
-        }
-        Object.assign(vars, savedVars);
-        return ret;
-      }
-      try {
-        const safe = raw.replace(/\$(\w+)/g, (_, n) => {
-          const v = vars['$' + n] ?? vars[n] ?? 0;
-          return typeof v === 'number' ? String(v) : `"${v}"`;
-        });
-        // eslint-disable-next-line no-new-func
-        return Function('"use strict"; return (' + safe + ')')();
-      } catch { return raw; }
-    };
-
-    const processLine = (line: string, out: string[]) => {
-      const t = line.trim();
-      if (!t || t.startsWith('//') || t.startsWith('#')) return;
-
-      const defineM = t.match(/^define\s*\(\s*['"](\w+)['"]\s*,\s*(.+?)\s*\);?$/i);
-      if (defineM) { constants[defineM[1]] = resolveVal(defineM[2]); return; }
-
-      // Variable assignment
-      const assignM = t.match(/^(\$\w+)\s*=\s*(.+?)\s*;?$/);
-      if (assignM && !t.startsWith('echo') && !t.startsWith('print')) {
-        const varName = assignM[1];
-        const rawVal = assignM[2].trim();
-        // Check for short array syntax [...]
-        if (rawVal.startsWith('[')) {
-          try {
-            const inner = rawVal.slice(1, rawVal.lastIndexOf(']'));
-            const items = inner.split(',').map(s => s.trim()).filter(Boolean);
-            if (items.every(i => i.match(/^['"].*['"]$/) || !isNaN(Number(i)))) {
-              vars[varName] = items.map(i => resolveVal(i));
-              return;
-            }
-            // Associative array: "key"=>val
-            if (inner.includes('=>')) {
-              const obj: Record<string, any> = {};
-              items.forEach(item => {
-                const [k, v] = item.split('=>').map(x => x.trim());
-                obj[resolveVal(k)] = resolveVal(v);
-              });
-              vars[varName] = obj;
-              return;
-            }
-          } catch { /* fall through */ }
-        }
-        // array() syntax
-        const arrayM = rawVal.match(/^array\s*\((.+)\)$/i);
-        if (arrayM) {
-          const inner = arrayM[1];
-          const items = inner.split(',').map(s => s.trim()).filter(Boolean);
-          if (inner.includes('=>')) {
-            const obj: Record<string, any> = {};
-            items.forEach(item => {
-              const [k, v] = item.split('=>').map(x => x.trim());
-              obj[resolveVal(k)] = resolveVal(v);
-            });
-            vars[varName] = obj;
-          } else {
-            vars[varName] = items.map(i => resolveVal(i));
-          }
-          return;
-        }
-        vars[varName] = resolveVal(rawVal);
-        return;
-      }
-
-      // echo / print
-      const echoM = t.match(/^(?:echo|print)\s+(.+?)\s*;?$/i);
-      if (echoM) {
-        const parts = echoM[1].split(/\s*,\s*/);
-        const result = parts.map(p => String(resolveVal(p.trim()) ?? '')).join('');
-        out.push(result.replace(/\\n/g, '\n'));
-        return;
-      }
-
-      // printf
-      const printfM = t.match(/^printf\s*\(\s*(.+)\s*\)\s*;?$/i);
-      if (printfM) {
-        const args = printfM[1].split(',').map(s => s.trim());
-        let fmt = String(resolveVal(args[0]));
-        const vals = args.slice(1).map(a => resolveVal(a));
-        let vi = 0;
-        fmt = fmt.replace(/%([sdfc])/g, (_, spec) => {
-          const v = vals[vi++];
-          if (spec === 'd') return String(Math.round(Number(v)));
-          if (spec === 'f') return Number(v).toFixed(6);
-          if (spec === 'c') return String.fromCharCode(Number(v));
-          return String(v);
-        });
-        out.push(fmt.replace(/\\n/g, '\n'));
-        return;
-      }
-    };
-
-    // Multi-line structure parser
-    let i = 0;
-    const blockStack: string[] = [];
-    const bodyStack: string[][] = [];
-    const condStack: boolean[] = [];
-    let inFunction = false;
-    let funcName = '';
-    let funcParams: string[] = [];
-    let funcBody: string[] = [];
-    let skipElse = false;
-
-    while (i < lines.length) {
-      const rawLine = lines[i];
-      const t = rawLine.trim();
-      i++;
-
-      if (!t || t.startsWith('//') || t.startsWith('#')) continue;
-
-      // Function definition
-      const funcDefM = t.match(/^function\s+(\w+)\s*\(([^)]*)\)\s*\{?$/i);
-      if (funcDefM) {
-        inFunction = true;
-        funcName = funcDefM[1].toLowerCase();
-        funcParams = funcDefM[2] ? funcDefM[2].split(',').map(p => p.trim()) : [];
-        funcBody = [];
-        if (!t.endsWith('{')) { while (i < lines.length && !lines[i].trim().startsWith('{')) i++; i++; }
-        let depth = 1;
-        while (i < lines.length && depth > 0) {
-          const fl = lines[i]; i++;
-          if (fl.includes('{')) depth++;
-          if (fl.includes('}')) { depth--; if (depth === 0) break; }
-          funcBody.push(fl);
-        }
-        functions[funcName] = { params: funcParams, body: funcBody };
-        inFunction = false;
-        continue;
-      }
-
-      if (inFunction) { funcBody.push(rawLine); continue; }
-
-      // if / elseif / else
-      const ifM = t.match(/^if\s*\((.+)\)\s*\{?$/i);
-      if (ifM) {
-        const cond = ifM[1];
-        const condM = cond.match(/(\$\w+|\w+)\s*(===|!==|>=|<=|>|<|==|!=)\s*(.+)/);
-        let result = false;
-        if (condM) {
-          const lv = resolveVal(condM[1]), op = condM[2], rv = resolveVal(condM[3]);
-          if (op === '>'  || op === '>=') result = Number(lv) > Number(rv) || (op === '>=' && Number(lv) >= Number(rv));
-          else if (op === '<' || op === '<=') result = Number(lv) < Number(rv) || (op === '<=' && Number(lv) <= Number(rv));
-          else if (op === '==' || op === '===') result = lv == rv;
-          else if (op === '!=' || op === '!==') result = lv != rv;
-        }
-        blockStack.push('if');
-        condStack.push(result);
-        bodyStack.push([]);
-        continue;
-      }
-
-      const elseifM = t.match(/^}\s*elseif\s*\((.+)\)\s*\{?$/i);
-      if (elseifM) {
-        const prevCond = condStack[condStack.length - 1];
-        if (!prevCond && !skipElse) {
-          const cond = elseifM[1];
-          const condM = cond.match(/(\$\w+|\w+)\s*(===|!==|>=|<=|>|<|==|!=)\s*(.+)/);
-          let result = false;
-          if (condM) {
-            const lv = resolveVal(condM[1]), op = condM[2], rv = resolveVal(condM[3]);
-            if (op === '>' || op === '>=') result = Number(lv) > Number(rv) || (op === '>=' && Number(lv) >= Number(rv));
-            else if (op === '<' || op === '<=') result = Number(lv) < Number(rv) || (op === '<=' && Number(lv) <= Number(rv));
-            else if (op === '==' || op === '===') result = lv == rv;
-            else if (op === '!=' || op === '!==') result = lv != rv;
-          }
-          condStack[condStack.length - 1] = result;
-        } else {
-          skipElse = true;
-        }
-        bodyStack[bodyStack.length - 1] = [];
-        continue;
-      }
-
-      if (t.match(/^}\s*else\s*\{?$/i)) {
-        const prevCond = condStack[condStack.length - 1];
-        condStack[condStack.length - 1] = !prevCond && !skipElse;
-        bodyStack[bodyStack.length - 1] = [];
-        skipElse = false;
-        continue;
-      }
-
-      if (t === '}') {
-        const block = blockStack.pop();
-        const cond = condStack.pop();
-        const body = bodyStack.pop() ?? [];
-        skipElse = false;
-        if (block === 'if' && cond) { body.forEach(l => processLine(l, output)); }
-        if (block === 'foreach') { /* handled inline */ }
-        continue;
-      }
-
-      // foreach
-      const foreachM = t.match(/^foreach\s*\(\s*(\$\w+)\s+as\s+(?:(\$\w+)\s*=>\s*)?(\$\w+)\s*\)\s*\{?$/i);
-      if (foreachM) {
-        const arrVar = foreachM[1];
-        const keyVar = foreachM[2] ?? null;
-        const valVar = foreachM[3];
-        const arr = vars[arrVar];
-        const loopBody: string[] = [];
-        let depth = 1;
-        while (i < lines.length && depth > 0) {
-          const fl = lines[i]; i++;
-          if (fl.includes('{')) depth++;
-          if (fl.trim() === '}') { depth--; if (depth === 0) break; }
-          loopBody.push(fl);
-        }
-        if (Array.isArray(arr)) {
-          arr.forEach((v, k) => {
-            if (keyVar) vars[keyVar] = k;
-            vars[valVar] = v;
-            loopBody.forEach(l => processLine(l, output));
-          });
-        } else if (arr && typeof arr === 'object') {
-          Object.entries(arr).forEach(([k, v]) => {
-            if (keyVar) vars[keyVar] = k;
-            vars[valVar] = v;
-            loopBody.forEach(l => processLine(l, output));
-          });
-        }
-        continue;
-      }
-
-      // for loop
-      const forM = t.match(/^for\s*\(\s*(\$\w+)\s*=\s*(.+?);\s*(\$\w+)\s*(<|<=|>|>=|!=)\s*(.+?);\s*(\$\w+)(\+\+|--|\+=\s*.+|-=\s*.+)\s*\)\s*\{?$/i);
-      if (forM) {
-        vars[forM[1]] = resolveVal(forM[2]);
-        const loopBody: string[] = [];
-        let depth = 1;
-        while (i < lines.length && depth > 0) {
-          const fl = lines[i]; i++;
-          if (fl.includes('{')) depth++;
-          if (fl.trim() === '}') { depth--; if (depth === 0) break; }
-          loopBody.push(fl);
-        }
-        let guard = 0;
-        while (guard++ < 10000) {
-          const lv = Number(vars[forM[3]]), rv = Number(resolveVal(forM[5]));
-          let ok = false;
-          if (forM[4] === '<') ok = lv < rv;
-          else if (forM[4] === '<=') ok = lv <= rv;
-          else if (forM[4] === '>') ok = lv > rv;
-          else if (forM[4] === '>=') ok = lv >= rv;
-          else if (forM[4] === '!=') ok = lv !== rv;
-          if (!ok) break;
-          loopBody.forEach(l => processLine(l, output));
-          if (forM[7] === '++') vars[forM[6]] = Number(vars[forM[6]]) + 1;
-          else if (forM[7] === '--') vars[forM[6]] = Number(vars[forM[6]]) - 1;
-          else { const incM = forM[7].match(/(\+|-)\s*=\s*(.+)/); if (incM) vars[forM[6]] = Number(vars[forM[6]]) + (incM[1] === '+' ? 1 : -1) * Number(resolveVal(incM[2])); }
-        }
-        continue;
-      }
-
-      if (blockStack.length > 0) {
-        bodyStack[bodyStack.length - 1]?.push(rawLine);
-      } else {
-        processLine(rawLine, output);
-      }
-    }
-
-    return output.join('') || '(no output)';
-  } catch (e: any) {
-    return `Error: ${e.message}`;
-  }
+// ─── Shared Virtual Database & SQL Engine ─────────────────────────────────────
+type DbTable = {
+  columns: string[];
+  rows: Record<string, any>[];
 };
+type VirtualDb = Record<string, DbTable>;
 
-// ─── SQL Simulator ────────────────────────────────────────────────────────────
-const runSqlInBrowser = (code: string): string => {
+interface SqlResult {
+  success: boolean;
+  rows?: any[];
+  error?: string;
+  outputString: string;
+  updatedDb: VirtualDb;
+}
+
+const executeSql = (code: string, currentDb: VirtualDb): SqlResult => {
+  const db: VirtualDb = JSON.parse(JSON.stringify(currentDb));
+  const output: string[] = [];
+  let lastRows: any[] | undefined = undefined;
+
   try {
-    const tables: Record<string, { columns: string[]; rows: Record<string, any>[] }> = {};
-    const output: string[] = [];
-
-    // Split statements on semicolons (ignoring within strings)
     const stmts: string[] = [];
     let curr = '', depth = 0, inStr = false, strChar = '';
     for (const ch of code) {
@@ -586,7 +285,6 @@ const runSqlInBrowser = (code: string): string => {
     if (curr.trim()) stmts.push(curr.trim());
 
     for (const rawStmt of stmts) {
-      // Strip comments
       const stmt = rawStmt.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
       if (!stmt) continue;
 
@@ -602,7 +300,7 @@ const runSqlInBrowser = (code: string): string => {
             columns.push(cName.toLowerCase());
           }
         }
-        tables[tName] = { columns, rows: [] };
+        db[tName] = { columns, rows: [] };
         output.push(`Table '${createM[1]}' created.`);
         continue;
       }
@@ -611,7 +309,7 @@ const runSqlInBrowser = (code: string): string => {
       const insertM = stmt.match(/INSERT\s+INTO\s+(\w+)\s*(?:\(([^)]+)\))?\s*VALUES\s*(.+)/is);
       if (insertM) {
         const tName = insertM[1].toLowerCase();
-        const table = tables[tName];
+        const table = db[tName];
         if (!table) { output.push(`Error: Table '${insertM[1]}' not found.`); continue; }
         const colNames = insertM[2] ? insertM[2].split(',').map(s => s.trim().toLowerCase()) : table.columns;
         const valsPart = insertM[3];
@@ -635,7 +333,7 @@ const runSqlInBrowser = (code: string): string => {
       const updateM = stmt.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+))?$/is);
       if (updateM) {
         const tName = updateM[1].toLowerCase();
-        const table = tables[tName];
+        const table = db[tName];
         if (!table) { output.push(`Error: Table '${updateM[1]}' not found.`); continue; }
         const setAssigns = updateM[2].split(',').map(s => s.trim());
         const whereStr = updateM[3];
@@ -666,7 +364,7 @@ const runSqlInBrowser = (code: string): string => {
       const deleteM = stmt.match(/DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/is);
       if (deleteM) {
         const tName = deleteM[1].toLowerCase();
-        const table = tables[tName];
+        const table = db[tName];
         if (!table) { output.push(`Error: Table '${deleteM[1]}' not found.`); continue; }
         const before = table.rows.length;
         if (deleteM[2]) {
@@ -691,7 +389,7 @@ const runSqlInBrowser = (code: string): string => {
       const aggM = stmt.match(/SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))?(?:\s+GROUP\s+BY\s+(.+?))?(?:\s+ORDER\s+BY\s+(.+?)(?:\s+(ASC|DESC))?)?$/is);
       if (aggM && /\b(COUNT|SUM|AVG|MAX|MIN)\s*\(/i.test(aggM[1])) {
         const tName = aggM[2].toLowerCase();
-        const table = tables[tName];
+        const table = db[tName];
         if (!table) { output.push(`Error: Table '${aggM[2]}' not found.`); continue; }
         let rows = [...table.rows];
         if (aggM[3]) {
@@ -738,9 +436,11 @@ const runSqlInBrowser = (code: string): string => {
               res[alias] = gr[0]?.[part.toLowerCase()] ?? part;
             }
           });
+          res[alias] = res[alias] ?? null;
           resultRows.push(res);
         });
 
+        lastRows = resultRows;
         if (resultRows.length === 0) { output.push(`(0 rows)`); continue; }
         const displayCols = Object.keys(resultRows[0]);
         const widths = displayCols.map(c => Math.max(c.length, ...resultRows.map(r => String(r[c] ?? '').length)));
@@ -758,7 +458,7 @@ const runSqlInBrowser = (code: string): string => {
         const fromMatch = stmt.match(/\bFROM\s+(\w+)/i);
         if (!fromMatch) { output.push('-- SELECT without FROM not supported'); continue; }
         const tName = fromMatch[1].toLowerCase();
-        const table = tables[tName];
+        const table = db[tName];
         if (!table) { output.push(`Error: Table '${fromMatch[1]}' not found.`); continue; }
         let rows = [...table.rows];
 
@@ -804,6 +504,12 @@ const runSqlInBrowser = (code: string): string => {
         const displayCols = selCols === '*' ? Object.keys(rows[0]) :
           selCols.split(',').map(c => c.trim().toLowerCase().replace(/.*\s+as\s+/i, '').split(/\s+/).pop() || c.trim().toLowerCase());
 
+        lastRows = rows.map(r => {
+          const res: Record<string, any> = {};
+          displayCols.forEach(col => { res[col] = r[col] ?? null; });
+          return res;
+        });
+
         const widths = displayCols.map(c => Math.max(c.length, ...rows.map(r => String(r[c] ?? '').length)));
         const header = '| ' + displayCols.map((c, i) => c.padEnd(widths[i])).join(' | ') + ' |';
         const divider = '+-' + widths.map(w => '-'.repeat(w)).join('-+-') + '-+';
@@ -817,11 +523,766 @@ const runSqlInBrowser = (code: string): string => {
       output.push(`-- Statement skipped (not supported): ${stmt.substring(0, 60)}`);
     }
 
-    return output.join('\n') || '(no output)';
+    return {
+      success: true,
+      rows: lastRows,
+      outputString: output.join('\n') || '(no output)',
+      updatedDb: db
+    };
   } catch (e: any) {
-    return `Error: ${e.message}`;
+    return {
+      success: false,
+      error: e.message,
+      outputString: `Error: ${e.message}`,
+      updatedDb: currentDb
+    };
   }
 };
+
+// ─── AST PHP Parser & Interpreter ─────────────────────────────────────────────
+interface Stmt {
+  type: 'simple' | 'if' | 'while' | 'for' | 'foreach' | 'function';
+  raw: string;
+  condition?: string;
+  body?: Stmt[];
+  elseifs?: { condition: string; body: Stmt[] }[];
+  elseBody?: Stmt[];
+  funcName?: string;
+  funcParams?: string[];
+  loopInit?: string;
+  loopCond?: string;
+  loopStep?: string;
+  foreachArr?: string;
+  foreachKey?: string;
+  foreachVal?: string;
+}
+
+function startsWithWord(code: string, index: number, word: string): boolean {
+  if (!code.startsWith(word, index)) return false;
+  const nextChar = code[index + word.length];
+  return !nextChar || !/[a-zA-Z0-9_]/.test(nextChar);
+}
+
+function parseParentheses(code: string, index: number): { cond: string; nextIndex: number } {
+  while (index < code.length && code[index] !== '(') index++;
+  index++;
+  let depth = 1;
+  let cond = '';
+  let inStr = false;
+  let strChar = '';
+  while (index < code.length && depth > 0) {
+    const char = code[index];
+    if (inStr) {
+      cond += char;
+      if (char === '\\' && index + 1 < code.length) {
+        cond += code[index + 1];
+        index += 2;
+        continue;
+      }
+      if (char === strChar) inStr = false;
+      index++;
+    } else {
+      if (char === '"' || char === "'") {
+        inStr = true;
+        strChar = char;
+        cond += char;
+        index++;
+      } else if (char === '(') {
+        depth++;
+        cond += char;
+        index++;
+      } else if (char === ')') {
+        depth--;
+        if (depth > 0) cond += char;
+        index++;
+      } else {
+        cond += char;
+        index++;
+      }
+    }
+  }
+  return { cond: cond.trim(), nextIndex: index };
+}
+
+function parseBraces(code: string, index: number): { bodyCode: string; nextIndex: number } {
+  while (index < code.length && code[index] !== '{') index++;
+  index++;
+  let depth = 1;
+  let bodyCode = '';
+  let inStr = false;
+  let strChar = '';
+  while (index < code.length && depth > 0) {
+    const char = code[index];
+    if (inStr) {
+      bodyCode += char;
+      if (char === '\\' && index + 1 < code.length) {
+        bodyCode += code[index + 1];
+        index += 2;
+        continue;
+      }
+      if (char === strChar) inStr = false;
+      index++;
+    } else {
+      if (char === '"' || char === "'") {
+        inStr = true;
+        strChar = char;
+        bodyCode += char;
+        index++;
+      } else if (char === '{') {
+        depth++;
+        bodyCode += char;
+        index++;
+      } else if (char === '}') {
+        depth--;
+        if (depth > 0) bodyCode += char;
+        index++;
+      } else {
+        bodyCode += char;
+        index++;
+      }
+    }
+  }
+  return { bodyCode: bodyCode.trim(), nextIndex: index };
+}
+
+function parseBlock(code: string): Stmt[] {
+  const stmts: Stmt[] = [];
+  let i = 0;
+  while (i < code.length) {
+    while (i < code.length && /\s/.test(code[i])) i++;
+    if (i >= code.length) break;
+
+    if (startsWithWord(code, i, 'if')) {
+      i += 2;
+      const { cond, nextIndex } = parseParentheses(code, i);
+      i = nextIndex;
+      const { bodyCode, nextIndex: bodyEnd } = parseBraces(code, i);
+      i = bodyEnd;
+      const body = parseBlock(bodyCode);
+
+      const elseifs: { condition: string; body: Stmt[] }[] = [];
+      let elseBody: Stmt[] | undefined = undefined;
+
+      while (true) {
+        let tempI = i;
+        while (tempI < code.length && /\s/.test(code[tempI])) tempI++;
+        if (startsWithWord(code, tempI, 'elseif')) {
+          i = tempI + 6;
+          const { cond: eiCond, nextIndex: eiNext } = parseParentheses(code, i);
+          i = eiNext;
+          const { bodyCode: eiBodyCode, nextIndex: eiBodyEnd } = parseBraces(code, i);
+          i = eiBodyEnd;
+          elseifs.push({ condition: eiCond, body: parseBlock(eiBodyCode) });
+        } else if (startsWithWord(code, tempI, 'else')) {
+          i = tempI + 4;
+          const { bodyCode: eBodyCode, nextIndex: eBodyEnd } = parseBraces(code, i);
+          i = eBodyEnd;
+          elseBody = parseBlock(eBodyCode);
+          break;
+        } else {
+          break;
+        }
+      }
+
+      stmts.push({ type: 'if', raw: '', condition: cond, body, elseifs, elseBody });
+    } else if (startsWithWord(code, i, 'while')) {
+      i += 5;
+      const { cond, nextIndex } = parseParentheses(code, i);
+      i = nextIndex;
+      const { bodyCode, nextIndex: bodyEnd } = parseBraces(code, i);
+      i = bodyEnd;
+      stmts.push({ type: 'while', raw: '', condition: cond, body: parseBlock(bodyCode) });
+    } else if (startsWithWord(code, i, 'for')) {
+      i += 3;
+      const { cond: loopHeader, nextIndex } = parseParentheses(code, i);
+      i = nextIndex;
+      const { bodyCode, nextIndex: bodyEnd } = parseBraces(code, i);
+      i = bodyEnd;
+
+      const parts = loopHeader.split(';');
+      stmts.push({
+        type: 'for',
+        raw: '',
+        loopInit: parts[0]?.trim(),
+        loopCond: parts[1]?.trim(),
+        loopStep: parts[2]?.trim(),
+        body: parseBlock(bodyCode)
+      });
+    } else if (startsWithWord(code, i, 'foreach')) {
+      i += 7;
+      const { cond: loopHeader, nextIndex } = parseParentheses(code, i);
+      i = nextIndex;
+      const { bodyCode, nextIndex: bodyEnd } = parseBraces(code, i);
+      i = bodyEnd;
+
+      const m = loopHeader.match(/^([^\s]+)\s+as\s+(?:([^\s]+)\s*=>\s*)?([^\s]+)$/i);
+      if (m) {
+        stmts.push({
+          type: 'foreach',
+          raw: '',
+          foreachArr: m[1],
+          foreachKey: m[2],
+          foreachVal: m[3],
+          body: parseBlock(bodyCode)
+        });
+      }
+    } else if (startsWithWord(code, i, 'function')) {
+      i += 8;
+      while (i < code.length && /\s/.test(code[i])) i++;
+      let funcName = '';
+      while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) {
+        funcName += code[i];
+        i++;
+      }
+      const { cond: paramsStr, nextIndex } = parseParentheses(code, i);
+      i = nextIndex;
+      const { bodyCode, nextIndex: bodyEnd } = parseBraces(code, i);
+      i = bodyEnd;
+      const funcParams = paramsStr.split(',').map(s => s.trim()).filter(Boolean);
+      stmts.push({
+        type: 'function',
+        raw: '',
+        funcName,
+        funcParams,
+        body: parseBlock(bodyCode)
+      });
+    } else {
+      let raw = '';
+      let inStr = false;
+      let strChar = '';
+      while (i < code.length) {
+        const char = code[i];
+        raw += char;
+        i++;
+        if (inStr) {
+          if (char === '\\' && i < code.length) {
+            raw += code[i];
+            i++;
+          } else if (char === strChar) {
+            inStr = false;
+          }
+        } else {
+          if (char === '"' || char === "'") {
+            inStr = true;
+            strChar = char;
+          } else if (char === ';') {
+            break;
+          }
+        }
+      }
+      raw = raw.trim();
+      if (raw) {
+        stmts.push({ type: 'simple', raw });
+      }
+    }
+  }
+  return stmts;
+}
+
+function resolveValue(
+  expr: string,
+  vars: Record<string, any>,
+  constants: Record<string, any>,
+  dbState: VirtualDb,
+  setDbState?: (db: VirtualDb) => void
+): any {
+  expr = expr.trim();
+  if (!expr) return null;
+
+  if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
+    let s = expr.slice(1, -1);
+    if (expr.startsWith('"')) {
+      s = s.replace(/\{?\$(\w+)\}?/g, (_, n) => {
+        const key = '$' + n;
+        return String(vars[key] !== undefined ? vars[key] : (vars[n] !== undefined ? vars[n] : ''));
+      });
+    }
+    return s;
+  }
+
+  const lower = expr.toLowerCase();
+  if (lower === 'true') return true;
+  if (lower === 'false') return false;
+  if (lower === 'null') return null;
+  if (!isNaN(Number(expr))) return Number(expr);
+
+  if (expr.startsWith('[') && expr.endsWith(']')) {
+    const inner = expr.slice(1, -1).trim();
+    return parseArrayItems(inner, vars, constants, dbState);
+  }
+  const arrayM = expr.match(/^array\s*\((.*)\)$/is);
+  if (arrayM) {
+    return parseArrayItems(arrayM[1].trim(), vars, constants, dbState);
+  }
+
+  const funcCallM = expr.match(/^(\w+)\s*\((.*)\)$/is);
+  if (funcCallM) {
+    const fName = funcCallM[1].toLowerCase();
+    const argsStr = funcCallM[2].trim();
+    const argExprs: string[] = [];
+    let curr = '', pDepth = 0, inStr = false, strChar = '';
+    for (let c = 0; c < argsStr.length; c++) {
+      const ch = argsStr[c];
+      if (!inStr && (ch === "'" || ch === '"')) { inStr = true; strChar = ch; }
+      else if (inStr && ch === strChar) { inStr = false; }
+      if (!inStr && ch === '(') pDepth++;
+      if (!inStr && ch === ')') pDepth--;
+      if (!inStr && ch === ',' && pDepth === 0) {
+        argExprs.push(curr.trim());
+        curr = '';
+      } else {
+        curr += ch;
+      }
+    }
+    if (curr.trim()) argExprs.push(curr.trim());
+    const argVals = argExprs.map(a => resolveValue(a, vars, constants, dbState, setDbState));
+
+    if (fName === 'mysqli_connect') {
+      return { __type: 'connection', dbName: String(argVals[3] ?? '') };
+    }
+    if (fName === 'mysqli_query') {
+      const sql = String(argVals[1] ?? '');
+      const res = executeSql(sql, dbState);
+      if (setDbState && res.success) {
+        setDbState(res.updatedDb);
+      }
+      return { __type: 'result', rows: res.rows || [], pointer: 0, error: res.error };
+    }
+    if (fName === 'mysqli_fetch_assoc') {
+      const resObj = argVals[0];
+      if (resObj && resObj.__type === 'result') {
+        const row = resObj.rows[resObj.pointer];
+        if (row !== undefined) {
+          resObj.pointer++;
+          return row;
+        }
+      }
+      return null;
+    }
+    if (fName === 'mysqli_num_rows') {
+      const resObj = argVals[0];
+      return resObj && resObj.__type === 'result' ? resObj.rows.length : 0;
+    }
+    if (fName === 'mysqli_error') {
+      return '';
+    }
+
+    if (fName === 'count' || fName === 'sizeof') {
+      const arr = argVals[0];
+      return Array.isArray(arr) ? arr.length : (arr && typeof arr === 'object' ? Object.keys(arr).length : 0);
+    }
+    if (fName === 'array_sum') {
+      const arr = argVals[0];
+      return Array.isArray(arr) ? arr.reduce((a, b) => Number(a) + Number(b), 0) : 0;
+    }
+    if (fName === 'max') {
+      const val = argVals.length === 1 && Array.isArray(argVals[0]) ? argVals[0] : argVals;
+      return Math.max(...val.map(Number));
+    }
+    if (fName === 'min') {
+      const val = argVals.length === 1 && Array.isArray(argVals[0]) ? argVals[0] : argVals;
+      return Math.min(...val.map(Number));
+    }
+    if (fName === 'strtoupper') return String(argVals[0] ?? '').toUpperCase();
+    if (fName === 'strtolower') return String(argVals[0] ?? '').toLowerCase();
+    if (fName === 'strlen') return String(argVals[0] ?? '').length;
+    if (fName === 'trim') return String(argVals[0] ?? '').trim();
+    if (fName === 'str_repeat') return String(argVals[0] ?? '').repeat(Number(argVals[1] ?? 0));
+    if (fName === 'implode') return Array.isArray(argVals[1]) ? argVals[1].join(String(argVals[0])) : '';
+    if (fName === 'explode') return String(argVals[1] ?? '').split(String(argVals[0] ?? ''));
+    if (fName === 'round') return Number(Number(argVals[0] ?? 0).toFixed(Number(argVals[1] ?? 0)));
+    if (fName === 'intval') return parseInt(argVals[0] ?? 0) || 0;
+    if (fName === 'floatval') return parseFloat(argVals[0] ?? 0) || 0.0;
+    if (fName === 'rand') return Math.floor(Math.random() * (Number(argVals[1] ?? 100) - Number(argVals[0] ?? 0) + 1)) + Number(argVals[0] ?? 0);
+  }
+
+  if (expr.startsWith('$')) {
+    const bracketIndex = expr.indexOf('[');
+    if (bracketIndex !== -1 && expr.endsWith(']')) {
+      const varName = expr.substring(0, bracketIndex).trim();
+      const innerIndex = expr.substring(bracketIndex + 1, expr.length - 1).trim();
+      const resolvedIndex = resolveValue(innerIndex, vars, constants, dbState, setDbState);
+      const arr = vars[varName];
+      return arr ? arr[resolvedIndex] : null;
+    }
+    return vars[expr] !== undefined ? vars[expr] : (vars[expr.substring(1)] !== undefined ? vars[expr.substring(1)] : null);
+  }
+
+  const ops = [
+    { op: '||', fn: (a: any, b: any) => !!a || !!b },
+    { op: '&&', fn: (a: any, b: any) => !!a && !!b },
+    { op: '===', fn: (a: any, b: any) => a === b },
+    { op: '==', fn: (a: any, b: any) => a == b },
+    { op: '!==', fn: (a: any, b: any) => a !== b },
+    { op: '!=', fn: (a: any, b: any) => a != b },
+    { op: '<=', fn: (a: any, b: any) => Number(a) <= Number(b) },
+    { op: '>=', fn: (a: any, b: any) => Number(a) >= Number(b) },
+    { op: '<', fn: (a: any, b: any) => Number(a) < Number(b) },
+    { op: '>', fn: (a: any, b: any) => Number(a) > Number(b) },
+    { op: '.', fn: (a: any, b: any) => String(a) + String(b) },
+    { op: '+', fn: (a: any, b: any) => Number(a) + Number(b) },
+    { op: '-', fn: (a: any, b: any) => Number(a) - Number(b) },
+    { op: '*', fn: (a: any, b: any) => Number(a) * Number(b) },
+    { op: '/', fn: (a: any, b: any) => Number(a) / Number(b) },
+  ];
+
+  for (const { op, fn } of ops) {
+    let pDepth = 0, inStr = false, strChar = '';
+    for (let c = expr.length - 1; c >= 0; c--) {
+      const ch = expr[c];
+      if (!inStr && (ch === "'" || ch === '"')) { inStr = true; strChar = ch; }
+      else if (inStr && ch === strChar) { inStr = false; }
+      if (!inStr && ch === ')') pDepth++;
+      if (!inStr && ch === '(') pDepth--;
+      if (!inStr && pDepth === 0) {
+        if (expr.startsWith(op, c)) {
+          if (op === '=' && (expr[c - 1] === '=' || expr[c + 1] === '=')) continue;
+          if (op === '<' && expr[c + 1] === '=') continue;
+          if (op === '>' && expr[c + 1] === '=') continue;
+          if (op === '!' && expr[c + 1] === '=') continue;
+
+          if (op === '.' && !isNaN(Number(expr[c - 1])) && !isNaN(Number(expr[c + 1]))) {
+            continue;
+          }
+
+          const left = expr.substring(0, c).trim();
+          const right = expr.substring(c + op.length).trim();
+          return fn(
+            resolveValue(left, vars, constants, dbState, setDbState),
+            resolveValue(right, vars, constants, dbState, setDbState)
+          );
+        }
+      }
+    }
+  }
+
+  if (expr.startsWith('!')) {
+    return !resolveValue(expr.substring(1), vars, constants, dbState, setDbState);
+  }
+
+  if (expr.startsWith('(') && expr.endsWith(')')) {
+    return resolveValue(expr.slice(1, -1), vars, constants, dbState, setDbState);
+  }
+
+  return expr;
+}
+
+function parseArrayItems(
+  inner: string,
+  vars: Record<string, any>,
+  constants: Record<string, any>,
+  dbState: VirtualDb
+): any {
+  if (!inner) return [];
+  const items: string[] = [];
+  let curr = '', pDepth = 0, inStr = false, strChar = '';
+  for (let c = 0; c < inner.length; c++) {
+    const ch = inner[c];
+    if (!inStr && (ch === "'" || ch === '"')) { inStr = true; strChar = ch; }
+    else if (inStr && ch === strChar) { inStr = false; }
+    if (!inStr && ch === '(') pDepth++;
+    if (!inStr && ch === ')') pDepth--;
+    if (!inStr && ch === ',' && pDepth === 0) {
+      items.push(curr.trim());
+      curr = '';
+    } else {
+      curr += ch;
+    }
+  }
+  if (curr.trim()) items.push(curr.trim());
+
+  if (items.some(it => it.includes('=>'))) {
+    const obj: Record<string, any> = {};
+    items.forEach(it => {
+      const idx = it.indexOf('=>');
+      if (idx !== -1) {
+        const k = it.substring(0, idx).trim();
+        const v = it.substring(idx + 2).trim();
+        obj[resolveValue(k, vars, constants, dbState)] = resolveValue(v, vars, constants, dbState);
+      }
+    });
+    return obj;
+  } else {
+    return items.map(it => resolveValue(it, vars, constants, dbState));
+  }
+}
+
+interface EvalContext {
+  vars: Record<string, any>;
+  constants: Record<string, any>;
+  functions: Record<string, Stmt>;
+  output: string[];
+  dbState: VirtualDb;
+  setDbState?: (db: VirtualDb) => void;
+  hasReturned?: boolean;
+  returnValue?: any;
+}
+
+function evaluatePhpBlock(stmts: Stmt[], ctx: EvalContext): void {
+  for (const stmt of stmts) {
+    if (ctx.hasReturned) return;
+
+    if (stmt.type === 'function') {
+      if (stmt.funcName) {
+        ctx.functions[stmt.funcName.toLowerCase()] = stmt;
+      }
+      continue;
+    }
+
+    if (stmt.type === 'simple') {
+      const raw = stmt.raw;
+      
+      const retM = raw.match(/^return\s+(.+)$/i);
+      if (retM) {
+        ctx.returnValue = resolveValue(retM[1], ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+        ctx.hasReturned = true;
+        return;
+      }
+      if (raw === 'return') {
+        ctx.returnValue = null;
+        ctx.hasReturned = true;
+        return;
+      }
+
+      const defineM = raw.match(/^define\s*\(\s*['"](\w+)['"]\s*,\s*(.+?)\s*\)$/i);
+      if (defineM) {
+        ctx.constants[defineM[1]] = resolveValue(defineM[2], ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+        continue;
+      }
+
+      const echoM = raw.match(/^(echo|print)\s+(.+)$/i);
+      if (echoM) {
+        const partsExpr = echoM[2].trim();
+        const parts: string[] = [];
+        let curr = '', pDepth = 0, inStr = false, strChar = '';
+        for (let c = 0; c < partsExpr.length; c++) {
+          const ch = partsExpr[c];
+          if (!inStr && (ch === "'" || ch === '"')) { inStr = true; strChar = ch; }
+          else if (inStr && ch === strChar) { inStr = false; }
+          if (!inStr && ch === '(') pDepth++;
+          if (!inStr && ch === ')') pDepth--;
+          if (!inStr && ch === ',' && pDepth === 0) {
+            parts.push(curr.trim());
+            curr = '';
+          } else {
+            curr += ch;
+          }
+        }
+        if (curr.trim()) parts.push(curr.trim());
+
+        const result = parts.map(p => {
+          const val = resolveValue(p, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+          return val === null ? '' : String(val);
+        }).join('');
+        ctx.output.push(result.replace(/\\n/g, '\n').replace(/\\t/g, '\t'));
+        continue;
+      }
+
+      const printfM = raw.match(/^printf\s*\(\s*(.+)\s*\)$/i);
+      if (printfM) {
+        const argsExpr = printfM[1].trim();
+        const parts: string[] = [];
+        let curr = '', pDepth = 0, inStr = false, strChar = '';
+        for (let c = 0; c < argsExpr.length; c++) {
+          const ch = argsExpr[c];
+          if (!inStr && (ch === "'" || ch === '"')) { inStr = true; strChar = ch; }
+          else if (inStr && ch === strChar) { inStr = false; }
+          if (!inStr && ch === '(') pDepth++;
+          if (!inStr && ch === ')') pDepth--;
+          if (!inStr && ch === ',' && pDepth === 0) {
+            parts.push(curr.trim());
+            curr = '';
+          } else {
+            curr += ch;
+          }
+        }
+        if (curr.trim()) parts.push(curr.trim());
+        const argVals = parts.map(p => resolveValue(p, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState));
+        let fmt = String(argVals[0] ?? '');
+        const vals = argVals.slice(1);
+        let vi = 0;
+        fmt = fmt.replace(/%([sdfc])/g, (_, spec) => {
+          const v = vals[vi++];
+          if (v === undefined) return '';
+          if (spec === 'd') return String(Math.round(Number(v)));
+          if (spec === 'f') return Number(v).toFixed(6);
+          if (spec === 'c') return String.fromCharCode(Number(v));
+          return String(v);
+        });
+        ctx.output.push(fmt.replace(/\\n/g, '\n').replace(/\\t/g, '\t'));
+        continue;
+      }
+
+      const assignIdx = raw.indexOf('=');
+      if (assignIdx !== -1 && raw[assignIdx + 1] !== '=' && raw[assignIdx - 1] !== '>' && raw[assignIdx - 1] !== '<' && raw[assignIdx - 1] !== '!' && raw[assignIdx - 1] !== '=') {
+        const left = raw.substring(0, assignIdx).trim();
+        const right = raw.substring(assignIdx + 1).trim();
+        const rVal = resolveValue(right, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+
+        if (left.startsWith('$')) {
+          const bracketIdx = left.indexOf('[');
+          if (bracketIdx !== -1 && left.endsWith(']')) {
+            const varName = left.substring(0, bracketIdx).trim();
+            const indexExpr = left.substring(bracketIdx + 1, left.length - 1).trim();
+            
+            if (!ctx.vars[varName] || typeof ctx.vars[varName] !== 'object') {
+              ctx.vars[varName] = Array.isArray(ctx.vars[varName]) ? [] : {};
+            }
+
+            if (!indexExpr) {
+              if (Array.isArray(ctx.vars[varName])) {
+                ctx.vars[varName].push(rVal);
+              } else {
+                const nextKey = Object.keys(ctx.vars[varName]).length;
+                ctx.vars[varName][nextKey] = rVal;
+              }
+            } else {
+              const key = resolveValue(indexExpr, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+              ctx.vars[varName][key] = rVal;
+            }
+          } else {
+            ctx.vars[left] = rVal;
+          }
+        }
+        continue;
+      }
+
+      resolveValue(raw, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+    }
+
+    if (stmt.type === 'if') {
+      const condVal = !!resolveValue(stmt.condition ?? '', ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+      if (condVal) {
+        evaluatePhpBlock(stmt.body ?? [], ctx);
+      } else {
+        let matchedElif = false;
+        for (const elif of stmt.elseifs ?? []) {
+          const elifCond = !!resolveValue(elif.condition, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+          if (elifCond) {
+            evaluatePhpBlock(elif.body, ctx);
+            matchedElif = true;
+            break;
+          }
+        }
+        if (!matchedElif && stmt.elseBody) {
+          evaluatePhpBlock(stmt.elseBody, ctx);
+        }
+      }
+      continue;
+    }
+
+    if (stmt.type === 'while') {
+      let guard = 0;
+      while (guard++ < 10000) {
+        if (ctx.hasReturned) break;
+        const condVal = !!resolveValue(stmt.condition ?? '', ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+        if (!condVal) break;
+        evaluatePhpBlock(stmt.body ?? [], ctx);
+      }
+      if (guard >= 10000) {
+        ctx.output.push('Error: Infinite loop detected inside while loop.\n');
+      }
+      continue;
+    }
+
+    if (stmt.type === 'for') {
+      if (stmt.loopInit) {
+        const assignIdx = stmt.loopInit.indexOf('=');
+        if (assignIdx !== -1) {
+          const l = stmt.loopInit.substring(0, assignIdx).trim();
+          const r = stmt.loopInit.substring(assignIdx + 1).trim();
+          ctx.vars[l] = resolveValue(r, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+        }
+      }
+
+      let guard = 0;
+      while (guard++ < 10000) {
+        if (ctx.hasReturned) break;
+        if (stmt.loopCond) {
+          const condVal = !!resolveValue(stmt.loopCond, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+          if (!condVal) break;
+        }
+        evaluatePhpBlock(stmt.body ?? [], ctx);
+
+        if (stmt.loopStep) {
+          const step = stmt.loopStep;
+          if (step.endsWith('++')) {
+            const vName = step.slice(0, -2).trim();
+            ctx.vars[vName] = Number(ctx.vars[vName] ?? 0) + 1;
+          } else if (step.endsWith('--')) {
+            const vName = step.slice(0, -2).trim();
+            ctx.vars[vName] = Number(ctx.vars[vName] ?? 0) - 1;
+          } else {
+            const assignIdx = step.indexOf('=');
+            if (assignIdx !== -1) {
+              const l = step.substring(0, assignIdx).trim();
+              const r = step.substring(assignIdx + 1).trim();
+              ctx.vars[l] = resolveValue(r, ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+            }
+          }
+        }
+      }
+      if (guard >= 10000) {
+        ctx.output.push('Error: Infinite loop detected inside for loop.\n');
+      }
+      continue;
+    }
+
+    if (stmt.type === 'foreach') {
+      const arr = resolveValue(stmt.foreachArr ?? '', ctx.vars, ctx.constants, ctx.dbState, ctx.setDbState);
+      if (Array.isArray(arr)) {
+        for (let idx = 0; idx < arr.length; idx++) {
+          if (ctx.hasReturned) break;
+          if (stmt.foreachKey) ctx.vars[stmt.foreachKey] = idx;
+          if (stmt.foreachVal) ctx.vars[stmt.foreachVal] = arr[idx];
+          evaluatePhpBlock(stmt.body ?? [], ctx);
+        }
+      } else if (arr && typeof arr === 'object') {
+        const entries = Object.entries(arr);
+        for (const [key, val] of entries) {
+          if (ctx.hasReturned) break;
+          if (stmt.foreachKey) ctx.vars[stmt.foreachKey] = key;
+          if (stmt.foreachVal) ctx.vars[stmt.foreachVal] = val;
+          evaluatePhpBlock(stmt.body ?? [], ctx);
+        }
+      }
+      continue;
+    }
+  }
+}
+
+function runPhpInterpreter(
+  code: string,
+  dbState: VirtualDb,
+  setDbState: (db: VirtualDb) => void,
+  formInputs: { method: 'GET' | 'POST'; params: Record<string, any> }
+): string {
+  try {
+    const stmts = parseBlock(code.replace(/<\?php/gi, '').replace(/\?>/g, ''));
+    const output: string[] = [];
+    const vars: Record<string, any> = {
+      '$_GET': formInputs.method === 'GET' ? formInputs.params : {},
+      '$_POST': formInputs.method === 'POST' ? formInputs.params : {},
+      '$_REQUEST': formInputs.params,
+      '$_SERVER': {
+        'REQUEST_METHOD': formInputs.method,
+      }
+    };
+    const ctx: EvalContext = {
+      vars,
+      constants: {},
+      functions: {},
+      output,
+      dbState,
+      setDbState
+    };
+    evaluatePhpBlock(stmts, ctx);
+    return output.join('') || '(no output)';
+  } catch (e: any) {
+    return `Interpreter Error: ${e.message}`;
+  }
+}
+
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Playground = () => {
@@ -845,7 +1306,6 @@ const Playground = () => {
   const [htmlPreview, setHtmlPreview] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [hasRun, setHasRun] = useState(false);
-  const [showRefs, setShowRefs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -854,6 +1314,26 @@ const Playground = () => {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState('');
   const outputRef = useRef<HTMLDivElement>(null);
+
+  // New playground states for high interactivity
+  const [db, setDb] = useState<VirtualDb>({});
+  const [requestMethod, setRequestMethod] = useState<'GET' | 'POST'>('POST');
+  const [formParams, setFormParams] = useState<{ key: string; value: string }[]>([
+    { key: 'student_name', value: 'Saman' },
+    { key: 'marks', value: '78' }
+  ]);
+  const [rightTab, setRightTab] = useState<'output' | 'form' | 'db' | 'refs'>('output');
+
+  // Auto-seed virtual database on mount or restore defaults
+  useEffect(() => {
+    const sqlFile = files.find(f => f.name.endsWith('.sql'));
+    if (sqlFile) {
+      const res = executeSql(sqlFile.code, {});
+      if (res.success) {
+        setDb(res.updatedDb);
+      }
+    }
+  }, [files]);
 
   const activeFile = files.find(f => f.id === activeId) ?? files[0];
   const usedBytes = totalBytes(files);
@@ -1003,7 +1483,13 @@ const Playground = () => {
     }
     if (lang === 'sql') {
       setRunning(true); setOutput('');
-      try { setOutput(runSqlInBrowser(code)); } catch (e: any) { setOutput(`Error: ${e.message}`); }
+      try {
+        const res = executeSql(code, db);
+        setOutput(res.outputString);
+        if (res.success) {
+          setDb(res.updatedDb);
+        }
+      } catch (e: any) { setOutput(`Error: ${e.message}`); }
       finally { setRunning(false); }
       return;
     }
@@ -1055,7 +1541,18 @@ const Playground = () => {
     }
     if (lang === 'php') {
       setRunning(true);
-      try { setOutput(runPhpInBrowser(code)); } catch (e: any) { setOutput(`Error: ${e.message}`); }
+      try {
+        const paramsRecord: Record<string, any> = {};
+        formParams.forEach(p => {
+          if (p.key.trim()) paramsRecord[p.key.trim()] = p.value;
+        });
+        const out = runPhpInterpreter(code, db, (newDb) => setDb(newDb), {
+          method: requestMethod,
+          params: paramsRecord
+        });
+        setOutput(out);
+        setRightTab('output');
+      } catch (e: any) { setOutput(`Error: ${e.message}`); }
       finally { setRunning(false); }
       return;
     }
@@ -1307,30 +1804,48 @@ const Playground = () => {
 
         {/* ── Card 3: Output / Preview / References ── */}
         <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
-          <div className="flex items-center border-b bg-muted/30">
+          <div className="flex items-center border-b bg-muted/30 overflow-x-auto scrollbar-none">
             <button
-              onClick={() => setShowRefs(false)}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2"
+              onClick={() => setRightTab('output')}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
               style={{
-                borderBottomColor: !showRefs ? meta.color : 'transparent',
-                color: !showRefs ? meta.color : 'var(--muted-foreground)',
+                borderBottomColor: rightTab === 'output' ? meta.color : 'transparent',
+                color: rightTab === 'output' ? meta.color : 'var(--muted-foreground)',
               }}>
               <Terminal className="w-3.5 h-3.5" />
-              {isWebLang && showPreview ? '🌐 Web Preview' : lang === 'sql' ? 'SQL Output' : lang === 'php' ? 'PHP Output' : 'Output'}
+              {isWebLang && showPreview ? '🌐 Web Preview' : 'Console Output'}
             </button>
             <button
-              onClick={() => setShowRefs(true)}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2"
+              onClick={() => setRightTab('form')}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
               style={{
-                borderBottomColor: showRefs ? meta.color : 'transparent',
-                color: showRefs ? meta.color : 'var(--muted-foreground)',
+                borderBottomColor: rightTab === 'form' ? meta.color : 'transparent',
+                color: rightTab === 'form' ? meta.color : 'var(--muted-foreground)',
+              }}>
+              🌐 Form Inputs
+            </button>
+            <button
+              onClick={() => setRightTab('db')}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
+              style={{
+                borderBottomColor: rightTab === 'db' ? meta.color : 'transparent',
+                color: rightTab === 'db' ? meta.color : 'var(--muted-foreground)',
+              }}>
+              🗄️ DB Schema
+            </button>
+            <button
+              onClick={() => setRightTab('refs')}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
+              style={{
+                borderBottomColor: rightTab === 'refs' ? meta.color : 'transparent',
+                color: rightTab === 'refs' ? meta.color : 'var(--muted-foreground)',
               }}>
               📚 References
             </button>
-            {running && !showRefs && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto mr-4" />}
+            {running && rightTab === 'output' && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto mr-4" />}
           </div>
 
-          {showRefs ? (
+          {rightTab === 'refs' && (
             <div className="flex-1 overflow-auto p-4 flex flex-col gap-2">
               <p className="text-xs text-muted-foreground mb-1">
                 {meta.emoji} <span className="font-semibold text-foreground">{meta.label}</span> quick references
@@ -1352,7 +1867,7 @@ const Playground = () => {
                       <button
                         onClick={() => {
                           updateCode(ref.code);
-                          setShowRefs(false);
+                          setRightTab('output');
                           setTimeout(() => handleRun(), 100);
                         }}
                         className="flex items-center gap-1 px-2 py-1 rounded text-xs hover:opacity-90 transition-colors text-white"
@@ -1368,34 +1883,163 @@ const Playground = () => {
                 </div>
               ))}
             </div>
-          ) : isWebLang && showPreview ? (
-            <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
-          ) : (
-            <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#0d1117]" style={{ minHeight: 380 }}>
-              {!hasRun ? (
-                <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-30">
-                  <span className="text-4xl font-mono font-bold text-gray-500">&lt;/&gt;</span>
-                  <p className="text-xs text-center text-gray-500">
-                    {lang === 'html' ? 'Click Preview to render HTML'
-                      : lang === 'sql' ? 'Click Run SQL to execute'
-                      : lang === 'php' ? 'Click Run PHP to execute'
-                      : lang === 'css' ? 'Click Preview to view CSS'
-                      : 'Click Run to execute code'}
-                  </p>
+          )}
+
+          {rightTab === 'form' && (
+            <div className="flex-1 p-4 overflow-auto flex flex-col gap-4">
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Request Method</h3>
+                <div className="flex gap-2">
+                  <Button variant={requestMethod === 'POST' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('POST')}>POST</Button>
+                  <Button variant={requestMethod === 'GET' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('GET')}>GET</Button>
                 </div>
-              ) : output ? (
-                <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"
-                  style={{ color: output.startsWith('⚠') ? '#eab308' : output.includes('Error:') ? '#f85149' : '#3fb950' }}>
-                  {output}
-                </pre>
-              ) : running ? (
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Running…
+              </div>
+              
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Form Data (Parameters for PHP $_POST / $_GET)</h3>
+                <div className="space-y-2">
+                  {formParams.map((p, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input placeholder="Key" value={p.key} onChange={e => {
+                        const newParams = [...formParams];
+                        newParams[idx].key = e.target.value;
+                        setFormParams(newParams);
+                      }} className="h-9 text-xs" />
+                      <Input placeholder="Value" value={p.value} onChange={e => {
+                        const newParams = [...formParams];
+                        newParams[idx].value = e.target.value;
+                        setFormParams(newParams);
+                      }} className="h-9 text-xs" />
+                      <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive shrink-0" onClick={() => {
+                        setFormParams(formParams.filter((_, i) => i !== idx));
+                      }}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => setFormParams([...formParams, { key: '', value: '' }])} className="w-full text-xs mt-2">
+                    + Add Form Parameter
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {rightTab === 'db' && (
+            <div className="flex-1 p-4 overflow-auto flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Virtual SQL Database</h3>
+                <Button variant="outline" size="sm" onClick={() => {
+                  const sqlFile = files.find(f => f.name.endsWith('.sql'));
+                  if (sqlFile) {
+                    const res = executeSql(sqlFile.code, {});
+                    if (res.success) {
+                      setDb(res.updatedDb);
+                      toast.success('Database reset and re-seeded!');
+                    }
+                  }
+                }} className="text-xs px-2.5 h-7">
+                  Reset DB
+                </Button>
+              </div>
+              
+              {Object.keys(db).length === 0 ? (
+                <div className="text-center py-8 text-xs text-muted-foreground border border-dashed rounded-xl">
+                  No tables created. Run SQL CREATE TABLE statements inside 'school_db.sql' to setup tables.
                 </div>
               ) : (
-                <p className="text-xs italic text-gray-500">No output produced.</p>
+                <div className="space-y-4 flex-1">
+                  {Object.entries(db).map(([tName, table]) => (
+                    <div key={tName} className="rounded-lg border overflow-hidden bg-muted/10">
+                      <div className="px-3 py-2 bg-muted/40 border-b flex justify-between items-center">
+                        <span className="font-mono text-xs font-bold text-primary">{tName.toUpperCase()}</span>
+                        <span className="text-[10px] text-muted-foreground">{table.rows.length} rows</span>
+                      </div>
+                      <div className="p-3 overflow-x-auto">
+                        <table className="w-full text-xs font-mono text-left">
+                          <thead>
+                            <tr className="border-b border-border/80 pb-1 text-muted-foreground text-[10px]">
+                              {table.columns.map(col => (
+                                <th key={col} className="pb-1 pr-4">{col}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {table.rows.length === 0 ? (
+                              <tr>
+                                <td colSpan={table.columns.length} className="pt-2 text-center text-muted-foreground italic text-[11px]">
+                                  Empty table
+                                </td>
+                              </tr>
+                            ) : (
+                              table.rows.map((row, idx) => (
+                                <tr key={idx} className="border-b border-border/20 last:border-0 hover:bg-muted/10">
+                                  {table.columns.map(col => (
+                                    <td key={col} className="py-1 pr-4 whitespace-nowrap">{String(row[col] ?? 'NULL')}</td>
+                                  ))}
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Console SQL runner */}
+                  <div className="pt-4 border-t mt-4">
+                    <h4 className="text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase">Test Query Console</h4>
+                    <form onSubmit={e => {
+                      e.preventDefault();
+                      const target = e.currentTarget;
+                      const qInput = target.elements.namedItem('q') as HTMLInputElement;
+                      const qVal = qInput?.value.trim();
+                      if (!qVal) return;
+                      const res = executeSql(qVal, db);
+                      if (res.success) {
+                        setDb(res.updatedDb);
+                      }
+                      alert(res.outputString);
+                    }} className="flex gap-2">
+                      <Input name="q" placeholder="SELECT * FROM students WHERE marks >= 80;" className="h-9 text-xs font-mono" />
+                      <Button type="submit" size="sm">Query</Button>
+                    </form>
+                  </div>
+                </div>
               )}
             </div>
+          )}
+
+          {rightTab === 'output' && (
+            isWebLang && showPreview ? (
+              <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
+            ) : (
+              <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#0d1117]" style={{ minHeight: 380 }}>
+                {!hasRun ? (
+                  <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-30">
+                    <span className="text-4xl font-mono font-bold text-gray-500">&lt;/&gt;</span>
+                    <p className="text-xs text-center text-gray-500">
+                      {lang === 'html' ? 'Click Preview to render HTML'
+                        : lang === 'sql' ? 'Click Run SQL to execute'
+                        : lang === 'php' ? 'Click Run PHP to execute'
+                        : lang === 'css' ? 'Click Preview to view CSS'
+                        : 'Click Run to execute code'}
+                    </p>
+                  </div>
+                ) : output ? (
+                  <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"
+                    style={{ color: output.startsWith('⚠') ? '#eab308' : output.includes('Error:') || output.includes('Interpreter Error:') ? '#f85149' : '#3fb950' }}>
+                    {output}
+                  </pre>
+                ) : running ? (
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Running…
+                  </div>
+                ) : (
+                  <p className="text-xs italic text-gray-500">No output produced.</p>
+                )}
+              </div>
+            )
           )}
         </div>
       </div>
