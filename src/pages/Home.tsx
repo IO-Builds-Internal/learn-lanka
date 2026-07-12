@@ -155,17 +155,17 @@ const HomePage = () => {
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="page-container py-0">
           <div className="flex h-16 items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0">
                 {settings?.logo_url ? (
                   <img src={settings.logo_url} alt="AL Student" className="w-full h-full object-contain rounded-xl" />
                 ) : (
-                  <GraduationCap className="w-6 h-6 text-primary-foreground" />
+                  <img src="/logo.png" alt="AL Student" className="w-full h-full object-cover rounded-xl" />
                 )}
               </div>
               <div>
-                <span className="font-bold text-lg text-foreground">AL Student</span>
-                <span className="text-xs text-muted-foreground block -mt-1">Sri Lanka's #1 A/L Platform</span>
+                <span className="font-bold text-lg text-foreground tracking-tight">AL Student</span>
+                <span className="text-xs text-muted-foreground block -mt-0.5">Sri Lanka's #1 A/L Platform</span>
               </div>
             </Link>
 
@@ -201,44 +201,83 @@ const HomePage = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-        <div className="relative page-container py-16 sm:py-24 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <BookOpen className="w-4 h-4" />
-            All A/L Subjects in One Place
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-4 tracking-tight">
-            Your Gateway to
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> A/L Success</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Access past papers, expert classes, rank papers, and study materials for every Advanced Level subject — all in one platform.
-          </p>
+        {/* Deep blue gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0f2167] via-[#1a3a8f] to-[#1e4fc2]" />
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
-          {/* Search */}
-          <div className="max-w-lg mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search subjects..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 h-12 text-base rounded-xl bg-card border-border shadow-sm"
-            />
-          </div>
+        <div className="relative page-container py-14 sm:py-20">
+          <div className="max-w-3xl mx-auto text-center">
 
-          {/* Quick Links */}
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
-            <Link to="/papers">
-              <Button variant="outline" className="gap-2 rounded-full">
-                <FileText className="w-4 h-4" />
-                Past Papers Library
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button variant="outline" className="gap-2 rounded-full">
-                Contact Us
-              </Button>
-            </Link>
+            {/* Top badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-7"
+              style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white' }}>
+              <BookOpen className="w-4 h-4" />
+              All A/L Subjects in One Place
+            </div>
+
+            {/* Heading */}
+            <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-extrabold text-white mb-5 tracking-tight leading-tight">
+              Sri Lanka's #1
+              <span className="block text-amber-400">A/L Learning Platform</span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-blue-100 max-w-xl mx-auto mb-8">
+              Past papers, expert classes, rank tests & study materials for every Advanced Level subject — trusted by 10,000+ students.
+            </p>
+
+            {/* Search Bar */}
+            <div className="max-w-md mx-auto relative mb-8">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: 'rgba(255,255,255,0.6)' }} />
+              <Input
+                placeholder="Search subjects..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-12 h-12 text-base rounded-xl border-0 shadow-lg"
+                style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)', color: 'white' }}
+              />
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap justify-center gap-3 mb-10">
+              {!user && (
+                <Link to="/register">
+                  <Button size="lg" className="gap-2 rounded-xl h-11 px-6 font-semibold bg-amber-500 hover:bg-amber-400 border-0 text-white shadow-lg">
+                    <UserPlus className="w-4 h-4" />
+                    Get Started Free
+                  </Button>
+                </Link>
+              )}
+              <Link to="/papers">
+                <Button variant="outline" size="lg" className="gap-2 rounded-xl h-11 px-6 font-semibold border-white/40 hover:bg-white/10"
+                  style={{ color: 'white', background: 'rgba(255,255,255,0.12)' }}>
+                  <FileText className="w-4 h-4" />
+                  Past Papers Library
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button variant="ghost" size="lg" className="gap-2 rounded-xl h-11 px-6 font-semibold hover:bg-white/10"
+                  style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Contact Us
+                </Button>
+              </Link>
+            </div>
+
+            {/* Stats Pills */}
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { value: '10,000+', label: 'Students' },
+                { value: '20+',     label: 'Subjects' },
+                { value: '500+',    label: 'Past Papers' },
+                { value: '50+',     label: 'Expert Teachers' },
+              ].map(s => (
+                <div key={s.label} className="px-4 py-2 rounded-full text-sm font-medium"
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
+                  <span className="font-bold text-amber-400">{s.value}</span>
+                  <span className="text-blue-100 ml-1.5">{s.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
