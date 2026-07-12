@@ -553,7 +553,13 @@ const YearCard = forwardRef<
             const attachmentsCount = getAttachmentsCount(paper.id);
             return (
               <div key={paper.id} className="space-y-2">
-                <p className="font-semibold text-sm text-foreground">{paper.title}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-sm text-foreground truncate">{paper.title}</p>
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+                    <Download className="w-2.5 h-2.5" />
+                    {paper.download_count ?? 0}
+                  </span>
+                </div>
                 <div className="flex gap-1">
                   <Button
                     className="flex-1"
@@ -651,6 +657,10 @@ const GradeCard = forwardRef<
                           {paper.medium && (
                             <span className="text-primary">{getMediumLabel(paper.medium)}</span>
                           )}
+                          <span className="flex items-center gap-0.5 ml-auto text-[10px] text-muted-foreground font-sans">
+                            <Download className="w-2.5 h-2.5" />
+                            {paper.download_count ?? 0}
+                          </span>
                         </div>
                       </div>
                       <div className="flex gap-1">
@@ -720,12 +730,18 @@ const PaperCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium text-foreground truncate">{paper.title}</p>
-            {attachmentsCount > 0 && (
-              <Badge variant="secondary" className="shrink-0 gap-1">
-                <Video className="w-3 h-3" />
-                {attachmentsCount}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 font-sans">
+                <Download className="w-2.5 h-2.5" />
+                {paper.download_count ?? 0}
+              </span>
+              {attachmentsCount > 0 && (
+                <Badge variant="secondary" className="shrink-0 gap-1">
+                  <Video className="w-3 h-3" />
+                  {attachmentsCount}
+                </Badge>
+              )}
+            </div>
           </div>
           {paper.description && (
             <p className="text-xs text-muted-foreground line-clamp-2">{paper.description}</p>
