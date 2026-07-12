@@ -206,10 +206,6 @@ const HomePage = () => {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px', color: 'hsl(var(--primary))' }} />
 
         <div className="relative page-container py-16 sm:py-24 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <BookOpen className="w-4 h-4" />
-            All A/L Subjects in One Place
-          </div>
 
           {/* Main Title */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-5 tracking-tight leading-[1.15]">
@@ -223,14 +219,19 @@ const HomePage = () => {
           </p>
 
           {/* Search Box */}
-          <div className="max-w-lg mx-auto relative mb-8">
-            <Search className="absolute left-4.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search subjects (e.g., Maths, Biology, ICT)..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 h-13 text-base rounded-2xl bg-card border-border shadow-sm hover:border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-            />
+          <div className="max-w-xl mx-auto mb-10">
+            <span className="block font-caveat text-2xl sm:text-3xl text-primary/85 mb-3 font-medium animate-bounce-subtle">
+              Which subject are we learning today?
+            </span>
+            <div className="relative group transition-all duration-300 focus-within:scale-[1.025] focus-within:shadow-lg focus-within:shadow-primary/10 rounded-2xl">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5.5 h-5.5 text-muted-foreground group-hover:text-primary transition-colors pointer-events-none" />
+              <Input
+                placeholder="Search subjects (Maths, Physics, Commerce...)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-13 h-15 text-lg rounded-2xl bg-card border-border shadow-sm hover:border-primary/45 focus:border-primary focus:ring-1 focus:ring-primary transition-all font-sans"
+              />
+            </div>
           </div>
 
           {/* Quick Links */}
