@@ -1314,6 +1314,7 @@ const Playground = () => {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState('');
   const outputRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
 
   // New playground states for high interactivity
   const [db, setDb] = useState<VirtualDb>({});
@@ -1587,36 +1588,36 @@ const Playground = () => {
 
   return (
     <StudentLayout>
-      {/* Page Header */}
-      <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
-            <Code2 className="w-5 h-5 text-primary-foreground" />
+      {/* Premium Header */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl border bg-gradient-to-r from-card to-muted/20 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/10">
+            <Code2 className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Code Playground</h1>
-            <p className="text-sm text-muted-foreground">A/L Code Practice</p>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Code Playground</h1>
+            <p className="text-sm text-muted-foreground">Interactive A/L Programming & Database Sandbox</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2.5 bg-muted/40 px-3.5 py-1.5 rounded-xl border">
+            <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
               <div className="h-full rounded-full transition-all"
                 style={{ width: `${usedPct}%`, background: usedPct > 80 ? '#ef4444' : usedPct > 60 ? '#eab308' : '#22c55e' }} />
             </div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{fmtBytes(usedBytes)} / 10 MB</span>
-            {usedPct > 80 && <AlertCircle className="w-3.5 h-3.5 text-yellow-500" />}
+            <span className="text-[11px] font-mono text-muted-foreground whitespace-nowrap">{fmtBytes(usedBytes)} / 10 MB</span>
+            {usedPct > 80 && <AlertCircle className="w-3.5 h-3.5 text-yellow-500 animate-pulse" />}
           </div>
           {userId ? (
-            <Button variant="outline" size="sm" onClick={manualSave} disabled={saving} className="gap-1.5">
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {saving ? 'Saving…' : 'Save'}
+            <Button variant="default" size="sm" onClick={manualSave} disabled={saving} className="gap-2 shadow-sm rounded-xl px-4">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? 'Saving…' : 'Save Workspace'}
             </Button>
           ) : (
             <Link to="/login">
-              <Button variant="outline" size="sm" className="gap-1.5 text-muted-foreground">
-                <CloudOff className="w-3.5 h-3.5" />
+              <Button variant="outline" size="sm" className="gap-1.5 text-muted-foreground rounded-xl">
+                <CloudOff className="w-4 h-4" />
                 Log in to save
               </Button>
             </Link>
@@ -1625,41 +1626,42 @@ const Playground = () => {
       </div>
 
       {!userId && (
-        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5">
+        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-2xl border border-primary/20 bg-primary/5 shadow-sm">
           <Cloud className="w-4 h-4 text-primary flex-shrink-0" />
           <p className="text-sm text-foreground">
             <Link to="/login" className="font-semibold text-primary hover:underline">Log in</Link>
-            {' '}to save your workspace, create new files, and sync across devices.
+            {' '}to save your workspace files, create new scripts, and sync work across devices.
           </p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_1fr] gap-4">
+      {/* Main IDE Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_1fr] gap-5 items-stretch">
 
-        {/* ── Card 1: File Explorer ── */}
-        <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
-          <div className="flex items-center justify-between px-3 py-2.5 border-b bg-muted/30">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Explorer</span>
-            <div className="flex items-center gap-1">
+        {/* ── Card 1: Advanced File Explorer ── */}
+        <div className="rounded-2xl border bg-card/60 backdrop-blur-md overflow-hidden flex flex-col shadow-sm" style={{ minHeight: 520 }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Workspace Files</span>
+            <div className="flex items-center gap-1.5">
               <button
                 title="Restore default files"
                 onClick={restoreDefaults}
-                className="p-1 rounded-md hover:bg-muted transition-colors"
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
               >
-                <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
               <button
                 title={userId ? 'New file' : 'Log in to create files'}
                 onClick={() => { if (!userId) { toast.error('Log in to create new files'); return; } setAddingFile(true); }}
-                className="p-1 rounded-md hover:bg-muted transition-colors"
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
                 style={{ opacity: userId ? 1 : 0.4 }}
               >
-                <FilePlus className="w-3.5 h-3.5 text-muted-foreground" />
+                <FilePlus className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-1">
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {files.map(file => {
               const m = langMeta[extToLang(file.name)];
               const isActive = file.id === activeId;
@@ -1670,32 +1672,33 @@ const Playground = () => {
                       onChange={e => setRenameVal(e.target.value)}
                       onBlur={() => renameFile(file.id)}
                       onKeyDown={e => { if (e.key === 'Enter') renameFile(file.id); if (e.key === 'Escape') setRenamingId(null); }}
-                      className="w-full px-3 py-1.5 text-xs font-mono bg-muted outline-none text-foreground"
+                      className="w-full px-3 py-2 text-xs font-mono bg-muted border rounded-lg outline-none text-foreground"
                     />
                   ) : (
                     <button
                       onClick={() => { setActiveId(file.id); setOutput(''); setHasRun(false); setShowPreview(false); }}
                       onDoubleClick={() => { setRenamingId(file.id); setRenameVal(file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors"
-                      style={{
-                        background: isActive ? m.bg : 'transparent',
-                        borderLeft: `2px solid ${isActive ? m.color : 'transparent'}`,
-                      }}>
-                      <span className="text-base leading-none">{m.emoji}</span>
-                      <span className="truncate flex-1 font-mono text-foreground">{file.name}</span>
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-left transition-all rounded-xl ${
+                        isActive
+                          ? 'bg-primary/10 text-primary font-semibold shadow-sm border border-primary/20'
+                          : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
+                      }`}
+                    >
+                      <span className="text-base leading-none shrink-0" style={{ color: isActive ? m.color : undefined }}>{m.emoji}</span>
+                      <span className="truncate flex-1 font-mono">{file.name}</span>
                     </button>
                   )}
                   {renamingId !== file.id && (
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {userId && (
                         <button onClick={() => { setRenamingId(file.id); setRenameVal(file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name); }}
-                          className="p-1 rounded hover:bg-muted" title="Rename">
-                          <Pencil className="w-3 h-3 text-muted-foreground" />
+                          className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all" title="Rename">
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                       )}
                       <button onClick={() => deleteFile(file.id)}
-                        className="p-1 rounded hover:bg-destructive/10" title="Delete">
-                        <Trash2 className="w-3 h-3 text-destructive" />
+                        className="p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all" title="Delete">
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
@@ -1704,19 +1707,19 @@ const Playground = () => {
             })}
 
             {addingFile && userId && (
-              <div className="px-2 py-2">
+              <div className="px-2 py-2 border rounded-xl bg-muted/10">
                 <input autoFocus placeholder="filename.py" value={newFileName}
                   onChange={e => setNewFileName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') addFile(); if (e.key === 'Escape') { setAddingFile(false); setNewFileName(''); } }}
                   onBlur={addFile}
-                  className="w-full px-2 py-1.5 text-xs font-mono rounded-md border bg-background text-foreground outline-none focus:border-primary"
+                  className="w-full px-2.5 py-2 text-xs font-mono rounded-lg border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
-                <p className="text-xs mt-1 text-muted-foreground">.py .html .css .sql .js</p>
+                <p className="text-[10px] mt-1.5 text-muted-foreground text-center">Allowed: .py .html .css .sql .js .php</p>
               </div>
             )}
           </div>
 
-          <div className="border-t p-2 flex flex-wrap gap-1">
+          <div className="border-t p-3 bg-muted/10 flex flex-wrap gap-1.5">
             {(['python','html','css','javascript','php','sql'] as Language[]).map(l => {
               const m = langMeta[l];
               const isActive = lang === l;
@@ -1730,139 +1733,164 @@ const Playground = () => {
                 <button key={l}
                   onClick={() => { setActiveId(match.id); setOutput(''); setHasRun(false); setShowPreview(false); }}
                   title={m.label}
-                  className="text-xs px-2 py-0.5 rounded-full transition-all"
-                  style={{
-                    background: isActive ? m.bg : 'transparent',
-                    color: isActive ? m.color : 'var(--muted-foreground)',
-                    border: `1px solid ${isActive ? m.color + '60' : 'transparent'}`,
-                  }}>
-                  {m.emoji} {m.label}
+                  className={`text-[10px] px-2.5 py-1 rounded-full transition-all border font-medium ${
+                    isActive
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground bg-transparent border-transparent hover:text-foreground'
+                  }`}
+                  style={{ borderColor: isActive ? m.color + '40' : undefined }}
+                >
+                  <span className="mr-1">{m.emoji}</span>{m.label}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* ── Card 2: Code Editor ── */}
-        <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
-          <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-mono font-medium text-foreground">{activeFile?.name ?? '—'}</span>
+        {/* ── Card 2: Interactive Code Editor ── */}
+        <div className="rounded-2xl border bg-[#080b10] border-border/80 overflow-hidden flex flex-col shadow-lg relative" style={{ minHeight: 520 }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/5 bg-[#0b0e14]">
+            <div className="flex items-center gap-3">
+              {/* macOS window controls decoration */}
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#ff5f56]/90" />
+                <span className="w-3 h-3 rounded-full bg-[#ffbd2e]/90" />
+                <span className="w-3 h-3 rounded-full bg-[#27c93f]/90" />
+              </div>
+              <span className="h-4 w-px bg-border/10 ml-1" />
+              <span className="text-xs font-mono font-medium text-slate-400">{activeFile?.name ?? '—'}</span>
               {activeFile && (
-                <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider scale-95"
                   style={{ background: meta.bg, color: meta.color }}>
                   {lang.toUpperCase()}
                 </span>
               )}
             </div>
-            <div className="flex gap-1">
-              <button onClick={handleCopy} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Copy code">
-                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
+            <div className="flex items-center gap-1.5">
+              <button onClick={handleCopy} className="p-1.5 rounded-lg hover:bg-[#161b22] text-slate-400 hover:text-slate-200 transition-colors" title="Copy code">
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               </button>
-              <button onClick={handleReset} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Clear output">
-                <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
+              <button onClick={handleReset} className="p-1.5 rounded-lg hover:bg-[#161b22] text-slate-400 hover:text-slate-200 transition-colors" title="Clear outputs">
+                <RotateCcw className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <textarea
-            value={activeFile?.code ?? ''}
-            onChange={e => updateCode(e.target.value)}
-            className="flex-1 font-mono text-sm p-4 resize-none outline-none leading-relaxed bg-[#0d1117] text-[#e6edf3] caret-blue-400"
-            style={{ tabSize: 4, minHeight: 380 }}
-            spellCheck={false}
-            onKeyDown={e => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                const el = e.currentTarget;
-                const s = el.selectionStart, en = el.selectionEnd;
-                const nv = el.value.substring(0, s) + '    ' + el.value.substring(en);
-                updateCode(nv);
-                requestAnimationFrame(() => { el.selectionStart = el.selectionEnd = s + 4; });
-              }
-            }}
-          />
+          {/* IDE Area with Synchronized Line Numbers */}
+          <div className="flex-1 flex overflow-hidden min-h-[380px] bg-[#070a0f] relative">
+            <div ref={lineRef} className="py-4 pl-4 pr-2 select-none text-right font-mono text-xs text-slate-600 border-r border-border/5 bg-[#05070a] overflow-hidden flex flex-col pointer-events-none" style={{ minWidth: '3.5rem' }}>
+              {Array.from({ length: (activeFile?.code ?? '').split('\n').length || 1 }).map((_, idx) => (
+                <div key={idx} className="h-[21px] leading-[21px]">{idx + 1}</div>
+              ))}
+            </div>
+            <textarea
+              value={activeFile?.code ?? ''}
+              onChange={e => updateCode(e.target.value)}
+              onScroll={e => {
+                if (lineRef.current) {
+                  lineRef.current.scrollTop = e.currentTarget.scrollTop;
+                }
+              }}
+              className="flex-1 font-mono text-xs p-4 resize-none outline-none leading-[21px] bg-[#080b11] text-[#cbd5e1] caret-primary overflow-auto scrollbar-thin"
+              spellCheck={false}
+              onKeyDown={e => {
+                if (e.key === 'Tab') {
+                  e.preventDefault();
+                  const el = e.currentTarget;
+                  const s = el.selectionStart, en = el.selectionEnd;
+                  const nv = el.value.substring(0, s) + '    ' + el.value.substring(en);
+                  updateCode(nv);
+                  requestAnimationFrame(() => { el.selectionStart = el.selectionEnd = s + 4; });
+                }
+              }}
+            />
+          </div>
 
-          <div className="flex items-center gap-3 px-4 py-2.5 border-t bg-muted/30">
-            <Button onClick={handleRun} disabled={running} size="sm" className="gap-2"
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/5 bg-[#0b0e14]">
+            <Button onClick={handleRun} disabled={running} size="sm" className="gap-2 px-5 font-bold shadow-md shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
               style={{ background: meta.color, color: '#fff', border: 'none' }}>
-              {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+              {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-white" />}
               {running ? 'Running…' : runLabel}
             </Button>
-            <span className="text-xs text-muted-foreground">{meta.emoji} {meta.label}</span>
-            {saving ? (
-              <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-                <Loader2 className="w-3 h-3 animate-spin" /> Saving…
-              </div>
-            ) : userId ? (
-              <div className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
-                <Cloud className="w-3 h-3" /> Click Save to sync
-              </div>
-            ) : null}
+            <div className="flex items-center gap-1.5">
+              {saving ? (
+                <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Auto-saving…
+                </div>
+              ) : userId ? (
+                <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <Cloud className="w-3.5 h-3.5 text-primary" /> Synced to Cloud
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 
-        {/* ── Card 3: Output / Preview / References ── */}
-        <div className="rounded-xl border bg-card overflow-hidden flex flex-col" style={{ minHeight: 480 }}>
-          <div className="flex items-center border-b bg-muted/30 overflow-x-auto scrollbar-none">
+        {/* ── Card 3: Dashboard Inspector Panel ── */}
+        <div className="rounded-2xl border bg-card overflow-hidden flex flex-col shadow-sm" style={{ minHeight: 520 }}>
+          <div className="flex items-center border-b bg-muted/20 overflow-x-auto scrollbar-none">
             <button
               onClick={() => setRightTab('output')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
-              style={{
-                borderBottomColor: rightTab === 'output' ? meta.color : 'transparent',
-                color: rightTab === 'output' ? meta.color : 'var(--muted-foreground)',
-              }}>
+              className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
+                rightTab === 'output'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
               <Terminal className="w-3.5 h-3.5" />
-              {isWebLang && showPreview ? '🌐 Web Preview' : 'Console Output'}
+              {isWebLang && showPreview ? '🌐 Live Web Preview' : 'Console Output'}
             </button>
             <button
               onClick={() => setRightTab('form')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
-              style={{
-                borderBottomColor: rightTab === 'form' ? meta.color : 'transparent',
-                color: rightTab === 'form' ? meta.color : 'var(--muted-foreground)',
-              }}>
-              🌐 Form Inputs
+              className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
+                rightTab === 'form'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              🌐 HTTP Inputs
             </button>
             <button
               onClick={() => setRightTab('db')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
-              style={{
-                borderBottomColor: rightTab === 'db' ? meta.color : 'transparent',
-                color: rightTab === 'db' ? meta.color : 'var(--muted-foreground)',
-              }}>
-              🗄️ DB Schema
+              className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
+                rightTab === 'db'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              🗄️ Database Schema
             </button>
             <button
               onClick={() => setRightTab('refs')}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap"
-              style={{
-                borderBottomColor: rightTab === 'refs' ? meta.color : 'transparent',
-                color: rightTab === 'refs' ? meta.color : 'var(--muted-foreground)',
-              }}>
+              className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
+                rightTab === 'refs'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
               📚 References
             </button>
-            {running && rightTab === 'output' && <Loader2 className="w-3 h-3 animate-spin text-primary ml-auto mr-4" />}
+            {running && rightTab === 'output' && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary ml-auto mr-4" />}
           </div>
 
           {rightTab === 'refs' && (
-            <div className="flex-1 overflow-auto p-4 flex flex-col gap-2">
-              <p className="text-xs text-muted-foreground mb-1">
-                {meta.emoji} <span className="font-semibold text-foreground">{meta.label}</span> quick references
+            <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                {meta.emoji} {meta.label} Cheat Sheet & Examples
               </p>
               {(LANG_REFS[lang] ?? LANG_REFS.text).map((ref, i) => (
-                <div key={i} className="flex flex-col gap-1 rounded-lg border border-border overflow-hidden">
-                  <div className="flex items-center justify-between px-3 py-2 bg-muted/40">
+                <div key={i} className="flex flex-col gap-1 rounded-xl border overflow-hidden bg-[#080b10]">
+                  <div className="flex items-center justify-between px-3.5 py-2 bg-muted/10 border-b border-border/5">
                     <div>
-                      <span className="text-xs font-semibold text-foreground">{ref.title}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{ref.desc}</span>
+                      <span className="text-xs font-bold text-slate-200">{ref.title}</span>
+                      <span className="text-[10px] text-muted-foreground ml-2">{ref.desc}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => { navigator.clipboard.writeText(ref.code); toast.success('Copied!'); }}
-                        className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
                       >
-                        <Copy className="w-3 h-3" /> Copy
+                        <Copy className="w-3.5 h-3.5" /> Copy
                       </button>
                       <button
                         onClick={() => {
@@ -1870,14 +1898,14 @@ const Playground = () => {
                           setRightTab('output');
                           setTimeout(() => handleRun(), 100);
                         }}
-                        className="flex items-center gap-1 px-2 py-1 rounded text-xs hover:opacity-90 transition-colors text-white"
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-white hover:opacity-90 transition-all font-semibold"
                         style={{ background: meta.color }}
                       >
-                        <Play className="w-3 h-3" /> Run
+                        <Play className="w-3 h-3" /> Load
                       </button>
                     </div>
                   </div>
-                  <pre className="text-xs font-mono px-3 py-2 bg-[#0d1117] text-[#e6edf3] overflow-x-auto whitespace-pre leading-relaxed">
+                  <pre className="text-xs font-mono px-3.5 py-2.5 bg-[#0d1117] text-[#cbd5e1] overflow-x-auto whitespace-pre leading-relaxed">
                     {ref.code}
                   </pre>
                 </div>
@@ -1886,38 +1914,38 @@ const Playground = () => {
           )}
 
           {rightTab === 'form' && (
-            <div className="flex-1 p-4 overflow-auto flex flex-col gap-4">
+            <div className="flex-1 p-5 overflow-auto flex flex-col gap-5">
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Request Method</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">HTTP Request Method</h3>
                 <div className="flex gap-2">
-                  <Button variant={requestMethod === 'POST' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('POST')}>POST</Button>
-                  <Button variant={requestMethod === 'GET' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('GET')}>GET</Button>
+                  <Button variant={requestMethod === 'POST' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('POST')} className="rounded-xl px-4">POST</Button>
+                  <Button variant={requestMethod === 'GET' ? 'default' : 'outline'} size="sm" onClick={() => setRequestMethod('GET')} className="rounded-xl px-4">GET</Button>
                 </div>
               </div>
-              
+
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Form Data (Parameters for PHP $_POST / $_GET)</h3>
-                <div className="space-y-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">Form Parameters (PHP $_POST / $_GET State)</h3>
+                <div className="space-y-2.5">
                   {formParams.map((p, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
                       <Input placeholder="Key" value={p.key} onChange={e => {
                         const newParams = [...formParams];
                         newParams[idx].key = e.target.value;
                         setFormParams(newParams);
-                      }} className="h-9 text-xs" />
+                      }} className="h-10 text-xs rounded-xl" />
                       <Input placeholder="Value" value={p.value} onChange={e => {
                         const newParams = [...formParams];
                         newParams[idx].value = e.target.value;
                         setFormParams(newParams);
-                      }} className="h-9 text-xs" />
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive shrink-0" onClick={() => {
+                      }} className="h-10 text-xs rounded-xl" />
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl shrink-0" onClick={() => {
                         setFormParams(formParams.filter((_, i) => i !== idx));
                       }}>
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
-                  <Button variant="outline" size="sm" onClick={() => setFormParams([...formParams, { key: '', value: '' }])} className="w-full text-xs mt-2">
+                  <Button variant="outline" size="sm" onClick={() => setFormParams([...formParams, { key: '', value: '' }])} className="w-full text-xs mt-2 rounded-xl h-10 border-dashed hover:border-solid">
                     + Add Form Parameter
                   </Button>
                 </div>
@@ -1926,9 +1954,9 @@ const Playground = () => {
           )}
 
           {rightTab === 'db' && (
-            <div className="flex-1 p-4 overflow-auto flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Virtual SQL Database</h3>
+            <div className="flex-1 p-5 overflow-auto flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Virtual SQL Inspector</h3>
                 <Button variant="outline" size="sm" onClick={() => {
                   const sqlFile = files.find(f => f.name.endsWith('.sql'));
                   if (sqlFile) {
@@ -1938,44 +1966,46 @@ const Playground = () => {
                       toast.success('Database reset and re-seeded!');
                     }
                   }
-                }} className="text-xs px-2.5 h-7">
+                }} className="text-xs px-3 h-7 rounded-lg">
                   Reset DB
                 </Button>
               </div>
-              
+
               {Object.keys(db).length === 0 ? (
-                <div className="text-center py-8 text-xs text-muted-foreground border border-dashed rounded-xl">
-                  No tables created. Run SQL CREATE TABLE statements inside 'school_db.sql' to setup tables.
+                <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-2xl bg-muted/5 flex flex-col items-center justify-center gap-2 p-6">
+                  <Database className="w-8 h-8 text-muted-foreground/30" />
+                  <p>No tables detected in virtual database.</p>
+                  <p className="text-[10px] max-w-[200px]">Run SQL CREATE TABLE statements inside 'school_db.sql' to view tables.</p>
                 </div>
               ) : (
                 <div className="space-y-4 flex-1">
                   {Object.entries(db).map(([tName, table]) => (
-                    <div key={tName} className="rounded-lg border overflow-hidden bg-muted/10">
-                      <div className="px-3 py-2 bg-muted/40 border-b flex justify-between items-center">
+                    <div key={tName} className="rounded-xl border overflow-hidden bg-muted/5 shadow-sm">
+                      <div className="px-3.5 py-2 bg-muted/40 border-b flex justify-between items-center">
                         <span className="font-mono text-xs font-bold text-primary">{tName.toUpperCase()}</span>
-                        <span className="text-[10px] text-muted-foreground">{table.rows.length} rows</span>
+                        <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{table.rows.length} rows</span>
                       </div>
-                      <div className="p-3 overflow-x-auto">
-                        <table className="w-full text-xs font-mono text-left">
+                      <div className="p-3 overflow-x-auto scrollbar-thin">
+                        <table className="w-full text-xs font-mono text-left border-collapse">
                           <thead>
-                            <tr className="border-b border-border/80 pb-1 text-muted-foreground text-[10px]">
+                            <tr className="border-b border-border/80 text-muted-foreground text-[10px]">
                               {table.columns.map(col => (
-                                <th key={col} className="pb-1 pr-4">{col}</th>
+                                <th key={col} className="pb-1.5 pr-4 font-bold">{col.toUpperCase()}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody>
                             {table.rows.length === 0 ? (
                               <tr>
-                                <td colSpan={table.columns.length} className="pt-2 text-center text-muted-foreground italic text-[11px]">
-                                  Empty table
+                                <td colSpan={table.columns.length} className="pt-3 text-center text-muted-foreground italic text-[11px]">
+                                  Empty table records
                                 </td>
                               </tr>
                             ) : (
                               table.rows.map((row, idx) => (
-                                <tr key={idx} className="border-b border-border/20 last:border-0 hover:bg-muted/10">
+                                <tr key={idx} className="border-b border-border/10 last:border-0 hover:bg-muted/10 transition-colors">
                                   {table.columns.map(col => (
-                                    <td key={col} className="py-1 pr-4 whitespace-nowrap">{String(row[col] ?? 'NULL')}</td>
+                                    <td key={col} className="py-1.5 pr-4 whitespace-nowrap text-slate-300">{String(row[col] ?? 'NULL')}</td>
                                   ))}
                                 </tr>
                               ))
@@ -1985,10 +2015,10 @@ const Playground = () => {
                       </div>
                     </div>
                   ))}
-                  
-                  {/* Console SQL runner */}
-                  <div className="pt-4 border-t mt-4">
-                    <h4 className="text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase">Test Query Console</h4>
+
+                  {/* Console SQL ad-hoc query runner */}
+                  <div className="pt-4 border-t mt-6">
+                    <h4 className="text-[11px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">Execute Ad-Hoc Statement</h4>
                     <form onSubmit={e => {
                       e.preventDefault();
                       const target = e.currentTarget;
@@ -2001,8 +2031,8 @@ const Playground = () => {
                       }
                       alert(res.outputString);
                     }} className="flex gap-2">
-                      <Input name="q" placeholder="SELECT * FROM students WHERE marks >= 80;" className="h-9 text-xs font-mono" />
-                      <Button type="submit" size="sm">Query</Button>
+                      <Input name="q" placeholder="SELECT * FROM students WHERE marks >= 80;" className="h-10 text-xs font-mono rounded-xl bg-muted/10" />
+                      <Button type="submit" size="sm" className="rounded-xl px-4">Execute</Button>
                     </form>
                   </div>
                 </div>
@@ -2014,29 +2044,29 @@ const Playground = () => {
             isWebLang && showPreview ? (
               <iframe srcDoc={htmlPreview} className="flex-1 w-full bg-white" title="HTML Preview" sandbox="allow-scripts" />
             ) : (
-              <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#0d1117]" style={{ minHeight: 380 }}>
+              <div ref={outputRef} className="flex-1 overflow-auto p-4 bg-[#05070a] shadow-inner font-mono text-xs" style={{ minHeight: 380 }}>
                 {!hasRun ? (
-                  <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-30">
-                    <span className="text-4xl font-mono font-bold text-gray-500">&lt;/&gt;</span>
-                    <p className="text-xs text-center text-gray-500">
-                      {lang === 'html' ? 'Click Preview to render HTML'
-                        : lang === 'sql' ? 'Click Run SQL to execute'
-                        : lang === 'php' ? 'Click Run PHP to execute'
-                        : lang === 'css' ? 'Click Preview to view CSS'
-                        : 'Click Run to execute code'}
+                  <div className="h-full flex flex-col items-center justify-center gap-2 select-none opacity-20 py-16">
+                    <Terminal className="w-10 h-10 text-slate-500" />
+                    <p className="text-[11px] text-center text-slate-400 font-sans tracking-wide">
+                      {lang === 'html' ? 'Click Preview to render document layout'
+                        : lang === 'sql' ? 'Click Run SQL to execute DB scripts'
+                        : lang === 'php' ? 'Click Run PHP to execute interpretation'
+                        : lang === 'css' ? 'Click Preview to render styles'
+                        : 'Click Run to compile and execute output'}
                     </p>
                   </div>
                 ) : output ? (
-                  <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"
+                  <pre className="leading-relaxed whitespace-pre-wrap break-words p-2"
                     style={{ color: output.startsWith('⚠') ? '#eab308' : output.includes('Error:') || output.includes('Interpreter Error:') ? '#f85149' : '#3fb950' }}>
                     {output}
                   </pre>
                 ) : running ? (
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Running…
+                  <div className="flex items-center gap-2 text-slate-400 p-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" /> Compiling output console…
                   </div>
                 ) : (
-                  <p className="text-xs italic text-gray-500">No output produced.</p>
+                  <p className="italic text-slate-500 p-2">Workspace process completed. No output produced.</p>
                 )}
               </div>
             )
