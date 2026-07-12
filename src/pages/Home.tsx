@@ -206,13 +206,9 @@ const HomePage = () => {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px', color: 'hsl(var(--primary))' }} />
 
         <div className="relative page-container py-16 sm:py-24 text-center">
-          {/* Dynamic Status Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-semibold tracking-wide uppercase mb-6 border border-primary/10">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            Live A/L Preparation Platform
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <BookOpen className="w-4 h-4" />
+            All A/L Subjects in One Place
           </div>
 
           {/* Main Title */}
@@ -250,24 +246,6 @@ const HomePage = () => {
                 Contact Us
               </Button>
             </Link>
-          </div>
-
-          {/* Minimal Trust Statistics */}
-          <div className="flex justify-center items-center gap-6 sm:gap-12 mt-12 pt-8 border-t border-border/50 max-w-xl mx-auto">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground tracking-tight">10,000+</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Students</p>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground tracking-tight">500+</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Past Papers</p>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground tracking-tight">20+</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Subjects</p>
-            </div>
           </div>
         </div>
       </section>
